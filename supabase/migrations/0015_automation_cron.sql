@@ -79,8 +79,16 @@ end $$;
 create extension if not exists pg_cron;
 
 -- Unschedule just in case it was previously scheduled with a different ID to ensure true idempotency
-select cron.unschedule('expire-pending-bookings');
-select cron.unschedule('daily-maintenance');
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'expire-pending-bookings') THEN
+    PERFORM cron.unschedule('expire-pending-bookings');
+  END IF;
+  
+  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'daily-maintenance') THEN
+    PERFORM cron.unschedule('daily-maintenance');
+  END IF;
+END $$;
 
 -- Schedule pending booking expiration every minute
 select cron.schedule(
