@@ -1,0 +1,36 @@
+/* Section 66.2 — BBS design tokens. Every module consumes these, never hex. */
+:root {
+  --color-bg: #FAF9F5;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F2F0E9;
+
+  --color-primary: #6B8E6B;        /* muted sage */
+  --color-primary-strong: #57795A;
+  --color-primary-soft: #E4EDE3;
+
+  --color-accent: #C9A24B;         /* muted gold */
+  --color-accent-strong: #B08C38;
+  --color-accent-soft: #F5EBD3;
+
+  --color-ink: #1E1E1A;            /* warm charcoal */
+  --color-ink-muted: #6B6A60;
+  --color-on-dark: #FFFFFF;
+
+  --color-status-pending: #C99A4B;
+  --color-status-confirmed: #6B8E6B;
+  --color-status-rejected: #B5705E; /* muted terracotta */
+  --color-status-neutral: #8A8880;
+
+  --radius-card: 24px;
+  --radius-hero: 28px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 8px 24px rgba(30, 30, 26, 0.06);
+  --shadow-nav: 0 12px 32px rgba(30, 30, 26, 0.18);
+
+  --space-page: 20px;
+  --nav-height: 68px;
+
+  --font-heading: 'Plus Jakarta Sans', 'Nunito', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}

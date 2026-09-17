@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBS — Borneo Berkuda Stable</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0C0C0E;
+            --surface: #18181C;
+            --surface-2: #222228;
+            --surface-3: #2E2E36;
+            --ink: #F4F4F6;
+            --ink-2: #9E9EA8;
+            --ink-3: #62626D;
+            --gold: #FFD700;
+            --gold-deep: #D4AF37;
+            --gold-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            --gold-soft: rgba(255, 215, 0, 0.12);
+            --lime: #39E75F;
+            --lime-soft: rgba(57, 231, 95, 0.12);
+            --line: rgba(255, 255, 255, 0.08);
+            --r-card: 28px;
+            --r-pill: 999px;
+            --sh: 0 16px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            background: #060608;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            color: var(--ink);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 50px;
+            gap: 16px;
+        }
+
+        /* Shell & Switcher */
+        .brandbar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+            max-width: 420px;
+        }
+
+        .brandbar h1 {
+            font-size: 17px;
+            margin: 0;
+            letter-spacing: -0.3px;
+            color: var(--gold);
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .brandbar p {
+            margin: 0;
+            font-size: 11.5px;
+            color: var(--ink-2);
+            line-height: 1.4;
+        }
+
+        .roles {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: var(--surface);
+            padding: 4px;
+            border-radius: var(--r-pill);
+            border: 1px solid var(--line);
+        }
+
+        .roles button {
+            border: 0;
+            background: transparent;
+            color: var(--ink-2);
+            font: 700 11px 'Plus Jakarta Sans';
+            padding: 7px 14px;
+            border-radius: var(--r-pill);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .roles button.on {
+            background: var(--gold-gradient);
+            color: #000;
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Phone Mockup Frame */
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: var(--bg);
+            border-radius: 46px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 0 10px #18181C, 0 0 0 12px #2A2A32, 0 40px 80px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .notch {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 26px;
+            background: #121215;
+            border-radius: var(--r-pill);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .notch span {
+            width: 10px;
+            height: 10px;
+            background: #222228;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .notch b {
+            width: 36px;
+            height: 4px;
+            background: #222228;
+            border-radius: 2px;
+            display: block;
+        }
+
+        .scroll {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 56px 18px 120px;
+            scrollbar-width: none;
+        }
+
+        .scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .screen {
+            display: none;
+            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .screen.on {
+            display: block;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.97) translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Super-App Shortcut Grid (Gojek-style) */
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .quick-item {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 12px 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .quick-item:active {
+            transform: scale(0.95);
+        }
+
+        .quick-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            background: var(--gold-soft);
+            color: var(--gold);
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+            margin: 0 auto 6px;
+        }
+
+        .quick-item span {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--ink-2);
+            display: block;
+        }
+
+        /* Livin' / E-Wallet Style Card */
+        .wallet-card {
+            background: linear-gradient(135deg, #1C1C24 0%, #0E0E12 100%);
+            border-radius: var(--r-card);
+            padding: 22px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: var(--sh);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            right: -30px;
+            bottom: -30px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+        }
+
+        /* Ticket Boarding Pass (GenZ Edition) */
+        .ticket-pass {
+            background: var(--surface);
+            border-radius: var(--r-card);
+            border: 1px solid var(--line);
+            box-shadow: var(--sh);
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .ticket-pass:active {
+            transform: scale(0.98);
+        }
+
+        .ticket-header {
+            padding: 18px;
+            background: linear-gradient(135deg, #252530 0%, #18181C 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .ticket-body {
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* UI Elements */
+        .top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            background: var(--gold-gradient);
+            color: #000;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 16px;
+            flex: none;
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.25);
+        }
+
+        .who {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .who b {
+            display: block;
+            font-size: 16px;
+            letter-spacing: -0.3px;
+            color: var(--ink);
+        }
+
+        .who span {
+            font-size: 11.5px;
+            color: var(--ink-2);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 1px;
+        }
+
+        .bell {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            display: grid;
+            place-items: center;
+            position: relative;
+            flex: none;
+            cursor: pointer;
+        }
+
+        .bell i {
+            position: absolute;
+            top: 9px;
+            right: 9px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gold);
+        }
+
+        h2.page {
+            font-size: 26px;
+            letter-spacing: -0.8px;
+            margin: 4px 0 16px;
+            font-weight: 800;
+        }
+
+        .sec {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin: 24px 2px 10px;
+        }
+
+        .sec h3 {
+            font-size: 14.5px;
+            margin: 0;
+            letter-spacing: -0.2px;
+            font-weight: 700;
+        }
+
+        .sec a {
+            font-size: 11.5px;
+            color: var(--gold);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .stat {
+            border-radius: var(--r-card);
+            padding: 16px;
+            background: var(--surface);
+            box-shadow: var(--sh);
+            border: 1px solid var(--line);
+        }
+
+        .stat .ic {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: var(--surface-2);
+            display: grid;
+            place-items: center;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .stat b {
+            display: block;
+            font-size: 24px;
+            letter-spacing: -0.8px;
+            line-height: 1;
+        }
+
+        .stat span {
+            font-size: 11px;
+            color: var(--ink-2);
+            display: block;
+            margin-top: 4px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--r-card);
+            padding: 16px;
+            box-shadow: var(--sh);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            border: 1px solid var(--line);
+            transition: transform 0.2s;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        .card .date {
+            width: 52px;
+            height: 54px;
+            border-radius: 16px;
+            background: var(--surface-2);
+            display: grid;
+            place-items: center;
+            text-align: center;
+            flex: none;
+            border: 1px solid var(--line);
+        }
+
+        .card .date b {
+            font-size: 16px;
+            line-height: 1;
+            letter-spacing: -0.3px;
+        }
+
+        .card .date span {
+            font-size: 9.5px;
+            color: var(--ink-2);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .card .body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card .body b {
+            font-size: 14px;
+            letter-spacing: -0.2px;
+        }
+
+        .card .body span {
+            display: block;
+            font-size: 11.5px;
+            color: var(--ink-2);
+            margin-top: 3px;
+        }
+
+        .pill {
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            padding: 5px 10px;
+            border-radius: var(--r-pill);
+            text-transform: uppercase;
+        }
+
+        .pill.ok {
+            background: var(--lime-soft);
+            color: var(--lime);
+            border: 1px solid rgba(57, 231, 95, 0.3);
+        }
+
+        .pill.wait {
+            background: var(--gold-soft);
+            color: var(--gold);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .pill.no {
+            background: rgba(255, 80, 80, 0.15);
+            color: #FF6B6B;
+        }
+
+        .pill.done {
+            background: var(--surface-2);
+            color: var(--ink-2);
+        }
+
+        .chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 2px 0 6px;
+            margin-bottom: 14px;
+            scrollbar-width: none;
+        }
+
+        .chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chips button {
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--ink-2);
+            font: 700 12px 'Plus Jakarta Sans';
+            padding: 8px 16px;
+            border-radius: var(--r-pill);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chips button.on {
+            background: var(--gold-gradient);
+            color: #000;
+            border-color: transparent;
+        }
+
+        .week {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .day {
+            flex: 1;
+            border-radius: 16px;
+            padding: 10px 0;
+            text-align: center;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            cursor: pointer;
+        }
+
+        .day span {
+            display: block;
+            font-size: 9.5px;
+            color: var(--ink-3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .day b {
+            font-size: 14.5px;
+            letter-spacing: -0.3px;
+        }
+
+        .day.on {
+            background: var(--gold-gradient);
+            color: #000;
+            border-color: transparent;
+            font-weight: 800;
+        }
+
+        .day.on span {
+            color: #332B00;
+        }
+
+        .day i {
+            display: block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--gold);
+            margin: 3px auto 0;
+        }
+
+        .day.on i {
+            background: #000;
+        }
+
+        .slot {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 13px 15px;
+            margin-bottom: 9px;
+            cursor: pointer;
+        }
+
+        .slot b {
+            font-size: 14.5px;
+            letter-spacing: -0.3px;
+            width: 52px;
+        }
+
+        .slot .meta {
+            flex: 1;
+            font-size: 11.5px;
+            color: var(--ink-2);
+        }
+
+        .slot.full {
+            background: var(--surface-2);
+            opacity: 0.55;
+        }
+
+        .dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dots i {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--gold);
+        }
+
+        .dots i.empty {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            border: 0;
+            border-radius: var(--r-pill);
+            padding: 15px;
+            font: 800 13.5px 'Plus Jakarta Sans';
+            cursor: pointer;
+            margin-top: 12px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn.dark {
+            background: var(--surface-2);
+            color: var(--ink);
+            border: 1px solid var(--line);
+        }
+
+        .btn.gold {
+            background: var(--gold-gradient);
+            color: #000;
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Slide Action Slider */
+        .slide-action {
+            background: var(--surface-2);
+            border-radius: var(--r-pill);
+            height: 56px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            margin-top: 14px;
+            overflow: hidden;
+            user-select: none;
+            border: 1px solid var(--line);
+        }
+
+        .slide-handle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--gold-gradient);
+            color: #000;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            cursor: grab;
+            position: absolute;
+            left: 4px;
+            transition: left 0.1s ease;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+        }
+
+        .slide-text {
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--ink-2);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        /* Bottom Nav */
+        .nav {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 18px;
+            height: 64px;
+            background: rgba(24, 24, 28, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: var(--r-pill);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 8px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            z-index: 40;
+        }
+
+        .nav button {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 0;
+            background: transparent;
+            color: var(--ink-3);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .nav button.on {
+            background: var(--gold-gradient);
+            color: #000;
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.35);
+        }
+
+        svg {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="brandbar">
+        <h1>BORNEO BERKUDA STABLE</h1>
+        <p>Gen-Z Super-App Redesign (Gojek &amp; Livin' Touch). Pilih peran &amp; jelajahi fitur.</p>
+    </div>
+
+    <div class="roles" id="roles">
+        <button data-role="public">Non-Member</button>
+        <button data-role="member" class="on">Member</button>
+        <button data-role="admin">Admin</button>
+        <button data-role="groomer">Groomer</button>
+    </div>
+
+    <div class="phone">
+        <div class="notch">
+            <span></span><b></b>
+        </div>
+        <div class="scroll" id="scroll">
+
+            <!-- ==========================================
+         1. NON-MEMBER FLOW
+         ========================================== -->
+            <section class="screen" id="s-landing">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+                    <b style="font-size:14px;letter-spacing:1px;color:var(--gold)">BBS STABLE</b>
+                    <span
+                        style="font-size:11px;color:var(--ink-2);background:var(--surface);padding:4px 10px;border-radius:var(--r-pill);border:1px solid var(--line)">✨
+                        Balikpapan</span>
+                </div>
+
+                <h2 class="page" style="font-size:32px;line-height:1.12">Vibe checking<br>&amp; riding time.</h2>
+                <p style="font-size:13px;color:var(--ink-2);line-height:1.55;margin:0 0 20px">
+                    Eksklusif privat berkuda di Balikpapan. 45 menit tenang, tanpa antre, dipandu groomer pro.
+                </p>
+
+                <div class="wallet-card">
+                    <div
+                        style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);font-weight:800">
+                        Casual Rider Pass</div>
+                    <div style="font-size:32px;font-weight:800;margin:6px 0 2px">Rp200K</div>
+                    <div style="font-size:12px;color:var(--ink-2)">Tanpa komitmen · 1 sesi privat 45 menit langsung
+                        main.</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+                        <span class="pill wait">INSTANT BOOK</span>
+                        <button
+                            style="width:40px;height:40px;border-radius:50%;background:var(--gold-gradient);border:0;display:grid;place-items:center;font-weight:800;cursor:pointer"
+                            data-go="s-plans">→</button>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="ic">⏱️</div>
+                        <b>45m</b>
+                        <span>Sesi privat</span>
+                    </div>
+                    <div class="stat">
+                        <div class="ic">🔥</div>
+                        <b>2 Rider</b>
+                        <span>Maksimal per slot</span>
+                    </div>
+                </div>
+
+                <div class="sec">
+                    <h3>Quick Access</h3>
+                </div>
+                <div class="quick-grid">
+                    <div class="quick-item" data-go="s-plans">
+                        <div class="quick-icon">💳</div><span>Paket</span>
+                    </div>
+                    <div class="quick-item" data-go="s-plans">
+                        <div class="quick-icon">🐎</div><span>Kuda</span>
+                    </div>
+                    <div class="quick-item" data-go="s-login">
+                        <div class="quick-icon">👤</div><span>Akun</span>
+                    </div>
+                    <div class="quick-item" data-go="s-plans">
+                        <div class="quick-icon">✨</div><span>Vibe</span>
+                    </div>
+                </div>
+
+                <div class="slide-action" id="slideCasual">
+                    <div class="slide-handle" id="handleCasual">→</div>
+                    <div class="slide-text">Slide untuk Casual Ride</div>
+                </div>
+
+                <button class="btn gold" data-go="s-plans" style="margin-top:10px">Lihat Membership &amp;
+                    Benefit</button>
+            </section>
+
+            <!-- Plans Page -->
+            <section class="screen" id="s-plans">
+                <div class="top">
+                    <button class="bell" data-go="s-landing">←</button>
+                    <div class="who"><b>Pilihan Membership</b><span>Super Saving Deals</span></div>
+                </div>
+
+                <div class="wallet-card">
+                    <div
+                        style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);font-weight:800">
+                        Gold Package · Best Value</div>
+                    <div style="font-size:32px;font-weight:800;margin:6px 0 2px">Rp1.600.000</div>
+                    <div style="font-size:12px;color:var(--ink-2)">10 Sesi · Berlaku 3 Bulan (Perpanjangan Rp1.5M)</div>
+                    <div
+                        style="margin-top:12px;background:rgba(255,215,0,0.08);border-radius:14px;padding:10px;font-size:11.5px;color:var(--gold)">
+                        ✨ <b>Benefit:</b> Prioritas jam favorit, 1x guest pass gratis, grooming intro.
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+                        <span class="pill wait">MOST POPULAR</span>
+                        <button
+                            style="width:40px;height:40px;border-radius:50%;background:var(--gold-gradient);border:0;display:grid;place-items:center;font-weight:800;cursor:pointer"
+                            data-go="s-login">→</button>
+                    </div>
+                </div>
+
+                <div class="card" data-go="s-login">
+                    <div class="date" style="background:var(--surface-2)"><b>S</b><span>silv</span></div>
+                    <div class="body"><b>Silver Package · Rp850.000</b><span>5 Sesi · Berlaku 3 Bulan (Perpanjangan
+                            Rp750K)</span></div>
+                    <div style="font-weight:800">→</div>
+                </div>
+
+                <div class="sec">
+                    <h3>Cara Kerja Membership</h3>
+                </div>
+                <div
+                    style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:16px;font-size:12px;line-height:1.6;color:var(--ink-2)">
+                    1. Pilih paket &amp; transfer via QRIS/Bank.<br>
+                    2. Konfirmasi kilat ke admin via WhatsApp.<br>
+                    3. Kredit langsung masuk dan siap dipakai booking app!
+                </div>
+
+                <button class="btn gold" data-go="s-login">Gabung Member Sekarang</button>
+            </section>
+
+            <section class="screen" id="s-login">
+                <div style="height:90px"></div>
+                <div style="text-align:center">
+                    <div class="avatar" style="width:72px;height:72px;font-size:28px;margin:0 auto 20px">🐎</div>
+                    <h2 class="page" style="font-size:26px">Masuk ke BBS</h2>
+                    <p style="font-size:12.5px;color:var(--ink-2);line-height:1.5;margin:0 auto 24px;max-width:260px">
+                        Single Sign-On Google untuk akses riwayat dan sisa kredit kamu.
+                    </p>
+                </div>
+                <button class="btn gold" data-go="s-home">
+                    <span style="display:inline-flex;align-items:center;gap:8px">
+                        <span
+                            style="background:#000;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;color:#FFD700;font-size:11px;font-weight:800">G</span>
+                        Continue with Google
+                    </span>
+                </button>
+                <button class="btn dark" data-go="s-landing">Kembali</button>
+            </section>
+
+
+            <!-- ==========================================
+         2. MEMBER FLOW
+         ========================================== -->
+            <section class="screen" id="s-home">
+                <div class="top">
+                    <div class="avatar">KA</div>
+                    <div class="who"><b>Hi, Keisha ✨</b><span>Gold Member · 7 Sesi Tersisa</span></div>
+                    <div class="bell" data-go="s-notif"><i></i>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Ticket-Style Boarding Pass for Next Ride -->
+                <div class="ticket-pass" data-go="s-detail">
+                    <div class="ticket-header">
+                        <div>
+                            <div
+                                style="font-size:9.5px;letter-spacing:1px;color:var(--gold);font-weight:800;text-transform:uppercase">
+                                Next Ride Boarding Pass</div>
+                            <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;margin-top:2px">16:00 —
+                                16:45 WITA</div>
+                            <div style="font-size:11.5px;color:var(--ink-2);margin-top:2px">Sabtu, 20 September · Arena
+                                01</div>
+                        </div>
+                        <span class="pill ok">Confirmed</span>
+                    </div>
+                    <div class="ticket-body">
+                        <span style="font-size:12px;color:var(--ink-2)">Dipandu oleh Groomer Sarah</span>
+                        <b style="color:var(--gold);font-size:11.5px">Detail Tiket →</b>
+                    </div>
+                </div>
+
+                <div class="quick-grid">
+                    <div class="quick-item" data-go="s-schedule">
+                        <div class="quick-icon">📅</div><span>Book</span>
+                    </div>
+                    <div class="quick-item" data-go="s-bookings">
+                        <div class="quick-icon">🎟️</div><span>Rides</span>
+                    </div>
+                    <div class="quick-item" data-go="s-membership">
+                        <div class="quick-icon">⚡</div><span>Gold</span>
+                    </div>
+                    <div class="quick-item" data-go="s-profile">
+                        <div class="quick-icon">⚙️</div><span>Profil</span>
+                    </div>
+                </div>
+
+                <!-- Mini Date Selector / Quick Booking Bar -->
+                <div class="sec">
+                    <h3>Quick Schedule</h3><a data-go="s-schedule">Buka kalender</a>
+                </div>
+                <div class="week">
+                    <div class="day" data-go="s-schedule"><span>Sen</span><b>15</b></div>
+                    <div class="day" data-go="s-schedule"><span>Sel</span><b>16</b><i></i></div>
+                    <div class="day" data-go="s-schedule"><span>Rab</span><b>17</b></div>
+                    <div class="day" data-go="s-schedule"><span>Kam</span><b>18</b><i></i></div>
+                    <div class="day" data-go="s-schedule"><span>Jum</span><b>19</b></div>
+                    <div class="day on" data-go="s-schedule"><span>Sab</span><b>20</b><i></i></div>
+                    <div class="day" data-go="s-schedule"><span>Min</span><b>21</b></div>
+                </div>
+
+                <button class="btn gold" data-go="s-schedule">Book a Ride Now</button>
+            </section>
+
+            <!-- Schedule Screen -->
+            <section class="screen" id="s-schedule">
+                <div class="top">
+                    <div class="who"><b style="font-size:22px;letter-spacing:-0.5px">Pilih Jadwal
+                            Sesi</b><span>September 2026</span></div>
+                </div>
+
+                <div class="chips">
+                    <button class="on">Semua</button><button>Pagi</button><button>Sore</button><button>Tersedia</button>
+                </div>
+
+                <div class="sec" style="margin-top:4px">
+                    <h3>Pagi</h3><span>07:00 — 11:00</span>
+                </div>
+                <div class="slot" data-go="s-detail"><b>07:00</b>
+                    <div class="meta">1 slot tersisa · 1/2 rider</div>
+                    <div class="dots"><i></i><i class="empty"></i></div>
+                </div>
+                <div class="slot full"><b>08:00</b>
+                    <div class="meta">Penuh · 2/2 rider</div>
+                    <div class="dots"><i></i><i></i></div>
+                </div>
+                <div class="slot" data-go="s-detail"><b>09:00</b>
+                    <div class="meta">2 slot tersisa · 0/2 rider</div>
+                    <div class="dots"><i class="empty"></i><i class="empty"></i></div>
+                </div>
+
+                <div class="sec">
+                    <h3>Sore</h3><span>13:00 — 18:00</span>
+                </div>
+                <div class="slot full"><b>13:00</b>
+                    <div class="meta">Penuh · 2/2 rider</div>
+                    <div class="dots"><i></i><i></i></div>
+                </div>
+                <div class="slot" style="border-color:var(--gold);background:var(--gold-soft)" data-go="s-detail">
+                    <b>16:00</b>
+                    <div class="meta" style="color:var(--gold);font-weight:700">Booking kamu · Confirmed</div>
+                    <div class="dots"><i></i><i></i></div>
+                </div>
+                <div class="slot" data-go="s-detail"><b>17:00</b>
+                    <div class="meta">1 slot tersisa · 1/2 rider</div>
+                    <div class="dots"><i></i><i class="empty"></i></div>
+                </div>
+            </section>
+
+            <!-- Booking Detail Screen -->
+            <section class="screen" id="s-detail">
+                <div class="top">
+                    <button class="bell" data-go="s-bookings">←</button>
+                    <div class="who"><b>Boarding Pass</b><span>#BBS-1023</span></div>
+                </div>
+
+                <div class="ticket-pass" style="cursor:default">
+                    <div class="ticket-header" style="background:linear-gradient(135deg, #1C1C24 0%, #0E0E12 100%)">
+                        <div>
+                            <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">BORNEO
+                                BERKUDA STABLE</div>
+                            <div style="font-size:24px;font-weight:800;margin-top:4px">16:00 — 16:45</div>
+                            <div style="font-size:12px;color:var(--ink-2);margin-top:2px">Sabtu, 20 September 2026</div>
+                        </div>
+                        <span class="pill ok">CONFIRMED</span>
+                    </div>
+                    <div style="padding:16px;background:var(--surface)">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
+                            <span style="color:var(--ink-2)">Peserta</span><b>Keisha &amp; Sarah</b>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
+                            <span style="color:var(--ink-2)">Kredit Dipakai</span><b>1 Sesi (Gold)</b>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:12px">
+                            <span style="color:var(--ink-2)">Batas Batal</span><b>20 Sep, 10:00 WITA</b>
+                        </div>
+                    </div>
+                    <div class="ticket-body" style="background:var(--surface-2)">
+                        <span style="font-size:11px">Arena 01 · No Antre</span>
+                        <span style="font-family:monospace;letter-spacing:2px;font-size:12px;color:var(--gold)">||| |
+                            |||| || |</span>
+                    </div>
+                </div>
+
+                <button class="btn dark" data-go="s-schedule">Reschedule Sesi</button>
+                <button class="btn" style="background:rgba(255,80,80,0.15);color:#FF6B6B" data-go="s-bookings">Batalkan
+                    Sesi</button>
+            </section>
+
+            <!-- My Bookings Screen -->
+            <section class="screen" id="s-bookings">
+                <div class="top">
+                    <div class="who"><b style="font-size:22px;letter-spacing:-0.5px">Riwayat Sesi</b><span>Tiket &amp;
+                            Aktivitas Anda</span></div>
+                </div>
+                <div class="chips">
+                    <button class="on">Mendatang</button><button>Selesai</button><button>Batal</button>
+                </div>
+
+                <div class="card" data-go="s-detail">
+                    <div class="date"><b>20</b><span>Sep</span></div>
+                    <div class="body"><b>16:00 — 16:45</b><span>Sesi sore · bersama Sarah</span></div>
+                    <span class="pill ok">Active</span>
+                </div>
+
+                <div class="card" data-go="s-detail" style="opacity:.8">
+                    <div class="date"><b>13</b><span>Sep</span></div>
+                    <div class="body"><b>16:00 — 16:45</b><span>Hadir · 1 kredit terpakai</span></div>
+                    <span class="pill done">Selesai</span>
+                </div>
+            </section>
+
+            <!-- Membership Screen -->
+            <section class="screen" id="s-membership">
+                <div class="top">
+                    <div class="who"><b style="font-size:22px;letter-spacing:-.5px">Status Member</b><span>Gold Tier
+                            Aktif</span></div>
+                </div>
+
+                <div class="wallet-card">
+                    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">GOLD MEMBERSHIP
+                    </div>
+                    <div class="big" style="font-size:28px;font-weight:800;margin:4px 0">7 Sesi Tersisa</div>
+                    <div style="font-size:12px;color:var(--ink-2)">Berakhir 20 Desember 2026</div>
+                    <div
+                        style="height:8px;background:var(--surface-2);border-radius:var(--r-pill);margin:14px 0 6px;overflow:hidden">
+                        <div style="height:100%;width:30%;background:var(--gold-gradient)"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-2)">
+                        <span>3 Terpakai</span><span>7 Tersedia</span>
+                    </div>
+                </div>
+
+                <div class="sec">
+                    <h3>Riwayat Paket</h3>
+                </div>
+                <div class="card" style="cursor:default">
+                    <div class="date" style="background:var(--gold-soft)"><b
+                            style="color:var(--gold)">G</b><span>gold</span></div>
+                    <div class="body"><b>20 Sep — 20 Des 2026</b><span>10 Sesi · Rp1.600.000</span></div>
+                    <span class="pill ok">Aktif</span>
+                </div>
+
+                <button class="btn gold" data-go="s-renew">Perpanjang Membership</button>
+            </section>
+
+            <!-- Renewal Screen -->
+            <section class="screen" id="s-renew">
+                <div class="top">
+                    <button class="bell" data-go="s-membership">←</button>
+                    <div class="who"><b>Perpanjang Paket</b><span>Hemat Rp100.000</span></div>
+                </div>
+
+                <div class="wallet-card">
+                    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">GOLD EXTENSION
+                    </div>
+                    <div style="font-size:28px;font-weight:800;margin:4px 0">Rp1.500.000</div>
+                    <div style="font-size:12px;color:var(--ink-2)">10 Sesi baru · Masa aktif diperpanjang 3 bulan</div>
+                    <div style="margin-top:14px"><span class="pill wait">SPECIAL DISCOUNT</span></div>
+                </div>
+
+                <div class="sec">
+                    <h3>Konfirmasi Pembayaran</h3>
+                </div>
+                <div
+                    style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:16px;font-size:12px;line-height:1.6;color:var(--ink-2)">
+                    Hubungi admin via WhatsApp untuk validasi transfer dan aktivasi instan kredit baru Anda.
+                </div>
+                <button class="btn gold">Konfirmasi via WhatsApp</button>
+            </section>
+
+            <!-- Notifications Screen -->
+            <section class="screen" id="s-notif">
+                <div class="top">
+                    <div class="who"><b style="font-size:22px;letter-spacing:-.5px">Notifikasi</b><span>Pembaruan &amp;
+                            info terbaru</span></div>
+                </div>
+
+                <div class="card" data-go="s-detail">
+                    <div class="date" style="background:var(--lime-soft);color:var(--lime)"><b>✓</b></div>
+                    <div class="body"><b>Booking dikonfirmasi</b><span>Sesi 20 Sep jam 16:00 disetujui BBS.</span></div>
+                </div>
+                <div class="card" data-go="s-membership">
+                    <div class="date" style="background:var(--gold-soft);color:var(--gold)"><b>💳</b></div>
+                    <div class="body"><b>Pengingat Masa Aktif</b><span>Gold membership berakhir dalam 90 hari.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Screen -->
+            <section class="screen" id="s-profile">
+                <div style="text-align:center;padding:12px 0">
+                    <div class="avatar" style="width:76px;height:76px;font-size:28px;margin:0 auto 12px">KA</div>
+                    <b style="font-size:20px">Keisha Alviani</b>
+                    <div style="margin-top:6px"><span class="pill wait">GOLD MEMBER</span></div>
+                </div>
+                <div class="sec">
+                    <h3>Pengaturan Akun</h3>
+                </div>
+                <div
+                    style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:4px 16px;box-shadow:var(--sh)">
+                    <div
+                        style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px">
+                        <span>Informasi Pribadi</span><span style="color:var(--ink-3)">›</span></div>
+                    <div
+                        style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px">
+                        <span>Kontak Darurat</span><span style="color:var(--ink-3)">›</span></div>
+                    <div style="padding:14px 0;display:flex;justify-content:space-between;font-size:13px"><span>Bantuan
+                            &amp; FAQ</span><span style="color:var(--ink-3)">›</span></div>
+                </div>
+                <button class="btn dark" data-go="s-landing" style="margin-top:20px">Keluar Akun</button>
+            </section>
+
+
+            <!-- ==========================================
+         3. ADMIN FLOW
+         ========================================== -->
+            <section class="screen" id="a-home">
+                <div class="top">
+                    <div class="avatar" style="background:#FFA500">ADM</div>
+                    <div class="who"><b>Admin Dashboard</b><span>Sabtu, 20 September</span></div>
+                </div>
+
+                <div class="wallet-card">
+                    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">BUTUH TINDAKAN
+                    </div>
+                    <div style="font-size:28px;font-weight:800;margin:4px 0">4 Pending Request</div>
+                    <div style="font-size:12px;color:var(--ink-2)">2 booking request · 1 reschedule · 1 renewal</div>
+                    <div style="margin-top:14px"><button class="btn gold" style="margin:0;padding:10px 16px"
+                            data-go="a-bookings">Review Sekarang</button></div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="ic">📅</div><b>12</b><span>Sesi hari ini</span>
+                    </div>
+                    <div class="stat">
+                        <div class="ic">👥</div><b>8</b><span>Member aktif</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen" id="a-schedule">
+                <div class="top">
+                    <div class="who"><b style="font-size:22px">Manajemen Jadwal</b><span>20 Sep 2026</span></div>
+                </div>
+                <div class="slot"><b>07:00</b>
+                    <div class="meta">Keisha · Sarah</div><span class="pill ok">2/2</span>
+                </div>
+                <div class="slot"><b>08:00</b>
+                    <div class="meta">Andi (Casual)</div><span class="pill wait">1/2</span>
+                </div>
+                <div class="slot full"><b>10:00</b>
+                    <div class="meta">Ditutup · Perawatan kuda</div><span class="pill no">Tutup</span>
+                </div>
+            </section>
+
+            <section class="screen" id="a-bookings">
+                <div class="top">
+                    <div class="who"><b style="font-size:22px">Review Bookings</b><span>2 Pending Request</span></div>
+                </div>
+                <div class="ticket-pass" style="cursor:default">
+                    <div class="ticket-header">
+                        <div>
+                            <b style="font-size:15px">Keisha Alviani</b>
+                            <div style="font-size:11.5px;color:var(--ink-2);margin-top:2px">27 Sep · 15:00 — 15:45
+                                (Gold)</div>
+                        </div>
+                        <span class="pill wait">Pending</span>
+                    </div>
+                    <div class="ticket-body" style="gap:8px">
+                        <button class="btn gold" style="margin:0;padding:8px 16px">Approve</button>
+                        <button class="btn dark" style="margin:0;padding:8px 16px">Reject</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen" id="a-members">
+                <div class="top">
+                    <div class="who"><b style="font-size:22px">Daftar Member</b><span>8 Member Aktif</span></div>
+                </div>
+                <div class="card">
+                    <div class="avatar">KA</div>
+                    <div class="body"><b>Keisha Alviani</b><span>Gold · 7 Kredit</span></div><span
+                        class="pill ok">Aktif</span>
+                </div>
+                <div class="card">
+                    <div class="avatar">SR</div>
+                    <div class="body"><b>Sarah</b><span>Silver · 3 Kredit</span></div><span class="pill ok">Aktif</span>
+                </div>
+            </section>
+
+            <section class="screen" id="a-reports">
+                <div class="top">
+                    <div class="who"><b style="font-size:22px">Laporan Bulanan</b><span>September 2026</span></div>
+                </div>
+                <div class="wallet-card">
+                    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">TOTAL SESI BULAN
+                        INI</div>
+                    <div style="font-size:32px;font-weight:800;margin:4px 0">126 Sesi</div>
+                    <div style="font-size:12px;color:var(--ink-2)">112 selesai · 8 batal · 6 no-show</div>
+                </div>
+                <button class="btn gold" style="margin-top:16px">Export Laporan XLSX</button>
+            </section>
+
+
+            <!-- ==========================================
+         4. GROOMER FLOW
+         ========================================== -->
+            <section class="screen" id="g-home">
+                <div class="top">
+                    <div class="avatar" style="background:#39E75F;color:#000">GR</div>
+                    <div class="who"><b>Groomer Stable</b><span>Sabtu, 20 September</span></div>
+                </div>
+
+                <div class="wallet-card" style="border-color:rgba(57,231,95,0.3)">
+                    <div style="font-size:10px;letter-spacing:1px;color:var(--lime);font-weight:800">SESI BERIKUTNYA
+                    </div>
+                    <div style="font-size:28px;font-weight:800;margin:4px 0">07:00 WITA</div>
+                    <div style="font-size:12px;color:var(--ink-2)">2 Rider · Keisha, Sarah (Arena 01)</div>
+                    <div style="margin-top:14px"><button class="btn gold" style="margin:0;padding:10px 16px"
+                            data-go="g-session">Siapkan Kuda</button></div>
+                </div>
+
+                <div class="sec">
+                    <h3>Jadwal Hari Ini</h3>
+                </div>
+                <div class="card" data-go="g-session">
+                    <div class="date"><b>07</b><span>:00</span></div>
+                    <div class="body"><b>2 Rider</b><span>Keisha · Sarah</span></div>
+                    <div style="font-weight:800">→</div>
+                </div>
+                <div class="card" data-go="g-session">
+                    <div class="date"><b>16</b><span>:00</span></div>
+                    <div class="body"><b>2 Rider</b><span>Keisha · Sarah</span></div>
+                    <div style="font-weight:800">→</div>
+                </div>
+            </section>
+
+            <section class="screen" id="g-session">
+                <div class="top">
+                    <button class="bell" data-go="g-home">←</button>
+                    <div class="who"><b>Check-in Kehadiran</b><span>Sesi 16:00 WITA</span></div>
+                </div>
+                <div class="card" style="cursor:default">
+                    <div class="avatar">KA</div>
+                    <div class="body"><b>Keisha Alviani</b><span>Gold Member</span></div>
+                    <span class="pill ok" style="cursor:pointer">Hadir ✓</span>
+                </div>
+                <div class="card" style="cursor:default">
+                    <div class="avatar">SR</div>
+                    <div class="body"><b>Sarah</b><span>Silver Member</span></div>
+                    <span class="pill no" style="cursor:pointer">No-Show</span>
+                </div>
+                <button class="btn gold" data-go="g-home">Simpan Kehadiran</button>
+            </section>
+
+        </div><!-- /scroll -->
+
+        <nav class="nav" id="nav"></nav>
+    </div>
+
+    <script>
+        const NAVS = {
+            public: [['s-landing', 'home'], ['s-plans', 'card'], ['s-login', 'user']],
+            member: [['s-home', 'home'], ['s-schedule', 'cal'], ['s-bookings', 'ticket'], ['s-membership', 'card'], ['s-profile', 'user']],
+            admin: [['a-home', 'home'], ['a-schedule', 'cal'], ['a-bookings', 'ticket'], ['a-members', 'users'], ['a-reports', 'chart']],
+            groomer: [['g-home', 'home'], ['g-session', 'ticket'], ['s-profile', 'user']]
+        };
+
+        const ICONS = {
+            home: '<path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
+            cal: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/>',
+            ticket: '<path d="M3 9a2 2 0 0 0 0 6v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 1 0-6V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>',
+            card: '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>',
+            user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+            users: '<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 5.5a3.4 3.4 0 0 1 0 6.8"/>',
+            chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'
+        };
+
+        let currentRole = 'member';
+
+        function svgIcon(name) {
+            return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[name] || '') + '</svg>';
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+            document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.target === id));
+            const scroller = document.getElementById('scroll');
+            if (scroller) scroller.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
+        function buildNav() {
+            const nav = document.getElementById('nav');
+            if (!nav) return;
+            nav.innerHTML = '';
+            const list = NAVS[currentRole] || NAVS.member;
+            list.forEach(([id, icon], i) => {
+                const b = document.createElement('button');
+                b.dataset.target = id;
+                b.innerHTML = svgIcon(icon);
+                if (i === 0) b.classList.add('on');
+                b.onclick = () => showScreen(id);
+                nav.appendChild(b);
+            });
+            showScreen(list[0][0]);
+        }
+
+        document.getElementById('roles').onclick = e => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            currentRole = btn.dataset.role;
+            document.querySelectorAll('#roles button').forEach(x => x.classList.toggle('on', x === btn));
+            buildNav();
+        };
+
+        document.addEventListener('click', e => {
+            const el = e.target.closest('[data-go]');
+            if (!el) return;
+            e.stopPropagation();
+            showScreen(el.dataset.go);
+        });
+
+        document.querySelectorAll('.chips').forEach(group => {
+            group.onclick = e => {
+                const b = e.target.closest('button');
+                if (!b) return;
+                group.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+                b.classList.add('on');
+            };
+        });
+
+        document.querySelectorAll('.week').forEach(w => {
+            w.onclick = e => {
+                const d = e.target.closest('.day');
+                if (!d) return;
+                w.querySelectorAll('.day').forEach(x => x.classList.remove('on'));
+                d.classList.add('on');
+            };
+        });
+
+        // Slide action simulation
+        const slideAction = document.getElementById('slideCasual');
+        const handle = document.getElementById('handleCasual');
+        if (slideAction && handle) {
+            let isDragging = false;
+            handle.onmousedown = e => { isDragging = true; };
+            window.onmouseup = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                handle.style.left = '4px';
+            };
+            window.onmousemove = e => {
+                if (!isDragging) return;
+                const rect = slideAction.getBoundingClientRect();
+                let x = e.clientX - rect.left - 24;
+                if (x < 4) x = 4;
+                if (x > rect.width - 52) {
+                    x = rect.width - 52;
+                    isDragging = false;
+                    showScreen('s-plans');
+                }
+                handle.style.left = x + 'px';
+            };
+        }
+
+        buildNav();
+    </script>
+</body>
+
+</html>

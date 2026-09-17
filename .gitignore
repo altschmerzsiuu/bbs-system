@@ -1,0 +1,20 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env*.local
+coverage/
+.DS_Store
+public/sw.js
+public/workbox-*.js
+*.json.local
+bbs-system.json
+bbs-system-sheet.json
+*-adminsdk-*.json
+
+# Safety / IDE / Infra exclusions
+.vercel/
+.vscode/
+.idea/
+.gemini/
