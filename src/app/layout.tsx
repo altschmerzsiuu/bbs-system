@@ -38,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className={`${manrope.variable} ${fraunces.variable}`}>
-      <body className="min-h-dvh bg-bg text-ink antialiased" suppressHydrationWarning={true}>
+      <body suppressHydrationWarning={true}>
         <SerwistProvider swUrl="/serwist/sw.js">
           {children}
         </SerwistProvider>

@@ -5,11 +5,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const actor = await requireActor(['ADMIN']);
   
   return (
-    <>
-      <div className="mx-auto min-h-dvh max-w-app px-5 pt-6 pb-nav">
-        {children}
+    <div className="shell">
+      <div className="phone role-admin">
+        <div className="viewport">
+          {children}
+        </div>
+        <BottomNavAdmin />
       </div>
-      <BottomNavAdmin />
-    </>
+    </div>
   );
 }

@@ -61,16 +61,16 @@ export default async function AdminReviewRequestsPage() {
         const timeStr = b.session_slots.start_time.slice(0, 5);
 
         return (
-          <div key={b.id} className="card" style={{ flexDirection: 'column', alignItems: 'flex-start', marginBottom: '16px', padding: '16px' }}>
-            <span className="pill wait" style={{ marginBottom: '8px' }}>PENDING</span>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', marginBottom: '4px' }}>{participantName}</div>
-            <div className="sub">{dateStr} · {timeStr} · {b.is_casual ? 'Casual' : 'Member'}</div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '16px', width: '100%' }}>
+          <div key={b.id} className="card" style={{ marginBottom: '16px' }}>
+            <span className="pill wait">PENDING</span>
+            <div style={{ font: '20px var(--font-display)', marginTop: '9px' }}>{participantName}</div>
+            <div className="sub" style={{ marginTop: '4px' }}>{dateStr} · {timeStr} · {b.is_casual ? 'Casual' : 'Member'}</div>
+            <div style={{ display: 'flex', gap: '6px', marginTop: '13px' }}>
               <form action={approveBookingAction.bind(null, b.id) as any} style={{ flex: 1 }}>
-                <button type="submit" className="primary" style={{ width: '100%', margin: 0, padding: '12px' }}>Approve</button>
+                <button type="submit" className="primary">Approve</button>
               </form>
               <form action={rejectBookingAction.bind(null, b.id) as any} style={{ flex: 1 }}>
-                <button type="submit" className="primary" style={{ width: '100%', margin: 0, padding: '12px', background: '#efeee9', color: '#222' }}>Reject</button>
+                <button type="submit" className="primary" style={{ background: '#efeee9', color: '#222' }}>Reject</button>
               </form>
             </div>
           </div>
@@ -91,14 +91,12 @@ export default async function AdminReviewRequestsPage() {
         const timeStr = b.session_slots.start_time.slice(0, 5);
 
         return (
-          <div key={b.id} className="card" style={{ flexDirection: 'column', alignItems: 'flex-start', marginBottom: '16px', padding: '16px' }}>
-            <b style={{ fontSize: '14px' }}>{participantName}</b>
+          <div key={b.id} className="card" style={{ marginBottom: '16px' }}>
+            <b style={{ fontSize: '9px' }}>{participantName}</b>
             <div className="sub" style={{ marginTop: '4px' }}>{dateStr} · {timeStr} (Requested Change)</div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '16px', width: '100%' }}>
-              <form action={approveRescheduleAction.bind(null, b.id) as any} style={{ flex: 1 }}>
-                <button type="submit" className="primary" style={{ width: '100%', margin: 0, padding: '12px', background: '#efeee9', color: '#222' }}>Review change</button>
-              </form>
-            </div>
+            <form action={approveRescheduleAction.bind(null, b.id) as any} style={{ marginTop: '10px' }}>
+              <button type="submit" className="primary" style={{ background: '#efeee9', color: '#222' }}>Review change</button>
+            </form>
           </div>
         );
       })}
@@ -109,30 +107,30 @@ export default async function AdminReviewRequestsPage() {
         <span className="sub">{pendingApps.length} request{pendingApps.length !== 1 ? 's' : ''}</span>
       </div>
       {pendingApps.map((app: any) => (
-        <div key={app.id} className="card" style={{ flexDirection: 'column', alignItems: 'flex-start', marginBottom: '16px', padding: '16px' }}>
-          <b style={{ fontSize: '14px' }}>{app.members?.full_name}</b>
+        <div key={app.id} className="card" style={{ marginBottom: '16px' }}>
+          <b style={{ fontSize: '9px' }}>{app.members?.full_name}</b>
           <div className="sub" style={{ marginTop: '4px' }}>
             {app.application_type} → {app.membership_plans?.name} ({app.status.replace('_', ' ')})
           </div>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '16px', width: '100%' }}>
+          <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
             {app.status === 'PENDING_REVIEW' && (
               <>
                 <form action={approveApplicationAction.bind(null, app.id)} style={{ flex: 1 }}>
-                  <button type="submit" className="primary" style={{ width: '100%', margin: 0, padding: '12px' }}>Approve</button>
+                  <button type="submit" className="primary">Approve</button>
                 </form>
                 <form action={rejectApplicationAction.bind(null, app.id)} style={{ flex: 1 }}>
-                  <button type="submit" className="primary" style={{ width: '100%', margin: 0, padding: '12px', background: '#efeee9', color: '#222' }}>Reject</button>
+                  <button type="submit" className="primary" style={{ background: '#efeee9', color: '#222' }}>Reject</button>
                 </form>
               </>
             )}
             {app.status === 'APPROVED' && (
               <form action={confirmPaymentAction.bind(null, app.id)} style={{ flex: 1 }}>
-                <button type="submit" className="primary" style={{ width: '100%', margin: 0, padding: '12px', background: 'var(--gold)', color: '#171717' }}>Confirm Payment</button>
+                <button type="submit" className="primary" style={{ background: 'var(--gold)', color: '#171717' }}>Confirm Payment</button>
               </form>
             )}
             {app.status === 'PAYMENT_CONFIRMED' && (
               <form action={activateMembershipAction.bind(null, app.id)} style={{ flex: 1 }}>
-                <button type="submit" className="primary" style={{ width: '100%', margin: 0, padding: '12px' }}>Activate</button>
+                <button type="submit" className="primary">Activate</button>
               </form>
             )}
           </div>

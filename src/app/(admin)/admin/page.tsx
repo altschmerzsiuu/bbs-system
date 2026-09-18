@@ -21,7 +21,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <div className="top" style={{ marginBottom: '16px' }}>
+      <div className="top">
         <div className="avatar initial">AD</div>
         <div className="topmain">
           <b>Good morning, Admin.</b>
@@ -38,10 +38,8 @@ export default async function AdminDashboardPage() {
         <div style={{ fontSize: '8px', color: '#aaa', lineHeight: 1.5 }}>
           {pendingBookingsCount} bookings · {rescheduleRequestsCount} reschedule · {pendingAppsCount} membership
         </div>
-        <Link href="/admin/applications" style={{ textDecoration: 'none' }}>
-          <button className="primary" style={{ marginTop: '13px', background: 'var(--gold)', color: '#171717' }}>
-            Review now →
-          </button>
+        <Link href="/admin/applications" className="primary" style={{ marginTop: '13px', background: 'var(--gold)', color: '#171717' }}>
+          Review now →
         </Link>
       </div>
 
@@ -64,28 +62,22 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="section" style={{ marginTop: '16px' }}>
+      <div className="section">
         <b>Today's flow</b>
-        <Link href="/admin/schedule" style={{ textDecoration: 'none', color: 'var(--gold)', fontSize: '11px', fontWeight: 600 }}>
-          View schedule
-        </Link>
+        <Link href="/admin/schedule">View schedule</Link>
       </div>
 
       <div className="list">
-        <Link href="/admin/schedule" className="row" style={{ textDecoration: 'none' }}>
-          <div className="date" style={{ background: 'transparent' }}>
-            <b style={{ fontSize: '18px' }}>07:00</b>
-          </div>
+        <Link href="/admin/schedule" className="row">
+          <div className="date">07:00</div>
           <div className="rowmain">
             <b>2 riders</b>
             <span>Keisha · Sarah · Arena 01</span>
           </div>
           <span className="pill ok">Ready</span>
         </Link>
-        <Link href="/admin/schedule" className="row" style={{ textDecoration: 'none' }}>
-          <div className="date" style={{ background: 'transparent' }}>
-            <b style={{ fontSize: '18px' }}>16:00</b>
-          </div>
+        <Link href="/admin/schedule" className="row">
+          <div className="date">16:00</div>
           <div className="rowmain">
             <b>2 riders</b>
             <span>Keisha · Sarah · Arena 01</span>

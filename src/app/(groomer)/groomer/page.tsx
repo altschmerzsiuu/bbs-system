@@ -2,8 +2,8 @@ import React from 'react';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 import { resolveAttendanceAction, assignHorseAction } from './actions';
-import { LogOut } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js'; // We won't use it directly here for signout since this is server component, so we use a client component or link
+import { Bell, Check } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function GroomerDashboardPage() {
   await requireActor(['GROOMER', 'ADMIN']);
@@ -30,99 +30,91 @@ export default async function GroomerDashboardPage() {
     .order('start_time');
 
   const safeSlots = slots || [];
+  
+  // Flatten active participants for the groomer view
+  const activeSessions = safeSlots.map(slot => {
+    const activeBookings = slot.bookings.filter(b => ['CONFIRMED', 'COMPLETED', 'NO_SHOW'].includes(b.status));
+    const participants = activeBookings.flatMap(b => b.booking_participants);
+    return {
+      ...slot,
+      participants
+    };
+  }).filter(s => s.participants.length > 0);
+
+  const totalSessions = activeSessions.length;
+  const preppedSessions = activeSessions.filter(s => s.participants.every(p => p.horse_id != null)).length;
+  const progressPercent = totalSessions === 0 ? 0 : Math.round((preppedSessions / totalSessions) * 100);
+
+  const nextSession = activeSessions.find(s => s.participants.some(p => p.horse_id == null)) || activeSessions[0];
 
   return (
     <div>
-      <div className="top" style={{ marginBottom: '24px' }}>
+      <div className="top">
+        <div className="avatar initial" style={{ background: '#dfe6da' }}>GR</div>
         <div className="topmain">
-          <h2>Field Operations<br /><em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Groomer.</em></h2>
-          <span className="sub">{new Date(today).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <b>Good morning.</b>
+          <span>Stable team · {new Date().toLocaleDateString('en-GB', { weekday: 'long' })}</span>
         </div>
+        <button className="icon" aria-label="Notifications">
+          <Bell size={18} strokeWidth={2} color="var(--ink)" />
+        </button>
       </div>
 
-      {safeSlots.length === 0 ? (
-        <div style={{ textAlign: 'center', marginTop: '48px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'var(--goldSoft)', marginBottom: '12px' }}>✦</div>
-          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>No sessions today</div>
-          <div className="sub">Enjoy your free time!</div>
+      <div className="section" style={{ marginTop: 0 }}>
+        <b>Prep progress</b>
+        <span className="sub">{preppedSessions} of {totalSessions} ready</span>
+      </div>
+      <div className="progress" style={{ marginBottom: '18px' }}>
+        <i style={{ width: `${progressPercent}%` }}></i>
+      </div>
+
+      {nextSession ? (
+        <div className="groomHero">
+          <span className="eyebrow">NEXT SESSION</span>
+          <div className="big">{nextSession.start_time.slice(0, 5)}</div>
+          <div className="sub">{nextSession.participants.length} riders · Arena 01</div>
+          <button className="primary" style={{ marginTop: '13px', width: 'auto', padding: '0 20px' }}>
+            Prepare session →
+          </button>
+          <img className="groomHorse" src="https://images.unsplash.com/photo-1598974357801-cbca100e65d0?auto=format&fit=crop&w=900&q=80" alt="Horse" />
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {safeSlots.map((slot) => {
-            const activeBookings = slot.bookings.filter(b => ['CONFIRMED', 'COMPLETED', 'NO_SHOW'].includes(b.status));
-            if (activeBookings.length === 0) return null;
-
-            return (
-              <div key={slot.id} className="card" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                <b style={{ fontFamily: 'var(--font-display)', fontSize: '24px', borderBottom: '1px solid var(--line)', paddingBottom: '12px', marginBottom: '12px', width: '100%', color: 'var(--gold)' }}>
-                  {slot.start_time.slice(0, 5)}
-                </b>
-
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {activeBookings.map((b) => (
-                    b.booking_participants.map((p) => {
-                      const name = p.participant_type === 'MEMBER' 
-                        ? p.members?.full_name 
-                        : p.casual_customers?.full_name;
-                      
-                      const attendance = p.attendance_records?.[0];
-                      
-                      return (
-                        <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: '#fcfcfb', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <b style={{ fontSize: '16px' }}>{name}</b>
-                            <span className={`pill ${p.participant_type === 'MEMBER' ? 'wait' : 'ok'}`}>
-                              {p.participant_type}
-                            </span>
-                          </div>
-
-                          {/* HORSE ASSIGNMENT */}
-                          <div style={{ padding: '12px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--line)' }}>
-                            <b style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>HORSE ASSIGNMENT</b>
-                            <form action={assignHorseAction.bind(null, p.id) as any} style={{ display: 'flex', gap: '8px' }}>
-                              <select 
-                                name="horseId" 
-                                defaultValue={p.horse_id || 'UNASSIGN'}
-                                style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '13px', backgroundColor: '#fcfcfb', fontFamily: 'var(--font-body)' }}
-                              >
-                                <option value="UNASSIGN">-- Select Horse --</option>
-                                {horses?.map(h => (
-                                  <option key={h.id} value={h.id}>{h.name}</option>
-                                ))}
-                              </select>
-                              <button type="submit" className="btn gold" style={{ margin: 0, padding: '8px 16px' }}>Set</button>
-                            </form>
-                          </div>
-
-                          {/* ATTENDANCE */}
-                          <div style={{ padding: '12px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--line)' }}>
-                            <b style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>ATTENDANCE</b>
-                            {attendance ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: attendance.status === 'ATTENDED' ? 'var(--green)' : 'var(--red)' }}>
-                                <b>{attendance.status}</b>
-                                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Recorded</span>
-                              </div>
-                            ) : (
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <form action={resolveAttendanceAction.bind(null, p.id, 'ATTENDED') as any} style={{ flex: 1 }}>
-                                  <button type="submit" className="btn" style={{ width: '100%', backgroundColor: 'var(--greenSoft)', color: 'var(--green)', margin: 0 }}>Attended</button>
-                                </form>
-                                <form action={resolveAttendanceAction.bind(null, p.id, 'NO_SHOW') as any} style={{ flex: 1 }}>
-                                  <button type="submit" className="btn" style={{ width: '100%', backgroundColor: 'var(--redSoft)', color: 'var(--red)', margin: 0 }}>No Show</button>
-                                </form>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+        <div className="groomHero">
+          <span className="eyebrow">NO SESSIONS TODAY</span>
+          <div className="big">Enjoy!</div>
         </div>
       )}
+
+      <div className="section">
+        <b>Today's sessions</b>
+        <a style={{ fontSize: '8px', color: 'var(--gold)', fontWeight: 800, cursor: 'pointer' }}>See all</a>
+      </div>
+
+      {activeSessions.map((slot, i) => {
+        const isPrepped = slot.participants.every(p => p.horse_id != null);
+        const participantNames = slot.participants.map(p => 
+          p.participant_type === 'MEMBER' ? p.members?.full_name : p.casual_customers?.full_name
+        ).join(' · ');
+
+        return (
+          <div key={slot.id} className={`checkrow ${isPrepped ? 'done' : ''}`}>
+            <div className="checkdot">
+              {isPrepped ? (
+                <Check size={14} strokeWidth={2.5} color="white" />
+              ) : (
+                <span style={{ fontSize: '7px', color: '#b6b4ab', fontWeight: 800 }}>{i + 1}</span>
+              )}
+            </div>
+            <div className="rowmain">
+              <b>{slot.start_time.slice(0, 5)} · {slot.participants.length} rider{slot.participants.length !== 1 ? 's' : ''}</b>
+              <span>{participantNames} · Arena 01</span>
+            </div>
+            <span className={`pill ${isPrepped ? 'ok' : 'wait'}`}>
+              {isPrepped ? 'Prepped' : 'Pending'}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -8,9 +8,13 @@ import { requireActor } from '@/lib/auth';
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
   const actor = await requireActor(['MEMBER']);
   return (
-    <div className="mx-auto min-h-dvh max-w-app px-5 pt-6 pb-nav">
-      {children}
-      <BottomNav role={actor.role} />
+    <div className="shell">
+      <div className="phone role-member">
+        <div className="viewport">
+          {children}
+        </div>
+        <BottomNav role={actor.role} />
+      </div>
     </div>
   );
 }

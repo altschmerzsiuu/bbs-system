@@ -35,9 +35,7 @@ export default async function MemberHomePage() {
 
       {/* ── Top Bar ── */}
       <div className="top">
-        <div className="avatar" style={{ background: '#ded8c8' }}>
-          {firstName.charAt(0).toUpperCase()}
-        </div>
+        <img className="avatar" src="https://images.unsplash.com/photo-1598974357801-cbca100e65d0?auto=format&fit=crop&w=900&q=80" alt="Avatar" />
         <div className="topmain">
           <b>Hello, {firstName}.</b>
           <span>{tier ? `${tier} Member · ${data.membership?.available ?? 0} sessions left` : 'Member BBS'}</span>
@@ -58,7 +56,7 @@ export default async function MemberHomePage() {
       </div>
 
       {data.nextBooking ? (
-        <Link href={`/bookings/${data.nextBooking.id}`} className="ride" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+        <Link href={`/bookings/${data.nextBooking.id}`} className="ride">
           <div className="eyebrow" style={{ color: '#53472e' }}>
             {fmtDate(data.nextBooking.date).label}
           </div>
@@ -78,21 +76,21 @@ export default async function MemberHomePage() {
 
       {/* ── Quick Grid ── */}
       <div className="quick">
-        <Link href="/schedule" style={{ textDecoration: 'none' }}>
+        <Link href="/schedule">
           <span className="quickIcon"><Calendar size={18} strokeWidth={1.75} /></span>
-          <span>Book a Ride</span>
+          Book a Ride
         </Link>
-        <Link href="/bookings" style={{ textDecoration: 'none' }}>
+        <Link href="/bookings">
           <span className="quickIcon"><Ticket size={18} strokeWidth={1.75} /></span>
-          <span>My Rides</span>
+          My Rides
         </Link>
-        <Link href="/membership" style={{ textDecoration: 'none' }}>
+        <Link href="/membership">
           <span className="quickIcon"><CreditCard size={18} strokeWidth={1.75} /></span>
-          <span>Membership</span>
+          Membership
         </Link>
-        <Link href="/profile" style={{ textDecoration: 'none' }}>
+        <Link href="/profile">
           <span className="quickIcon"><User size={18} strokeWidth={1.75} /></span>
-          <span>Profile</span>
+          Profile
         </Link>
       </div>
 
@@ -107,13 +105,13 @@ export default async function MemberHomePage() {
         <>
           <div className="section">
             <b>Upcoming</b>
-            <Link href="/bookings" className="section-link" style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: 700, textDecoration: 'none' }}>See all</Link>
+            <Link href="/bookings">See all</Link>
           </div>
           <div className="list">
             {data.nextBooking && (() => {
               const d = fmtDate(data.nextBooking!.date);
               return (
-                <Link href={`/bookings/${data.nextBooking!.id}`} className="row" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link href={`/bookings/${data.nextBooking!.id}`} className="row">
                   <div className="date"><b>{d.day}</b><span>{d.mon}</span></div>
                   <div className="rowmain">
                     <b>{data.nextBooking!.startTime} — {data.nextBooking!.endTime}</b>
