@@ -918,3 +918,93 @@ h2.page { font-size: 26px; letter-spacing: -.8px; margin: 2px 0 16px; }
   margin: 14px 0 8px;
 }
 .bar i { height: 100%; }
+
+/* ── Admin & Groomer UI ───────────────────────────────────────── */
+.adminHero {
+  background: #334455;
+  border-radius: 20px;
+  padding: 22px 20px 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.adminHero::after {
+  content: "";
+  position: absolute;
+  right: -30px;
+  bottom: -40px;
+  width: 150px;
+  height: 150px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.adminHero .big {
+  font-family: var(--font-display);
+  font-size: 32px;
+  margin: 6px 0 3px;
+  line-height: 1.1;
+}
+
+.statStrip {
+  display: flex;
+  background: white;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  padding: 16px 0;
+  margin-bottom: 24px;
+}
+
+.stat {
+  flex: 1;
+  text-align: center;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat:last-child { border-right: none; }
+
+.stat strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+}
+.stat span {
+  font-size: 8px;
+  color: var(--muted);
+}
+.stat .up {
+  color: var(--green);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.groomHero {
+  background: #c3d2bd;
+  border-radius: 20px;
+  padding: 22px 20px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 12px;
+}
+.groomHero .eyebrow { color: #5a7051; }
+.groomHero .big {
+  font-family: var(--font-display);
+  font-size: 40px;
+  margin: 2px 0 0;
+  color: #171717;
+}
+.groomHorse {
+  position: absolute;
+  right: -20px;
+  bottom: -10px;
+  height: 120px;
+  opacity: 0.9;
+  pointer-events: none;
+}
