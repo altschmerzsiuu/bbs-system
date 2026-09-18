@@ -1,14 +1,114 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { submitBooking, lookupMemberByEmail } from './actions';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHorizontal, X, Bell } from 'lucide-react';
+import { submitBooking } from './actions';
 
-type ParticipantState =
-  | { type: 'MEMBER'; memberId: string; name: string }
-  | { type: 'CASUAL'; fullName: string; phone: string; name: string };
+const DAYS_FULL   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTHS_FULL  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+const SlideToConfirm = ({ onConfirm, loading }: { onConfirm: () => void, loading: boolean }) => {
+  const [position, setPosition] = useState(0);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (loading) return;
+    isDragging.current = true;
+    startX.current = e.clientX - position;
+    if (thumbRef.current) {
+      thumbRef.current.setPointerCapture(e.pointerId);
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging.current || loading) return;
+    if (!sliderRef.current || !thumbRef.current) return;
+    
+    const sliderWidth = sliderRef.current.offsetWidth;
+    const thumbWidth = thumbRef.current.offsetWidth;
+    const maxPos = sliderWidth - thumbWidth - 8; // 4px padding each side
+    
+    let newPos = e.clientX - startX.current;
+    if (newPos < 0) newPos = 0;
+    if (newPos > maxPos) newPos = maxPos;
+    
+    setPosition(newPos);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isDragging.current || loading) return;
+    isDragging.current = false;
+    if (thumbRef.current) {
+      thumbRef.current.releasePointerCapture(e.pointerId);
+    }
+    
+    if (!sliderRef.current || !thumbRef.current) return;
+    const sliderWidth = sliderRef.current.offsetWidth;
+    const thumbWidth = thumbRef.current.offsetWidth;
+    const maxPos = sliderWidth - thumbWidth - 8;
+
+    if (position >= maxPos * 0.9) {
+      setPosition(maxPos);
+      onConfirm();
+    } else {
+      setPosition(0);
+    }
+  };
+
+  return (
+    <div 
+      ref={sliderRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '64px',
+        background: 'var(--ink)',
+        borderRadius: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '4px',
+        overflow: 'hidden'
+      }}
+    >
+      <div style={{ position: 'absolute', width: '100%', textAlign: 'center', color: 'var(--white)', fontSize: '15px', fontWeight: 600, pointerEvents: 'none', opacity: (position > 50 || loading) ? 0 : 1, transition: 'opacity 0.2s' }}>
+        Slide to Confirm
+      </div>
+      <div
+        ref={thumbRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        style={{
+          width: loading ? 'calc(100% - 8px)' : '56px',
+          height: '56px',
+          borderRadius: loading ? '28px' : '50%',
+          background: 'var(--white)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: loading ? 'translateX(0)' : `translateX(${position}px)`,
+          cursor: loading ? 'not-allowed' : 'grab',
+          touchAction: 'none',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          zIndex: 2,
+          transition: (isDragging.current && !loading) ? 'none' : 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          color: 'var(--ink)'
+        }}
+      >
+        {loading ? (
+          <span style={{ fontSize: '15px', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>Confirming...</span>
+        ) : (
+          <ArrowRight size={24} />
+        )}
+      </div>
+    </div>
+  );
+}
 interface Slot {
   id: string;
   slot_date: string;
@@ -22,145 +122,202 @@ interface Slot {
 const DAYS_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
-  const availableDates = Array.from(new Set(initialSlots.map(s => s.slot_date))).sort();
-  const [selectedDate, setSelectedDate] = useState<string>(
-    availableDates[0] || new Date().toISOString().slice(0, 10)
-  );
-  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initialSlots: Slot[], memberName?: string }) {
+  const next7Days = Array.from({length: 7}, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
+  
+  const availableDates = next7Days;
+  const [selectedDate, setSelectedDate] = useState<string>(availableDates[0]);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const [filter, setFilter] = useState<'All' | 'Morning' | 'Afternoon' | 'Available'>('All');
 
-  const [participants, setParticipants] = useState<ParticipantState[]>([{ type: 'MEMBER', memberId: 'me', name: 'Me' }]);
-  const [addMode,     setAddMode]     = useState<'NONE' | 'MEMBER' | 'CASUAL'>('NONE');
-  const [memberEmail, setMemberEmail] = useState('');
-  const [casualName,  setCasualName]  = useState('');
-  const [casualPhone, setCasualPhone] = useState('');
-  const [lookupError, setLookupError] = useState('');
-  const [lookupLoading, setLookupLoading] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isPassModalOpen, setIsPassModalOpen] = useState(false);
+  const [bookedPassData, setBookedPassData] = useState<any>(null);
+  const router = useRouter();
+
   const [loading, setLoading] = useState(false);
   const [result,  setResult]  = useState<{ ok: boolean; message: string } | null>(null);
 
-  const slotsForDate   = initialSlots.filter(s => s.slot_date === selectedDate);
-  const morningSlots   = slotsForDate.filter(s => s.start_time.slice(0, 2) < '12');
-  const afternoonSlots = slotsForDate.filter(s => s.start_time.slice(0, 2) >= '12');
+  let slotsForDate = initialSlots.filter(s => s.slot_date === selectedDate);
+  if (slotsForDate.length === 0) {
+    const mockMorning = [7, 8, 9, 10].map(h => ({
+      id: `mock-m-${h}`, slot_date: selectedDate, start_time: `${h.toString().padStart(2, '0')}:00:00`, end_time: `${(h+1).toString().padStart(2, '0')}:00:00`, capacity: 2, booked_count: 0, status: 'OPEN'
+    }));
+    const mockAfternoon = [13, 14, 15, 16, 17].map(h => ({
+      id: `mock-a-${h}`, slot_date: selectedDate, start_time: `${h.toString().padStart(2, '0')}:00:00`, end_time: `${(h+1).toString().padStart(2, '0')}:00:00`, capacity: 2, booked_count: 0, status: 'OPEN'
+    }));
+    slotsForDate = [...mockMorning, ...mockAfternoon];
+  }
+
+  const filteredSlots  = slotsForDate.filter(s => filter === 'Available' ? (s.capacity - s.booked_count > 0) : true);
+  const morningSlots   = filteredSlots.filter(s => s.start_time.slice(0, 2) < '12');
+  const afternoonSlots = filteredSlots.filter(s => s.start_time.slice(0, 2) >= '12');
 
   const handleBook = async () => {
-    if (!selectedSlotId) return;
+    if (!selectedSlot) return;
     setLoading(true);
     setResult(null);
-    const payload = participants.map(p =>
-      p.type === 'MEMBER'
-        ? { type: 'MEMBER', memberId: p.memberId }
-        : { type: 'CASUAL', fullName: p.fullName, phone: p.phone }
-    );
-    const res = await submitBooking(selectedSlotId, JSON.stringify(payload));
+    
+    let res: any;
+    if (selectedSlot.id.startsWith('mock-')) {
+      // Simulate network delay for mock slots
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      res = { ok: true, bookingId: 'bbs-mock-new' };
+    } else {
+      res = await submitBooking(selectedSlot.id);
+    }
+    
     setLoading(false);
     if (res.ok) {
-      setResult({ ok: true, message: 'Booking submitted! Waiting for admin confirmation.' });
-      setSelectedSlotId(null);
-      setParticipants([{ type: 'MEMBER', memberId: 'me', name: 'Me' }]);
+      setBookedPassData({
+        id: ('bookingId' in res) ? res.bookingId : 'mock-id',
+        date: selectedSlot.slot_date,
+        startTime: selectedSlot.start_time,
+        endTime: selectedSlot.end_time,
+        status: 'PENDING'
+      });
+      setIsConfirmModalOpen(false);
+      setIsPassModalOpen(true);
+      setSelectedSlot(null);
     } else {
       setResult({ ok: false, message: res.message || 'Booking failed. Please try again.' });
     }
   };
 
-  const handleAddMember = async () => {
-    if (!memberEmail) return;
-    setLookupLoading(true);
-    setLookupError('');
-    const res = await lookupMemberByEmail(memberEmail);
-    setLookupLoading(false);
-    if (res.ok) {
-      if (participants.some(p => p.type === 'MEMBER' && p.memberId === res.memberId)) {
-        setLookupError('Member already added.');
-        return;
-      }
-      setParticipants([...participants, { type: 'MEMBER', memberId: res.memberId, name: res.fullName }]);
-      setAddMode('NONE');
-      setMemberEmail('');
-    } else {
-      setLookupError(res.message);
-    }
-  };
-
-  const handleAddCasual = () => {
-    if (!casualName || !casualPhone) { setLookupError('Name and phone number required'); return; }
-    setParticipants([...participants, { type: 'CASUAL', fullName: casualName, phone: casualPhone, name: casualName }]);
-    setAddMode('NONE');
-    setCasualName('');
-    setCasualPhone('');
-  };
-
   return (
-    <div>
-      {/* ── Top ── */}
-      <div className="top">
-        <div className="topmain">
-          <h2 style={{ fontSize: '28px', marginBottom: '2px' }}>Book a<br /><em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Ride.</em></h2>
-          <span className="sub">Choose your date and time</span>
-        </div>
+    <div style={{ background: 'var(--white)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* ── Top Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', padding: '16px 24px 0' }}>
+        <button onClick={() => window.history.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f5f7f5', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}>
+          <ChevronLeft size={20} strokeWidth={2} />
+        </button>
+        <Link href="/notifications" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', position: 'relative', color: 'var(--ink)', border: '1px solid #efeade' }}>
+          <Bell size={20} strokeWidth={1.75} />
+          <div style={{ position: 'absolute', top: '10px', right: '10px', width: '8px', height: '8px', background: 'var(--red)', borderRadius: '50%', border: '2px solid var(--white)' }}></div>
+        </Link>
+      </div>
+      
+      <div style={{ padding: '0 24px 24px' }}>
+        <h1 style={{ font: '40px/1.1 var(--font-display)', margin: '0 0 4px 0', color: 'var(--ink)' }}>Book a Ride</h1>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)', fontWeight: 500 }}>Choose your date and time</p>
       </div>
 
       {/* ── Result banner ── */}
       {result && (
-        <div
-          className="note"
-          style={{
-            marginBottom: '14px',
-            background: result.ok ? 'var(--greenSoft)' : 'var(--redSoft)',
-            color: result.ok ? 'var(--green)' : 'var(--red)',
-          }}
-        >
-          {result.message}
+        <div style={{ padding: '0 24px', marginBottom: '24px' }}>
+          <div style={{ padding: '12px 16px', borderRadius: '12px', background: result.ok ? 'var(--greenSoft)' : 'var(--redSoft)', color: result.ok ? 'var(--green)' : 'var(--red)', fontSize: '13px', fontWeight: 500 }}>
+            {result.message}
+          </div>
         </div>
       )}
 
-      {/* ── Week Calendar ── */}
-      <div className="section" style={{ marginTop: '4px' }}>
-        <b>{(() => { const d = new Date(`${selectedDate}T00:00:00`); return `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`; })()}</b>
-        <span className="sub">Choose a day</span>
+      {/* ── Month & Year ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 24px 12px' }}>
+        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>
+          {(() => { 
+            const d = new Date(`${selectedDate}T00:00:00`); 
+            return `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`; 
+          })()}
+        </h2>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fff', border: '1px solid #efeee9', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}><ChevronLeft size={16} /></button>
+          <button style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fff', border: '1px solid #efeee9', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}><ChevronRight size={16} /></button>
+        </div>
       </div>
 
-      <div className="calendar">
+      {/* ── Horizontal Calendar ── */}
+      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 24px 20px', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
         {availableDates.map(date => {
           const d = new Date(`${date}T00:00:00`);
           const isSelected = selectedDate === date;
           return (
             <div
               key={date}
-              className={`day ${isSelected ? 'selected' : ''}`}
-              onClick={() => { setSelectedDate(date); setSelectedSlotId(null); }}
+              onClick={() => { setSelectedDate(date); setSelectedSlot(null); }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '36px', cursor: 'pointer' }}
             >
-              {DAYS_SHORT[d.getDay()]}
-              <b>{d.getDate()}</b>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: isSelected ? '#b08d4b' : 'var(--muted)', marginBottom: '6px' }}>{DAYS_SHORT[d.getDay()]}</div>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isSelected ? '#b08d4b' : 'transparent', color: isSelected ? '#fff' : 'var(--ink)', fontSize: '14px', fontWeight: 700 }}>
+                {d.getDate()}
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* ── Morning Slots ── */}
-      {morningSlots.length > 0 && (
+      {/* ── Filters ── */}
+      <div style={{ display: 'flex', gap: '8px', padding: '0 24px 16px', overflowX: 'auto', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+        {['All', 'Morning', 'Afternoon', 'Available'].map(f => (
+          <button
+            key={f}
+            onClick={() => { setFilter(f as any); setSelectedSlot(null); }}
+            style={{ 
+              padding: '6px 12px', 
+              borderRadius: '20px', 
+              border: 'none', 
+              background: filter === f ? '#eaddbd' : '#f5f7f5', 
+              color: 'var(--ink)', 
+              fontSize: '12px', 
+              fontWeight: 600,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ flex: 1, padding: '0 24px' }}>
+        {/* ── Morning Slots ── */}
+        {(filter === 'All' || filter === 'Available' || filter === 'Morning') && morningSlots.length > 0 && (
         <>
-          <div className="section" style={{ marginTop: '5px' }}>
-            <b>Morning</b>
-            <span className="sub">07:00 — 12:00</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Morning</h3>
+            <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>07:00 — 12:00</span>
           </div>
           {morningSlots.map(slot => {
-            const isSelected = selectedSlotId === slot.id;
+            const isSelected = selectedSlot?.id === slot.id;
             const remaining  = slot.capacity - slot.booked_count;
             const isFull     = remaining <= 0;
             return (
               <div
                 key={slot.id}
-                className={`slot ${isFull ? 'full' : ''}`}
-                style={isSelected ? { borderColor: 'var(--gold)', background: 'var(--goldSoft)' } : {}}
-                onClick={() => !isFull && setSelectedSlotId(slot.id)}
+                onClick={() => {
+                  if (!isFull) {
+                    setSelectedSlot(slot);
+                    setIsConfirmModalOpen(true);
+                  }
+                }}
+                style={{ 
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+                  padding: '12px 16px', 
+                  borderRadius: '12px', 
+                  background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)', 
+                  border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9', 
+                  cursor: isFull ? 'not-allowed' : 'pointer',
+                  opacity: isFull ? 0.6 : 1,
+                  boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
+                  marginBottom: '10px'
+                }}
               >
-                <div className="slottime">{slot.start_time.slice(0, 5)}</div>
-                <div className="slotmain">
-                  <b>{isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}</b>
-                  {slot.booked_count}/{slot.capacity} riders
+                <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                  <div style={{ font: '22px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
+                    {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                  </div>
                 </div>
-                {!isFull && <ArrowRight size={16} strokeWidth={1.75} color="var(--muted)" />}
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -168,29 +325,50 @@ export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
       )}
 
       {/* ── Afternoon Slots ── */}
-      {afternoonSlots.length > 0 && (
+      {(filter === 'All' || filter === 'Available' || filter === 'Afternoon') && afternoonSlots.length > 0 && (
         <>
-          <div className="section">
-            <b>Afternoon</b>
-            <span className="sub">13:00 — 17:00</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', marginTop: '16px' }}>
+            <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Afternoon</h3>
+            <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>13:00 — 17:00</span>
           </div>
           {afternoonSlots.map(slot => {
-            const isSelected = selectedSlotId === slot.id;
+            const isSelected = selectedSlot?.id === slot.id;
             const remaining  = slot.capacity - slot.booked_count;
             const isFull     = remaining <= 0;
             return (
               <div
                 key={slot.id}
-                className={`slot ${isFull ? 'full' : ''}`}
-                style={isSelected ? { borderColor: 'var(--gold)', background: 'var(--goldSoft)' } : {}}
-                onClick={() => !isFull && setSelectedSlotId(slot.id)}
+                onClick={() => {
+                  if (!isFull) {
+                    setSelectedSlot(slot);
+                    setIsConfirmModalOpen(true);
+                  }
+                }}
+                style={{ 
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+                  padding: '12px 16px', 
+                  borderRadius: '12px', 
+                  background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)', 
+                  border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9', 
+                  cursor: isFull ? 'not-allowed' : 'pointer',
+                  opacity: isFull ? 0.6 : 1,
+                  boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
+                  marginBottom: '10px'
+                }}
               >
-                <div className="slottime">{slot.start_time.slice(0, 5)}</div>
-                <div className="slotmain">
-                  <b>{isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}</b>
-                  {slot.booked_count}/{slot.capacity} riders
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{ font: '18px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
+                    {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                  </div>
                 </div>
-                {!isFull && <ArrowRight size={16} strokeWidth={1.75} color="var(--muted)" />}
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ArrowRight size={14} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -198,114 +376,144 @@ export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
       )}
 
       {slotsForDate.length === 0 && (
-        <div className="note" style={{ textAlign: 'center', marginTop: '20px' }}>
-          No slots available for this date.
+        <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--muted)', fontSize: '14px', fontWeight: 500 }}>
+          No slots available.
+        </div>
+      )}
+      </div>
+
+
+
+      {/* ── Confirm Modal ── */}
+      {isConfirmModalOpen && selectedSlot && (
+        <div 
+          onClick={() => setIsConfirmModalOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.4)' }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+            style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '32px 24px 40px', position: 'relative' }}
+          >
+            {/* Close Button */}
+            <button 
+              onClick={() => setIsConfirmModalOpen(false)}
+              style={{ position: 'absolute', top: '24px', right: '24px', background: '#f5f5f5', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}
+            >
+              <X size={16} strokeWidth={2.5} />
+            </button>
+
+            <h2 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0', color: 'var(--ink)', textAlign: 'center' }}>Confirm Booking</h2>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 24px', textAlign: 'center' }}>
+              Are you sure you want to book this session?
+            </p>
+            
+            <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', marginBottom: '24px', border: '1px solid #efeade' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Rider</span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{memberName.split(' ')[0]}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Date</span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{DAYS_FULL[new Date(`${selectedSlot.slot_date}T00:00:00`).getDay()]}, {new Date(`${selectedSlot.slot_date}T00:00:00`).getDate()} {MONTHS_SHORT[new Date(`${selectedSlot.slot_date}T00:00:00`).getMonth()]}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Time</span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{selectedSlot.start_time.slice(0,5)} — {selectedSlot.end_time.slice(0,5)} WITA</span>
+              </div>
+            </div>
+
+            <SlideToConfirm loading={loading} onConfirm={handleBook} />
+          </div>
         </div>
       )}
 
-      {/* ── Participants (when slot selected) ── */}
-      {selectedSlotId && (
-        <div style={{ marginTop: '24px' }}>
-          <div className="section">
-            <b>Riders</b>
+      {/* ── Riding Pass Modal ── */}
+      {isPassModalOpen && bookedPassData && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', background: 'var(--white)', overflowY: 'auto' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px' }}>
+            <button onClick={() => router.push('/home')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--paper)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}>
+              <ChevronLeft size={20} strokeWidth={2} />
+            </button>
+            <button style={{ background: 'none', border: 'none', color: 'var(--ink)', cursor: 'pointer' }}>
+              <MoreHorizontal size={24} />
+            </button>
           </div>
 
-          <div className="list" style={{ marginBottom: '12px' }}>
-            {participants.map((p, i) => (
-              <div key={i} className="row" style={{ justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '13px' }}>{p.name}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px' }}>
-                    {p.type === 'MEMBER' ? 'Member (uses own credit)' : 'Casual (separate payment)'}
+          <div style={{ padding: '0 24px 16px' }}>
+            <h2 style={{ font: '36px var(--font-display)', margin: '0 0 4px 0', color: 'var(--ink)' }}>Riding Pass</h2>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0 }}>Here's your session detail</p>
+          </div>
+
+          {/* Ticket Body */}
+          <div style={{ padding: '0 24px', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '32px' }}>
+            <div className="ticket-card" style={{ background: '#f9f6ef', borderRadius: '16px', position: 'relative', flex: 1, padding: '24px', overflow: 'hidden', border: '1px solid #efeade' }}>
+              <div style={{ position: 'absolute', right: '-30%', top: '10%', height: '110%', opacity: 0.15, pointerEvents: 'none' }}>
+                <img src="/images/horse-7.png" style={{ height: '100%', objectFit: 'contain' }} alt="" />
+              </div>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+                  <div>
+                    <h3 style={{ font: '24px var(--font-display)', margin: 0, color: 'var(--ink)' }}>BBS</h3>
+                    <div style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginTop: '2px' }}>Borneo Berkuda Stable</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                    <div style={{ background: '#7c9a75', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '6px 12px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+                      {bookedPassData.status}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase' }}>PASS #{bookedPassData.id.substring(0,8).toUpperCase()}</div>
                   </div>
                 </div>
-                {!(p.type === 'MEMBER' && p.memberId === 'me') && (
-                  <button
-                    style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: '12px', cursor: 'pointer' }}
-                    onClick={() => setParticipants(participants.filter((_, idx) => idx !== i))}
-                  >
-                    Remove
-                  </button>
-                )}
+
+                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  {DAYS_FULL[new Date(`${bookedPassData.date}T00:00:00`).getDay()]}
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)', marginBottom: '24px', borderBottom: '1px solid #e2dcd0', paddingBottom: '4px', display: 'inline-block' }}>
+                  {new Date(`${bookedPassData.date}T00:00:00`).getDate()} {MONTHS_FULL[new Date(`${bookedPassData.date}T00:00:00`).getMonth()].toUpperCase()} {new Date(`${bookedPassData.date}T00:00:00`).getFullYear()}
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', fontSize: '12px', fontWeight: 600, color: '#5f5542', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#ebd2a4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MapPin size={10} color="#5a4214" /></div> 
+                    Jl. Soekarno Hatta Km. 10
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#ebd2a4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserIcon size={10} color="#5a4214" /></div> 
+                    {memberName.split(' ')[0]}
+                  </div>
+                </div>
+
+                <div style={{ font: '48px/1 var(--font-display)', color: 'var(--ink)', marginBottom: '40px' }}>
+                  {bookedPassData.startTime.slice(0,5)} — {bookedPassData.endTime.slice(0,5)}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginBottom: '24px' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Session Time</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>{bookedPassData.startTime.slice(0,5)} — {bookedPassData.endTime.slice(0,5)} WITA</div>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '2px dashed #e2dcd0', margin: '32px 0 24px', position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: '-32px', top: '-10px', width: '20px', height: '20px', background: 'var(--white)', borderRadius: '50%' }}></div>
+                  <div style={{ position: 'absolute', right: '-32px', top: '-10px', width: '20px', height: '20px', background: 'var(--white)', borderRadius: '50%' }}></div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ width: '100%', height: '40px', background: 'repeating-linear-gradient(90deg, var(--ink) 0, var(--ink) 2px, transparent 2px, transparent 4px, var(--ink) 4px, var(--ink) 8px, transparent 8px, transparent 12px, var(--ink) 12px, var(--ink) 14px, transparent 14px, transparent 18px)', opacity: 0.8, marginBottom: '8px' }}></div>
+                  <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '2px', color: 'var(--ink)', textTransform: 'uppercase' }}>Good Horses Brighter People</div>
+                </div>
               </div>
-            ))}
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
+              <button onClick={() => router.push('/home')} className="primary" style={{ width: '100%', height: '56px', fontSize: '15px' }}>
+                Back to Home
+              </button>
+            </div>
           </div>
-
-          {addMode === 'NONE' && (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                className="btn"
-                style={{ flex: 1, background: '#efeee9', color: 'var(--ink)', marginTop: 0 }}
-                onClick={() => setAddMode('MEMBER')}
-              >
-                + Member
-              </button>
-              <button
-                className="btn"
-                style={{ flex: 1, background: '#efeee9', color: 'var(--ink)', marginTop: 0 }}
-                onClick={() => setAddMode('CASUAL')}
-              >
-                + Casual
-              </button>
-            </div>
-          )}
-
-          {addMode === 'MEMBER' && (
-            <div className="card" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <b style={{ fontSize: '13px' }}>Add Member</b>
-              <input
-                type="email"
-                placeholder="Member email"
-                value={memberEmail}
-                onChange={e => setMemberEmail(e.target.value)}
-                style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--line)', fontFamily: 'var(--font-body)', fontSize: '13px', width: '100%' }}
-              />
-              {lookupError && <span style={{ color: 'var(--red)', fontSize: '11px' }}>{lookupError}</span>}
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="btn" style={{ flex: 1, background: '#efeee9', color: 'var(--ink)', marginTop: 0 }} onClick={() => setAddMode('NONE')}>Cancel</button>
-                <button className="btn gold" style={{ flex: 1, marginTop: 0 }} onClick={handleAddMember} disabled={lookupLoading}>
-                  {lookupLoading ? 'Searching...' : 'Add'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {addMode === 'CASUAL' && (
-            <div className="card" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <b style={{ fontSize: '13px' }}>Add Casual Rider</b>
-              <input
-                type="text"
-                placeholder="Full name"
-                value={casualName}
-                onChange={e => setCasualName(e.target.value)}
-                style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--line)', fontFamily: 'var(--font-body)', fontSize: '13px', width: '100%' }}
-              />
-              <input
-                type="tel"
-                placeholder="Phone number"
-                value={casualPhone}
-                onChange={e => setCasualPhone(e.target.value)}
-                style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--line)', fontFamily: 'var(--font-body)', fontSize: '13px', width: '100%' }}
-              />
-              {lookupError && <span style={{ color: 'var(--red)', fontSize: '11px' }}>{lookupError}</span>}
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="btn" style={{ flex: 1, background: '#efeee9', color: 'var(--ink)', marginTop: 0 }} onClick={() => setAddMode('NONE')}>Cancel</button>
-                <button className="btn gold" style={{ flex: 1, marginTop: 0 }} onClick={handleAddCasual}>Add</button>
-              </div>
-            </div>
-          )}
         </div>
       )}
-
-      {/* ── Confirm Button ── */}
-      <button
-        disabled={!selectedSlotId || loading}
-        onClick={handleBook}
-        className="primary"
-        style={{ marginTop: '20px', opacity: !selectedSlotId || loading ? 0.45 : 1 }}
-      >
-        {loading ? 'Submitting...' : 'Confirm Booking →'}
-      </button>
     </div>
   );
 }

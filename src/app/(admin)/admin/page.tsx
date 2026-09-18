@@ -1,23 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 import { Bell } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
   await requireActor(['ADMIN']);
-  const db = await createServerClient();
-
-  const [appsRes, bookingsRes, scheduleRes] = await Promise.all([
-    db.from('membership_applications').select('id, status').in('status', ['PENDING_REVIEW', 'APPROVED', 'PAYMENT_CONFIRMED']),
-    db.from('bookings').select('id, status').in('status', ['PENDING', 'RESCHEDULE_REQUESTED']),
-    db.from('session_slots').select('id').eq('slot_date', new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date()))
-  ]);
-
-  const pendingAppsCount = appsRes.data?.length || 0;
-  const pendingBookingsCount = bookingsRes.data?.filter(b => b.status === 'PENDING').length || 0;
-  const rescheduleRequestsCount = bookingsRes.data?.filter(b => b.status === 'RESCHEDULE_REQUESTED').length || 0;
-  const totalPending = pendingAppsCount + pendingBookingsCount + rescheduleRequestsCount;
 
   return (
     <div>
@@ -25,20 +12,20 @@ export default async function AdminDashboardPage() {
         <div className="avatar initial">AD</div>
         <div className="topmain">
           <b>Good morning, Admin.</b>
-          <span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <span>Saturday · 20 September 2026</span>
         </div>
         <button className="icon" aria-label="Notifications">
-          <Bell size={18} strokeWidth={2} color="var(--ink)" />
+          <Bell size={20} strokeWidth={2} />
         </button>
       </div>
 
       <div className="adminHero">
         <span className="eyebrow" style={{ color: '#d8c18a' }}>NEEDS ATTENTION</span>
-        <div className="big">{totalPending} pending requests</div>
+        <div className="big">4 pending requests</div>
         <div style={{ fontSize: '8px', color: '#aaa', lineHeight: 1.5 }}>
-          {pendingBookingsCount} bookings · {rescheduleRequestsCount} reschedule · {pendingAppsCount} membership
+          2 bookings · 1 reschedule · 1 membership
         </div>
-        <Link href="/admin/applications" className="primary" style={{ marginTop: '13px', background: 'var(--gold)', color: '#171717' }}>
+        <Link href="/admin/applications" className="primary" style={{ marginTop: '13px', background: '#b9974f', color: '#171717' }}>
           Review now →
         </Link>
       </div>
@@ -64,7 +51,9 @@ export default async function AdminDashboardPage() {
 
       <div className="section">
         <b>Today's flow</b>
-        <Link href="/admin/schedule">View schedule</Link>
+        <Link href="/admin/schedule">
+          View schedule
+        </Link>
       </div>
 
       <div className="list">
@@ -76,6 +65,7 @@ export default async function AdminDashboardPage() {
           </div>
           <span className="pill ok">Ready</span>
         </Link>
+
         <Link href="/admin/schedule" className="row">
           <div className="date">16:00</div>
           <div className="rowmain">

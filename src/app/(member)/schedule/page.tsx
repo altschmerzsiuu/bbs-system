@@ -3,8 +3,10 @@ import { requireActor } from '@/lib/auth';
 import { ScheduleClient } from './schedule-client';
 
 export default async function SchedulePage() {
-  await requireActor(['MEMBER']);
+  const actor = await requireActor(['MEMBER']);
   const db = await createServerClient();
+
+  const { data: member } = await db.from('members').select('full_name').eq('id', actor.memberId!).single();
 
   const today = new Date().toISOString().slice(0, 10);
   const next7Days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -18,5 +20,5 @@ export default async function SchedulePage() {
     .order('slot_date', { ascending: true })
     .order('start_time', { ascending: true });
 
-  return <ScheduleClient initialSlots={slots ?? []} />;
+  return <ScheduleClient initialSlots={slots ?? []} memberName={member?.full_name ?? 'Rider'} />;
 }

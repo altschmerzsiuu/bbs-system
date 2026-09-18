@@ -15,11 +15,22 @@ export function ProfileClient() {
     <button
       type="button"
       onClick={handleLogout}
-      className="primary"
-      style={{ background: 'var(--redSoft)', color: 'var(--red)' }}
+      style={{ 
+        width: '40px', 
+        height: '40px', 
+        borderRadius: '50%', 
+        background: '#faeae9', 
+        color: '#c06c64', 
+        border: 'none', 
+        cursor: 'pointer', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+      }}
+      title="Sign Out"
     >
-      <LogOut size={16} strokeWidth={2} />
-      Sign Out
+      <LogOut size={18} strokeWidth={2.5} />
     </button>
   );
 }
