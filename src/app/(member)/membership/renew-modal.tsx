@@ -44,25 +44,32 @@ export function RenewModal({ plans, activeMembership }: { plans: any[], activeMe
             {(plans ?? []).map((plan: any) => {
               const planNameLower = plan.name.toLowerCase();
               let eyebrowColor = 'var(--muted)';
-              if (planNameLower.includes('gold')) eyebrowColor = '#b59349';
-              else if (planNameLower.includes('silver')) eyebrowColor = '#8a8d91';
-              else if (planNameLower.includes('bronze')) eyebrowColor = '#a97142';
+              let cardBg = '#fff';
+              let cardTextColor = 'var(--ink)';
+              
+              if (planNameLower.includes('gold')) {
+                eyebrowColor = '#5a4214';
+                cardBg = 'linear-gradient(135deg, #f3e9d2, #d1a85b)';
+              } else if (planNameLower.includes('silver')) {
+                eyebrowColor = '#333';
+                cardBg = 'linear-gradient(135deg, #f5f5f5, #b8b8b8)';
+              }
               
               return (
-                <div key={plan.id} style={{ background: '#fff', border: '1px solid #efeade', borderRadius: '24px', padding: '24px', marginBottom: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', color: eyebrowColor }}>
+                <div key={plan.id} style={{ background: cardBg, border: 'none', borderRadius: '24px', padding: '24px', marginBottom: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.5px', color: eyebrowColor }}>
                     {plan.name.toUpperCase()}
                   </span>
-                  <div style={{ font: '32px var(--font-display)', color: 'var(--ink)', margin: '4px 0 8px' }}>
+                  <div style={{ font: '32px var(--font-display)', color: cardTextColor, margin: '4px 0 8px' }}>
                     {plan.credits} sessions
                   </div>
-                  <div style={{ fontSize: '14px', color: 'var(--muted)' }}>
+                  <div style={{ fontSize: '14px', color: cardTextColor, opacity: 0.8, fontWeight: 500 }}>
                     {plan.duration_months} months · Rp {(plan.price_idr / 1000).toLocaleString('id-ID')}k
                   </div>
                   
                   <form action={submitMembershipApplication.bind(null, plan.id)}>
-                    <button type="submit" style={{ width: '100%', padding: '16px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer', marginTop: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                      {activeMembership ? `Renew with ${plan.name}` : `Join ${plan.name}`} <Sparkles size={16} />
+                    <button type="submit" style={{ width: '100%', padding: '16px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer', marginTop: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      {activeMembership ? `Renew with ${plan.name}` : `Join ${plan.name}`}
                     </button>
                   </form>
                 </div>
