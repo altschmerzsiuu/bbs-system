@@ -1,5 +1,21 @@
 import type { Metadata, Viewport } from 'next';
+import { Manrope, Fraunces } from 'next/font/google';
 import './globals.css';
+import { SerwistProvider } from "@serwist/turbopack/react";
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-body',
+});
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+  style: ['normal', 'italic'],
+  axes: ['opsz'],
+});
 
 export const metadata: Metadata = {
   title: 'Borneo Berkuda Stable',
@@ -8,14 +24,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#F6F1E7',
+  themeColor: '#F8F7F3',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
 };
-
-import { SerwistProvider } from "@serwist/turbopack/react";
 
 export default function RootLayout({
   children,
@@ -23,16 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="min-h-dvh bg-bg text-ink antialiased">
+    <html lang="id" className={`${manrope.variable} ${fraunces.variable}`}>
+      <body className="min-h-dvh bg-bg text-ink antialiased" suppressHydrationWarning={true}>
         <SerwistProvider swUrl="/serwist/sw.js">
           {children}
         </SerwistProvider>

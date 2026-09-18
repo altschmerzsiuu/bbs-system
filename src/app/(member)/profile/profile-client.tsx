@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { createClient } from '@/infrastructure/supabase-browser';
+import { LogOut } from 'lucide-react';
 
 export function ProfileClient() {
   const handleLogout = async () => {
@@ -14,10 +15,11 @@ export function ProfileClient() {
     <button
       type="button"
       onClick={handleLogout}
-      className="btn line"
-      style={{ color: 'var(--clay)', borderColor: 'rgba(181, 112, 94, .4)' }}
+      className="primary"
+      style={{ background: 'var(--redSoft)', color: 'var(--red)' }}
     >
-      Keluar
+      <LogOut size={16} strokeWidth={2} />
+      Sign Out
     </button>
   );
 }

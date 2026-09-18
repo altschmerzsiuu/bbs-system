@@ -1,8 +1,15 @@
 import React from 'react';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 import { submitMembershipApplication } from './actions';
+
+const BENEFITS = [
+  'Priority booking access',
+  'Access to special events',
+  'Member-only updates',
+];
 
 export default async function MembershipPage() {
   const actor = await requireActor(['MEMBER']);
@@ -34,119 +41,164 @@ export default async function MembershipPage() {
     .in('status', ['PENDING_REVIEW', 'APPROVED', 'PAYMENT_CONFIRMED'])
     .maybeSingle();
 
-  // Get credit state if membership active
-  let remainingCredits = 0;
+  let remainingCredits  = 0;
+  let usedCredits       = 0;
+  let totalCredits      = activeMembership?.allocated_credits ?? 0;
   if (activeMembership) {
     const { data: state } = await db.rpc('membership_credit_state', { p_membership_id: activeMembership.id });
     const s = Array.isArray(state) ? state[0] : state;
     remainingCredits = s?.available ?? 0;
+    usedCredits      = totalCredits - remainingCredits;
   }
+
+  const progressPct = totalCredits > 0 ? Math.round((usedCredits / totalCredits) * 100) : 0;
+  const planName    = activeMembership?.membership_plans?.name ?? null;
 
   return (
     <div>
+      {/* ── Top ── */}
       <div className="top">
-        <div className="who">
-          <b style={{ fontSize: '24px', letterSpacing: '-.8px' }}>Membership</b>
-          <span>Periode aktif</span>
-        </div>
-        <Link href="/notifications" className="bell">
-          <i></i>🔔
-        </Link>
-      </div>
-
-      <div className="hero">
-        <div className="tag">{activeMembership?.membership_plans?.name || 'Paket saat ini'}</div>
-        <div className="big">{activeMembership ? `${remainingCredits} sesi` : 'Belum ada membership'}</div>
-        <div className="sub">
-          {activeMembership
-            ? `tersisa dari ${activeMembership.allocated_credits} · berakhir ${new Date(activeMembership.end_date).toLocaleDateString('id-ID')}`
-            : 'Mulai perjalanan berkuda Anda'}
+        <div className="topmain">
+          <h2>Your Membership</h2>
+          <span className="sub">Ride more, grow further.</span>
         </div>
       </div>
 
-      {pendingActivationMembership && (
-        <div className="card" style={{ flexDirection: 'column', alignItems: 'stretch', marginTop: '16px', backgroundColor: 'var(--sage-soft)', border: '1px solid var(--sage)' }}>
-          <b style={{ fontSize: '16px', color: 'var(--ink)' }}>Early Renewal Aktif</b>
-          <span style={{ fontSize: '13px', color: 'var(--ink-2)', marginTop: '4px' }}>
-            Paket <b>{pendingActivationMembership.membership_plans?.name}</b> Anda akan otomatis aktif pada {new Date(pendingActivationMembership.start_date).toLocaleDateString('id-ID')}.
+      {/* ── Membership Gold Card ── */}
+      {activeMembership ? (
+        <div className="membership-card">
+          <span className="eyebrow" style={{ color: '#554728' }}>
+            {planName?.toUpperCase() || 'MEMBER'}
           </span>
+          <div className="count">
+            {remainingCredits} <small>sessions left</small>
+          </div>
+          <div className="progress">
+            <i style={{ width: `${progressPct}%` }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'rgba(20,20,20,.6)' }}>
+            <span>{usedCredits} used</span>
+            <span>{totalCredits} total</span>
+          </div>
+          <div style={{ fontSize: '11px', marginTop: '16px', color: 'rgba(20,20,20,.6)' }}>Valid until</div>
+          <b style={{ fontSize: '13px', color: '#3a2e1a' }}>
+            {new Date(activeMembership.end_date).toLocaleDateString('en-GB', {
+              day: 'numeric', month: 'long', year: 'numeric'
+            })}
+          </b>
+        </div>
+      ) : (
+        <div className="membership-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '160px' }}>
+          <span className="eyebrow" style={{ color: '#554728' }}>NO ACTIVE MEMBERSHIP</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', marginTop: '10px', color: '#3a2e1a' }}>
+            Start your journey
+          </div>
+          <div style={{ fontSize: '11px', color: 'rgba(20,20,20,.55)', marginTop: '6px' }}>
+            Choose a plan below to get started.
+          </div>
         </div>
       )}
 
-      {activeApp ? (
-        <div className="card" style={{ flexDirection: 'column', alignItems: 'stretch', marginTop: '24px', backgroundColor: 'var(--surface-2)', border: '1px solid var(--gold-deep)' }}>
-          <b style={{ fontSize: '18px', color: 'var(--gold-deep)' }}>Status Aplikasi</b>
-          <div style={{ marginTop: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--ink-2)' }}>Paket:</span>
-              <b>{activeApp.membership_plans?.name}</b>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--ink-2)' }}>Harga:</span>
-              <b>Rp {(activeApp.final_price_idr / 1000).toLocaleString('id-ID')}k</b>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--ink-2)' }}>Status:</span>
-              <b style={{ 
-                color: activeApp.status === 'APPROVED' ? '#4CAF50' : 
-                       activeApp.status === 'PAYMENT_CONFIRMED' ? '#2196F3' : 'var(--ink-1)' 
-              }}>
-                {activeApp.status.replace('_', ' ')}
-              </b>
-            </div>
-          </div>
-          
-          <div style={{ marginTop: '16px', padding: '12px', backgroundColor: 'rgba(0,0,0,0.03)', borderRadius: '8px' }}>
-            {activeApp.status === 'PENDING_REVIEW' && (
-              <p style={{ fontSize: '14px', margin: 0 }}>Admin sedang meninjau aplikasi {activeApp.application_type.toLowerCase()} Anda. Mohon tunggu.</p>
-            )}
-            
-            {activeApp.status === 'APPROVED' && (
-              <>
-                <p style={{ fontSize: '14px', margin: '0 0 12px 0' }}>Aplikasi disetujui! Silakan lanjutkan pembayaran melalui WhatsApp.</p>
-                <a
-                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_ADMIN_NUMBER}?text=Halo%20BBS!%20Saya%20ingin%20mengkonfirmasi%20pembayaran%20untuk%20paket%20${encodeURIComponent(activeApp.membership_plans?.name)}.%20ID%20Aplikasi:%20${activeApp.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <button className="btn gold" style={{ width: '100%' }}>Konfirmasi Pembayaran</button>
-                </a>
-              </>
-            )}
-
-            {activeApp.status === 'PAYMENT_CONFIRMED' && (
-              <p style={{ fontSize: '14px', margin: 0 }}>Pembayaran Anda sedang dikonfirmasi oleh Admin. Keanggotaan Anda akan segera aktif.</p>
-            )}
+      {/* ── Pending activation notice ── */}
+      {pendingActivationMembership && (
+        <div className="card" style={{ marginTop: '12px', background: 'var(--greenSoft)', border: '1px solid var(--green)' }}>
+          <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--green)' }}>Early Renewal Active</div>
+          <div style={{ fontSize: '12px', color: 'var(--green)', marginTop: '4px' }}>
+            Your <b>{pendingActivationMembership.membership_plans?.name}</b> plan will activate automatically on{' '}
+            {new Date(pendingActivationMembership.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.
           </div>
         </div>
-      ) : (
-        <>
-          <div className="sec">
-            <h3>{activeMembership ? 'Perpanjang Paket' : 'Paket tersedia'}</h3>
+      )}
+
+      {/* ── Active Application ── */}
+      {activeApp ? (
+        <div className="card" style={{ marginTop: '16px' }}>
+          <span className="eyebrow">APPLICATION STATUS</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', margin: '10px 0 4px' }}>
+            {activeApp.membership_plans?.name}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px' }}>
+            <span style={{ color: 'var(--muted)' }}>Price</span>
+            <b>Rp {(activeApp.final_price_idr / 1000).toLocaleString('id-ID')}k</b>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '6px' }}>
+            <span style={{ color: 'var(--muted)' }}>Status</span>
+            <span className={`pill ${activeApp.status === 'APPROVED' ? 'ok' : 'wait'}`}>
+              {activeApp.status.replace(/_/g, ' ')}
+            </span>
           </div>
 
-          {!pendingActivationMembership && (plans ?? []).map((plan: any) => (
-            <div key={plan.id} className="card" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <b style={{ fontSize: '16px' }}>{plan.name}</b>
-                <b style={{ fontSize: '16px', color: 'var(--gold-deep)' }}>
-                  Rp {(plan.price_idr / 1000).toLocaleString('id-ID')}k
-                </b>
+          {activeApp.status === 'PENDING_REVIEW' && (
+            <div className="note" style={{ marginTop: '12px', fontSize: '12px' }}>
+              Admin is reviewing your application. Please wait.
+            </div>
+          )}
+
+          {activeApp.status === 'APPROVED' && (
+            <a
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_ADMIN_NUMBER}?text=Halo%20BBS!%20Saya%20ingin%20mengkonfirmasi%20pembayaran%20untuk%20paket%20${encodeURIComponent(activeApp.membership_plans?.name)}.%20ID%20Aplikasi:%20${activeApp.id}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              <button className="primary" style={{ marginTop: '12px', background: 'var(--gold)', color: '#171717' }}>
+                Confirm Payment →
+              </button>
+            </a>
+          )}
+
+          {activeApp.status === 'PAYMENT_CONFIRMED' && (
+            <div className="note" style={{ marginTop: '12px', fontSize: '12px' }}>
+              Payment received. Your membership will activate shortly.
+            </div>
+          )}
+        </div>
+      ) : !pendingActivationMembership ? (
+        <>
+          {/* ── Member Benefits ── */}
+          {activeMembership && (
+            <>
+              <div className="section">
+                <b>Member Benefits</b>
               </div>
-              <span style={{ fontSize: '12px', color: 'var(--ink-2)', marginTop: '4px' }}>
-                {plan.credits} sesi · masa berlaku {plan.duration_months} bulan
-              </span>
-              
+              <div className="benefits">
+                {BENEFITS.map(benefit => (
+                  <div key={benefit} className="benefit">
+                    <Check size={14} strokeWidth={2.5} color="var(--green)" style={{ flexShrink: 0 }} />
+                    <span>{benefit}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ── Available Plans ── */}
+          <div className="section">
+            <b>{activeMembership ? 'Renew / Upgrade' : 'Available Plans'}</b>
+          </div>
+
+          {(plans ?? []).map((plan: any) => (
+            <div key={plan.id} className="card" style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <div>
+                  <span className="eyebrow" style={{ color: 'var(--muted)' }}>{plan.name.toUpperCase()}</span>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '26px', marginTop: '4px' }}>
+                    {plan.credits} sessions
+                  </div>
+                  <div className="sub" style={{ marginTop: '2px' }}>
+                    {plan.duration_months} months · Rp {(plan.price_idr / 1000).toLocaleString('id-ID')}k
+                  </div>
+                </div>
+              </div>
               <form action={submitMembershipApplication.bind(null, plan.id)}>
-                <button className="btn gold" type="submit" style={{ marginTop: '12px', width: '100%' }}>
-                  Aktivasi {plan.name}
+                <button className="primary" type="submit" style={{ marginTop: '14px' }}>
+                  {activeMembership ? `Renew with ${plan.name}` : `Join ${plan.name}`} →
                 </button>
               </form>
             </div>
           ))}
         </>
-      )}
+      ) : null}
     </div>
   );
 }

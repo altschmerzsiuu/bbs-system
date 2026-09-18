@@ -9,49 +9,44 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg:      { DEFAULT: 'var(--bg)' },
-        surface: { DEFAULT: 'var(--surface)', dark: 'var(--surface-dark)', muted: '#F3F4F6' },
-        ink:     { DEFAULT: 'var(--ink)', muted: 'var(--ink-2)', faint: 'var(--ink-3)', 'on-dark': 'var(--ink-on-dark)' },
-        gold:    { DEFAULT: 'var(--gold)', deep: 'var(--gold-deep)', accent: 'var(--gold-accent)', tint: 'var(--gold-tint)' },
-        emerald: { DEFAULT: 'var(--emerald)', soft: 'var(--emerald-soft)' },
-        clay:    { DEFAULT: 'var(--clay)', soft: 'var(--clay-soft)' },
-        lilac:   { DEFAULT: 'var(--lilac)', soft: 'var(--lilac-soft)' },
-        /* backward compat */
-        sage:    { DEFAULT: 'var(--teal)', soft: 'var(--teal-soft)' },
-        teal:    { DEFAULT: 'var(--teal)', soft: 'var(--teal-soft)' },
-        stable:  { DEFAULT: 'var(--stable)', mid: 'var(--stable-mid)' },
-        line:    { DEFAULT: 'var(--border)', strong: 'var(--border-strong)' },
-        /* aliases */
-        'gold-soft':   'var(--gold-accent)',
-        'gold-deep':   'var(--gold-deep)',
-        'ink-muted':   'var(--ink-2)',
-        'ink-faint':   'var(--ink-3)',
-        'surface-2':   '#F3F4F6',
-        'clay-soft':   'var(--clay-soft)',
-        'lilac-soft':  'var(--lilac-soft)',
-        'teal-soft':   'var(--teal-soft)',
-        'sage-soft':   'var(--teal-soft)',
-        'stable-mid':  'var(--stable-mid)',
-        'line-strong': 'var(--border-strong)',
+        bg:      { DEFAULT: 'var(--color-bg)' },
+        surface: { DEFAULT: 'var(--color-surface)', secondary: 'var(--color-surface-secondary)' },
+        ink:     { DEFAULT: 'var(--color-ink)', secondary: 'var(--color-ink-secondary)', muted: 'var(--color-ink-muted)' },
+        gold:    { DEFAULT: 'var(--color-gold)', light: 'var(--color-gold-light)' },
+        sage:    { DEFAULT: 'var(--color-sage)' },
+        beige:   { DEFAULT: 'var(--color-warm-beige)' },
+        /* semantic states mapped for safety during transition */
+        status: {
+          pending: '#C99A4B',
+          confirmed: '#6B8E6B',
+          rejected: '#B5705E'
+        }
       },
       borderRadius: {
-        sm:   '6px',
-        card: '16px',
-        hero: '24px',
-        xl2:  '20px',
-        pill: '9999px',
+        card: 'var(--radius-card)',
+        hero: 'var(--radius-hero)',
+        large: 'var(--radius-large)',
+        xl: 'var(--radius-xl)',
+        pill: 'var(--radius-pill)',
       },
       boxShadow: {
-        sm:   'var(--shadow-sm)',
         card: 'var(--shadow-card)',
         nav:  'var(--shadow-nav)',
-        gold: 'var(--shadow-gold)',
       },
       maxWidth:   { app: '430px' },
-      fontFamily: { sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'] },
-      fontSize: {
-        '2xs': ['0.625rem', { lineHeight: '1rem' }],
+      fontFamily: { 
+        display: ['var(--font-display)', 'Times', 'serif'],
+        sans: ['var(--font-body)', 'system-ui', 'sans-serif']
       },
+      transitionTimingFunction: {
+        spring: 'var(--ease-spring)',
+        standard: 'var(--ease-standard)',
+      },
+      transitionDuration: {
+        fast: 'var(--duration-fast)',
+        normal: 'var(--duration-normal)',
+        slow: 'var(--duration-slow)',
+      }
     },
   },
   plugins: [],

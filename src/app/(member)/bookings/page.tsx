@@ -4,18 +4,7 @@ import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 import { BookingCard } from './booking-card';
 
-const MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-
-function formatDate(dateStr: string) {
-  const d = new Date(`${dateStr}T00:00:00`);
-  return {
-    full: `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
-    day:  d.getDate(),
-    mon:  MONTHS[d.getMonth()],
-  };
-}
-
-const UPCOMING_STATUSES = new Set(['PENDING','CONFIRMED','RESCHEDULE_REQUESTED']);
+const UPCOMING_STATUSES = new Set(['PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED']);
 
 export default async function BookingsPage() {
   const actor = await requireActor(['MEMBER']);
@@ -33,50 +22,56 @@ export default async function BookingsPage() {
     .eq('member_id', actor.memberId!)
     .order('booking_id', { ascending: false });
 
-  const list: any[] = (bookings ?? []).map((b: any) => b.bookings);
-  const upcoming = list.filter(b => UPCOMING_STATUSES.has(b.status));
-  const past     = list.filter(b => !UPCOMING_STATUSES.has(b.status));
+  const list: any[]     = (bookings ?? []).map((b: any) => b.bookings);
+  const upcoming        = list.filter(b => UPCOMING_STATUSES.has(b.status));
+  const past            = list.filter(b => !UPCOMING_STATUSES.has(b.status));
 
   return (
     <div>
+      {/* ── Top ── */}
       <div className="top">
-        <div className="who">
-          <b style={{ fontSize: '24px', letterSpacing: '-.8px' }}>My rides</b>
-          <span>Riwayat berkuda kamu</span>
+        <div className="topmain">
+          <h2>My Rides</h2>
+          <span className="sub">Your riding journey</span>
         </div>
-        <Link href="/notifications" className="bell">
-          <i></i>🔔
-        </Link>
       </div>
 
       {list.length === 0 ? (
-        <div className="note" style={{ textAlign: 'center', marginTop: '20px' }}>
-          Belum ada riwayat booking.
+        <div style={{ textAlign: 'center', marginTop: '48px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'var(--goldSoft)', marginBottom: '12px' }}>✦</div>
+          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>No rides yet</div>
+          <div className="sub" style={{ marginBottom: '20px' }}>Book your first session at the stable.</div>
           <Link href="/schedule">
-            <button className="btn gold" style={{ marginTop: '12px' }}>Book a ride</button>
+            <button className="primary" style={{ maxWidth: '220px', margin: '0 auto' }}>Book a Ride →</button>
           </Link>
         </div>
       ) : (
         <>
+          {/* Filter tabs */}
+          <div className="filters">
+            <button className="filter active">Upcoming</button>
+            <button className="filter">Completed</button>
+            <button className="filter">Cancelled</button>
+          </div>
+
           {upcoming.length > 0 && (
-            <>
-              <div className="sec">
-                <h3>Mendatang</h3>
-              </div>
+            <div className="list">
               {upcoming.map((booking: any) => (
                 <BookingCard key={booking.id} booking={booking} isOwner={booking.created_by === actor.userId} />
               ))}
-            </>
+            </div>
           )}
 
           {past.length > 0 && (
             <>
-              <div className="sec">
-                <h3>Sebelumnya</h3>
+              <div className="section" style={{ marginTop: '24px' }}>
+                <b>Past Rides</b>
               </div>
-              {past.map((booking: any) => (
-                <BookingCard key={booking.id} booking={booking} isOwner={booking.created_by === actor.userId} />
-              ))}
+              <div className="list">
+                {past.map((booking: any) => (
+                  <BookingCard key={booking.id} booking={booking} isOwner={booking.created_by === actor.userId} />
+                ))}
+              </div>
             </>
           )}
         </>

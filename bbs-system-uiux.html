@@ -1,1437 +1,1294 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BBS — Borneo Berkuda Stable</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>BBS V2 — Mobile PWA UI Preview</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
         :root {
-            --bg: #0C0C0E;
-            --surface: #18181C;
-            --surface-2: #222228;
-            --surface-3: #2E2E36;
-            --ink: #F4F4F6;
-            --ink-2: #9E9EA8;
-            --ink-3: #62626D;
-            --gold: #FFD700;
-            --gold-deep: #D4AF37;
-            --gold-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            --gold-soft: rgba(255, 215, 0, 0.12);
-            --lime: #39E75F;
-            --lime-soft: rgba(57, 231, 95, 0.12);
-            --line: rgba(255, 255, 255, 0.08);
-            --r-card: 28px;
-            --r-pill: 999px;
-            --sh: 0 16px 40px rgba(0, 0, 0, 0.4);
+            --paper: #f7f6f1;
+            --white: #fff;
+            --ink: #181817;
+            --muted: #7b7a74;
+            --line: rgba(24, 24, 23, .09);
+            --gold: #b9974f;
+            --gold2: #d8c18a;
+            --goldSoft: #eee2c6;
+            --green: #56705a;
+            --greenSoft: #dfe9df;
+            --red: #c66d66;
+            --redSoft: #f7e3e1;
+            --accent: #171717;
+            --accentSoft: #efeee9
+        }
+
+        .phone.role-admin {
+            --accent: #33465a;
+            --accentSoft: #e4e9ee
+        }
+
+        .phone.role-groomer {
+            --accent: #4b6350;
+            --accentSoft: #e2e9dd
         }
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            background: #e8e5dc;
+            color: var(--ink);
+            font-family: Manrope, Arial, sans-serif
         }
 
         body {
-            margin: 0;
-            background: #060608;
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-            color: var(--ink);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 24px 16px 50px;
-            gap: 16px;
+            padding: 24px 14px 50px
         }
 
-        /* Shell & Switcher */
-        .brandbar {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
+        button {
+            font: inherit
+        }
+
+        .shell {
+            max-width: 480px;
+            margin: auto
+        }
+
+        .header {
             text-align: center;
-            max-width: 420px;
+            margin-bottom: 18px
         }
 
-        .brandbar h1 {
-            font-size: 17px;
-            margin: 0;
-            letter-spacing: -0.3px;
-            color: var(--gold);
-            font-weight: 800;
-            text-transform: uppercase;
+        .logo {
+            font: 32px/1 'Fraunces', serif;
+            border: 1.5px solid #222;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 8px
         }
 
-        .brandbar p {
-            margin: 0;
-            font-size: 11.5px;
-            color: var(--ink-2);
-            line-height: 1.4;
+        .header b {
+            font-size: 11px;
+            letter-spacing: 1.4px
+        }
+
+        .header span {
+            display: block;
+            color: #85837b;
+            font-size: 8px;
+            letter-spacing: .7px;
+            margin-top: 3px
         }
 
         .roles {
             display: flex;
             gap: 4px;
-            flex-wrap: wrap;
-            justify-content: center;
-            background: var(--surface);
+            background: rgba(255, 255, 255, .78);
             padding: 4px;
-            border-radius: var(--r-pill);
             border: 1px solid var(--line);
+            border-radius: 999px;
+            box-shadow: 0 8px 25px rgba(30, 27, 20, .07);
+            margin-bottom: 22px
         }
 
         .roles button {
+            flex: 1;
             border: 0;
             background: transparent;
-            color: var(--ink-2);
-            font: 700 11px 'Plus Jakarta Sans';
-            padding: 7px 14px;
-            border-radius: var(--r-pill);
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #77766f;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 10px 4px;
+            border-radius: 999px;
+            cursor: pointer
         }
 
-        .roles button.on {
-            background: var(--gold-gradient);
-            color: #000;
-            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+        .roles button.active {
+            background: #171717;
+            color: #fff
         }
 
-        /* Phone Mockup Frame */
         .phone {
-            width: 375px;
-            height: 812px;
-            background: var(--bg);
-            border-radius: 46px;
+            width: 390px;
+            max-width: 100%;
+            height: 780px;
+            margin: auto;
+            background: var(--paper);
+            border: 1px solid rgba(0, 0, 0, .1);
+            border-radius: 44px;
+            box-shadow: 0 25px 65px rgba(35, 31, 22, .2), 0 0 0 7px #d8d5cc;
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 0 10px #18181C, 0 0 0 12px #2A2A32, 0 40px 80px rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden
         }
 
-        .notch {
+        .phone:before {
+            content: "";
             position: absolute;
-            top: 12px;
+            z-index: 20;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 110px;
-            height: 26px;
-            background: #121215;
-            border-radius: var(--r-pill);
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            width: 105px;
+            height: 27px;
+            background: #171717;
+            border-radius: 20px
         }
 
-        .notch span {
-            width: 10px;
-            height: 10px;
-            background: #222228;
-            border-radius: 50%;
-            display: block;
-        }
-
-        .notch b {
-            width: 36px;
-            height: 4px;
-            background: #222228;
-            border-radius: 2px;
-            display: block;
-        }
-
-        .scroll {
-            position: absolute;
-            inset: 0;
+        .viewport {
+            height: 100%;
             overflow-y: auto;
-            overflow-x: hidden;
-            padding: 56px 18px 120px;
             scrollbar-width: none;
+            padding: 43px 19px 104px
         }
 
-        .scroll::-webkit-scrollbar {
-            display: none;
+        .viewport::-webkit-scrollbar {
+            display: none
         }
 
         .screen {
             display: none;
-            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: up .35s cubic-bezier(.22, 1, .36, 1)
         }
 
-        .screen.on {
-            display: block;
+        .screen.active {
+            display: block
         }
 
-        @keyframes popIn {
+        @keyframes up {
             from {
                 opacity: 0;
-                transform: scale(0.97) translateY(8px);
+                transform: translateY(8px)
             }
 
             to {
                 opacity: 1;
-                transform: scale(1) translateY(0);
+                transform: none
             }
         }
 
-        /* Super-App Shortcut Grid (Gojek-style) */
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 16px 0;
-        }
-
-        .quick-item {
-            background: var(--surface);
-            border: 1px solid var(--line);
-            border-radius: 20px;
-            padding: 12px 6px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .quick-item:active {
-            transform: scale(0.95);
-        }
-
-        .quick-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 14px;
-            background: var(--gold-soft);
-            color: var(--gold);
-            display: grid;
-            place-items: center;
-            font-size: 18px;
-            margin: 0 auto 6px;
-        }
-
-        .quick-item span {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--ink-2);
-            display: block;
-        }
-
-        /* Livin' / E-Wallet Style Card */
-        .wallet-card {
-            background: linear-gradient(135deg, #1C1C24 0%, #0E0E12 100%);
-            border-radius: var(--r-card);
-            padding: 22px;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            box-shadow: var(--sh);
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-
-        .wallet-card::before {
-            content: '';
-            position: absolute;
-            right: -30px;
-            bottom: -30px;
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
-        }
-
-        /* Ticket Boarding Pass (GenZ Edition) */
-        .ticket-pass {
-            background: var(--surface);
-            border-radius: var(--r-card);
-            border: 1px solid var(--line);
-            box-shadow: var(--sh);
-            margin-bottom: 14px;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .ticket-pass:active {
-            transform: scale(0.98);
-        }
-
-        .ticket-header {
-            padding: 18px;
-            background: linear-gradient(135deg, #252530 0%, #18181C 100%);
+        .status {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            font-size: 9px;
+            font-weight: 800;
+            margin: 0 4px 11px
         }
 
-        .ticket-body {
-            padding: 16px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* UI Elements */
         .top {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 20px
         }
 
         .avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 16px;
-            background: var(--gold-gradient);
-            color: #000;
-            display: grid;
-            place-items: center;
-            font-weight: 800;
-            font-size: 16px;
-            flex: none;
-            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.25);
-        }
-
-        .who {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .who b {
-            display: block;
-            font-size: 16px;
-            letter-spacing: -0.3px;
-            color: var(--ink);
-        }
-
-        .who span {
-            font-size: 11.5px;
-            color: var(--ink-2);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 1px;
-        }
-
-        .bell {
             width: 40px;
             height: 40px;
-            border-radius: 14px;
-            background: var(--surface);
-            border: 1px solid var(--line);
-            display: grid;
-            place-items: center;
-            position: relative;
-            flex: none;
-            cursor: pointer;
-        }
-
-        .bell i {
-            position: absolute;
-            top: 9px;
-            right: 9px;
-            width: 8px;
-            height: 8px;
             border-radius: 50%;
-            background: var(--gold);
+            object-fit: cover;
+            background: #ded8c8;
+            flex: none
         }
 
-        h2.page {
-            font-size: 26px;
-            letter-spacing: -0.8px;
-            margin: 4px 0 16px;
-            font-weight: 800;
-        }
-
-        .sec {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            margin: 24px 2px 10px;
-        }
-
-        .sec h3 {
-            font-size: 14.5px;
-            margin: 0;
-            letter-spacing: -0.2px;
-            font-weight: 700;
-        }
-
-        .sec a {
-            font-size: 11.5px;
-            color: var(--gold);
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 14px;
-        }
-
-        .stat {
-            border-radius: var(--r-card);
-            padding: 16px;
-            background: var(--surface);
-            box-shadow: var(--sh);
-            border: 1px solid var(--line);
-        }
-
-        .stat .ic {
-            width: 34px;
-            height: 34px;
-            border-radius: 12px;
-            background: var(--surface-2);
+        .avatar.initial {
             display: grid;
             place-items: center;
-            margin-bottom: 12px;
+            font-size: 10px;
+            font-weight: 800
+        }
+
+        .topmain {
+            flex: 1
+        }
+
+        .topmain b {
+            font-size: 13px
+        }
+
+        .topmain span {
+            display: block;
+            color: var(--muted);
+            font-size: 8.5px;
+            margin-top: 2px
+        }
+
+        .icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .8);
+            border: 1px solid var(--line);
+            display: grid;
+            place-items: center;
+            cursor: pointer
+        }
+
+        .icon svg {
+            width: 16px;
+            height: 16px
+        }
+
+        .eyebrow {
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 1.1px;
+            text-transform: uppercase;
+            color: var(--gold)
+        }
+
+        h1 {
+            font: 400 36px/1.02 'Fraunces', serif;
+            letter-spacing: -1px;
+            margin: 0
+        }
+
+        h1 em {
+            color: var(--gold);
+            font-style: italic
+        }
+
+        h2 {
+            font: 400 28px/1.03 'Fraunces', serif;
+            margin: 0
+        }
+
+        .sub {
+            font-size: 9px;
+            line-height: 1.5;
+            color: var(--muted)
+        }
+
+        .hero {
+            height: 350px;
+            border-radius: 27px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(145deg, #e8dfc9, #bda77a)
+        }
+
+        .hero .horse {
+            position: absolute;
+            right: -26px;
+            bottom: -18px;
+            width: 72%;
+            height: 83%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 50% 50% 0 0;
+            filter: saturate(.75)
+        }
+
+        .hero:after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 35%, rgba(20, 19, 16, .68))
+        }
+
+        .heroText {
+            position: absolute;
+            z-index: 2;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            color: #fff
+        }
+
+        .heroText h1 {
+            font-size: 39px;
+            color: #fff
+        }
+
+        .heroText h1 em {
+            color: #dfc47d
+        }
+
+        .heroText p {
+            font-size: 9px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, .84);
+            margin: 10px 0 15px
+        }
+
+        .primary {
+            height: 44px;
+            border: 0;
+            border-radius: 999px;
+            background: var(--accent);
+            color: #fff;
+            width: 100%;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: .25s
+        }
+
+        .primary:hover {
+            transform: translateY(-1px)
+        }
+
+        .arrow {
             font-size: 16px;
+            color: #d5b76c
         }
 
-        .stat b {
-            display: block;
-            font-size: 24px;
-            letter-spacing: -0.8px;
-            line-height: 1;
-        }
-
-        .stat span {
-            font-size: 11px;
-            color: var(--ink-2);
-            display: block;
-            margin-top: 4px;
+        .ghost {
+            height: 44px;
+            border: 1.5px solid rgba(23, 23, 23, .16);
+            border-radius: 999px;
+            background: transparent;
+            color: #171717;
+            width: 100%;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer
         }
 
         .card {
-            background: var(--surface);
-            border-radius: var(--r-card);
-            padding: 16px;
-            box-shadow: var(--sh);
-            margin-bottom: 12px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 15px;
+            box-shadow: 0 8px 24px rgba(40, 35, 26, .04)
+        }
+
+        .ride {
+            background: #dbc58f;
+            border-radius: 24px;
+            padding: 17px;
+            min-height: 170px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer
+        }
+
+        .ride:after {
+            content: "";
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            right: -65px;
+            bottom: -80px;
+            background: rgba(255, 255, 255, .22)
+        }
+
+        .ride .time {
+            font: 31px/1 'Fraunces', serif;
+            margin-top: 9px
+        }
+
+        .meta {
             display: flex;
-            align-items: center;
-            gap: 14px;
-            cursor: pointer;
-            border: 1px solid var(--line);
-            transition: transform 0.2s;
+            gap: 12px;
+            margin-top: 11px;
+            font-size: 8px;
+            color: #5c574a
         }
 
-        .card:active {
-            transform: scale(0.98);
-        }
-
-        .card .date {
-            width: 52px;
-            height: 54px;
-            border-radius: 16px;
-            background: var(--surface-2);
-            display: grid;
-            place-items: center;
-            text-align: center;
-            flex: none;
-            border: 1px solid var(--line);
-        }
-
-        .card .date b {
-            font-size: 16px;
-            line-height: 1;
-            letter-spacing: -0.3px;
-        }
-
-        .card .date span {
-            font-size: 9.5px;
-            color: var(--ink-2);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-        }
-
-        .card .body {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .card .body b {
-            font-size: 14px;
-            letter-spacing: -0.2px;
-        }
-
-        .card .body span {
-            display: block;
-            font-size: 11.5px;
-            color: var(--ink-2);
-            margin-top: 3px;
+        .meta span {
+            white-space: nowrap
         }
 
         .pill {
-            font-size: 9.5px;
-            font-weight: 700;
-            letter-spacing: 0.6px;
-            padding: 5px 10px;
-            border-radius: var(--r-pill);
-            text-transform: uppercase;
+            display: inline-flex;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 7px;
+            font-weight: 800
         }
 
-        .pill.ok {
-            background: var(--lime-soft);
-            color: var(--lime);
-            border: 1px solid rgba(57, 231, 95, 0.3);
+        .ok {
+            background: var(--greenSoft);
+            color: var(--green)
         }
 
-        .pill.wait {
-            background: var(--gold-soft);
+        .wait {
+            background: #f0dfb9;
+            color: #705722
+        }
+
+        .no {
+            background: var(--redSoft);
+            color: #a94e49
+        }
+
+        .section {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 21px 2px 9px
+        }
+
+        .section b {
+            font-size: 11px
+        }
+
+        .section a {
+            font-size: 8px;
             color: var(--gold);
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            font-weight: 800;
+            cursor: pointer
         }
 
-        .pill.no {
-            background: rgba(255, 80, 80, 0.15);
-            color: #FF6B6B;
+        .quick {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin: 15px 0
         }
 
-        .pill.done {
-            background: var(--surface-2);
-            color: var(--ink-2);
-        }
-
-        .chips {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 2px 0 6px;
-            margin-bottom: 14px;
-            scrollbar-width: none;
-        }
-
-        .chips::-webkit-scrollbar {
-            display: none;
-        }
-
-        .chips button {
-            border: 1px solid var(--line);
-            background: var(--surface);
-            color: var(--ink-2);
-            font: 700 12px 'Plus Jakarta Sans';
-            padding: 8px 16px;
-            border-radius: var(--r-pill);
-            white-space: nowrap;
+        .quick button {
+            border: 0;
+            background: transparent;
+            font-size: 7px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
+            color: #363633
         }
 
-        .chips button.on {
-            background: var(--gold-gradient);
-            color: #000;
-            border-color: transparent;
+        .quickIcon {
+            width: 39px;
+            height: 39px;
+            margin: auto auto 5px;
+            border-radius: 15px;
+            background: #fff;
+            border: 1px solid var(--line);
+            display: grid;
+            place-items: center
         }
 
-        .week {
+        .quickIcon svg {
+            width: 17px;
+            height: 17px
+        }
+
+        .quote {
+            background: #e8e1d4;
+            border-radius: 23px;
+            padding: 17px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .quote:after {
+            content: "BBS";
+            position: absolute;
+            right: 8px;
+            bottom: -15px;
+            font: 70px 'Fraunces', serif;
+            font-style: italic;
+            color: rgba(185, 151, 79, .15)
+        }
+
+        .quote strong {
+            font: italic 22px/1 'Fraunces', serif
+        }
+
+        .quote span {
+            display: block;
+            font-size: 7px;
+            color: #77736b;
+            margin-top: 8px
+        }
+
+        .list {
+            display: grid;
+            gap: 7px
+        }
+
+        .row {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 17px;
+            padding: 11px;
             display: flex;
-            gap: 6px;
-            margin-bottom: 16px;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer
+        }
+
+        .date {
+            width: 43px;
+            height: 43px;
+            border-radius: 13px;
+            background: #f0efe9;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            flex: none
+        }
+
+        .date b {
+            font: 21px/1 'Fraunces', serif
+        }
+
+        .date span {
+            font-size: 6px;
+            color: #777
+        }
+
+        .rowmain {
+            flex: 1;
+            min-width: 0
+        }
+
+        .rowmain b {
+            font-size: 9px
+        }
+
+        .rowmain span {
+            display: block;
+            color: #777;
+            font-size: 7.5px;
+            margin-top: 3px
+        }
+
+        .row svg {
+            width: 14px;
+            height: 14px;
+            flex: none;
+            color: #b6b4ab
+        }
+
+        .filters {
+            display: flex;
+            gap: 5px;
+            overflow: auto;
+            scrollbar-width: none;
+            margin: 15px 0
+        }
+
+        .filters::-webkit-scrollbar {
+            display: none
+        }
+
+        .filter {
+            border: 0;
+            background: #efeee9;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 7.5px;
+            white-space: nowrap;
+            cursor: pointer
+        }
+
+        .filter.active {
+            background: var(--goldSoft);
+            color: #5f4a21;
+            font-weight: 800
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin: 10px 0 14px
         }
 
         .day {
-            flex: 1;
-            border-radius: 16px;
-            padding: 10px 0;
             text-align: center;
-            background: var(--surface);
-            border: 1px solid var(--line);
-            cursor: pointer;
-        }
-
-        .day span {
-            display: block;
-            font-size: 9.5px;
-            color: var(--ink-3);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 6.5px;
+            color: #777;
+            padding: 6px 0;
+            border-radius: 12px;
+            cursor: pointer
         }
 
         .day b {
-            font-size: 14.5px;
-            letter-spacing: -0.3px;
-        }
-
-        .day.on {
-            background: var(--gold-gradient);
-            color: #000;
-            border-color: transparent;
-            font-weight: 800;
-        }
-
-        .day.on span {
-            color: #332B00;
-        }
-
-        .day i {
             display: block;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--gold);
-            margin: 3px auto 0;
+            color: #222;
+            font-size: 10px;
+            margin-top: 4px
         }
 
-        .day.on i {
-            background: #000;
+        .day.selected {
+            background: var(--gold);
+            color: #fff
+        }
+
+        .day.selected b {
+            color: #fff
         }
 
         .slot {
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: var(--surface);
+            gap: 9px;
+            padding: 12px;
+            border-radius: 17px;
+            background: #fff;
             border: 1px solid var(--line);
-            border-radius: 18px;
-            padding: 13px 15px;
-            margin-bottom: 9px;
-            cursor: pointer;
-        }
-
-        .slot b {
-            font-size: 14.5px;
-            letter-spacing: -0.3px;
-            width: 52px;
-        }
-
-        .slot .meta {
-            flex: 1;
-            font-size: 11.5px;
-            color: var(--ink-2);
+            margin-bottom: 7px;
+            cursor: pointer
         }
 
         .slot.full {
-            background: var(--surface-2);
-            opacity: 0.55;
+            opacity: .45;
+            background: #efeee9;
+            cursor: default
         }
 
-        .dots {
-            display: flex;
-            gap: 4px;
+        .slottime {
+            font: 18px 'Fraunces', serif;
+            width: 43px;
+            flex: none
         }
 
-        .dots i {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--gold);
+        .slotmain {
+            flex: 1;
+            font-size: 7.5px;
+            color: #777
         }
 
-        .dots i.empty {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .btn {
+        .slotmain b {
             display: block;
-            width: 100%;
-            border: 0;
-            border-radius: var(--r-pill);
-            padding: 15px;
-            font: 800 13.5px 'Plus Jakarta Sans';
-            cursor: pointer;
-            margin-top: 12px;
-            transition: transform 0.2s, opacity 0.2s;
+            color: #333;
+            font-size: 8px;
+            margin-bottom: 2px
         }
 
-        .btn:active {
-            transform: scale(0.97);
+        .slot svg {
+            width: 14px;
+            flex: none
         }
 
-        .btn.dark {
-            background: var(--surface-2);
-            color: var(--ink);
+        .ticket {
+            background: #f5eee0;
+            border: 1px solid rgba(185, 151, 79, .24);
+            border-radius: 25px;
+            overflow: hidden
+        }
+
+        .ticketTop {
+            padding: 18px;
+            border-bottom: 1px dashed rgba(23, 23, 23, .18)
+        }
+
+        .ticketTop .pass {
+            float: right;
+            font-size: 6px;
+            color: #8b7955;
+            letter-spacing: .8px
+        }
+
+        .ticketTime {
+            font: 33px 'Fraunces', serif;
+            margin: 13px 0 4px
+        }
+
+        .ticketBody {
+            padding: 15px 18px
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+            margin: 10px 0
+        }
+
+        .info span {
+            color: #777
+        }
+
+        .barcode {
+            height: 29px;
+            margin: 5px 18px 17px;
+            background: repeating-linear-gradient(90deg, #222 0 2px, transparent 2px 4px, #222 4px 5px, transparent 5px 8px)
+        }
+
+        .membership {
+            background: linear-gradient(135deg, #dfc990, #c09c59);
+            border-radius: 25px;
+            padding: 18px;
+            min-height: 195px;
+            overflow: hidden;
+            position: relative
+        }
+
+        .membership:after {
+            content: "BBS";
+            position: absolute;
+            right: -7px;
+            bottom: -27px;
+            font: 100px 'Fraunces', serif;
+            font-style: italic;
+            color: rgba(255, 255, 255, .2)
+        }
+
+        .count {
+            font: 48px 'Fraunces', serif;
+            margin-top: 14px
+        }
+
+        .count small {
+            font-size: 17px
+        }
+
+        .progress {
+            height: 7px;
+            background: rgba(20, 20, 20, .18);
+            border-radius: 99px;
+            overflow: hidden;
+            margin: 13px 0 6px
+        }
+
+        .progress i {
+            display: block;
+            width: 30%;
+            height: 100%;
+            background: var(--accent);
+            border-radius: 99px
+        }
+
+        .benefits {
+            background: #fff;
             border: 1px solid var(--line);
+            border-radius: 21px;
+            overflow: hidden
         }
 
-        .btn.gold {
-            background: var(--gold-gradient);
-            color: #000;
-            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        .benefit {
+            padding: 11px 13px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            gap: 8px;
+            font-size: 8px
         }
 
-        /* Slide Action Slider */
-        .slide-action {
-            background: var(--surface-2);
-            border-radius: var(--r-pill);
-            height: 56px;
-            position: relative;
+        .benefit:last-child {
+            border: 0
+        }
+
+        .benefit svg {
+            width: 14px;
+            flex: none
+        }
+
+        .profile {
+            text-align: center
+        }
+
+        .profile img {
+            width: 88px;
+            height: 88px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 7px 20px rgba(0, 0, 0, .1)
+        }
+
+        .profile h2 {
+            font-size: 25px;
+            margin-top: 9px
+        }
+
+        .profile p {
+            font-size: 7.5px;
+            color: #777;
+            margin: 3px 0 7px
+        }
+
+        .settings {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 21px;
+            overflow: hidden;
+            margin-top: 17px
+        }
+
+        .setting {
             display: flex;
             align-items: center;
-            padding: 4px;
-            margin-top: 14px;
-            overflow: hidden;
-            user-select: none;
-            border: 1px solid var(--line);
+            gap: 9px;
+            padding: 13px;
+            border-bottom: 1px solid var(--line);
+            font-size: 8px;
+            cursor: pointer
         }
 
-        .slide-handle {
-            width: 48px;
-            height: 48px;
+        .setting:last-child {
+            border: 0
+        }
+
+        .setting svg {
+            width: 15px;
+            flex: none
+        }
+
+        .setting span {
+            flex: 1
+        }
+
+        .adminHero {
+            background: var(--accent);
+            color: #fff;
+            border-radius: 24px;
+            padding: 18px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .adminHero:after {
+            content: "";
+            position: absolute;
+            right: -55px;
+            bottom: -70px;
+            width: 170px;
+            height: 170px;
+            border: 1px solid rgba(215, 190, 131, .28);
+            border-radius: 50%
+        }
+
+        .adminHero .big {
+            font: 28px 'Fraunces', serif;
+            margin: 8px 0
+        }
+
+        .statStrip {
+            display: flex;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            overflow: hidden;
+            background: #fff
+        }
+
+        .stat {
+            flex: 1;
+            padding: 13px 10px;
+            text-align: center;
+            position: relative
+        }
+
+        .stat+.stat:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 14px;
+            bottom: 14px;
+            width: 1px;
+            background: var(--line)
+        }
+
+        .stat strong {
+            display: block;
+            font: 22px 'Fraunces', serif
+        }
+
+        .stat span {
+            display: block;
+            font-size: 6.5px;
+            color: #8a8880;
+            margin-top: 4px
+        }
+
+        .stat em {
+            display: block;
+            font-size: 6.5px;
+            font-style: normal;
+            font-weight: 800;
+            margin-top: 3px
+        }
+
+        .stat em.up {
+            color: var(--green)
+        }
+
+        .stat em.down {
+            color: var(--red)
+        }
+
+        .checkrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 17px;
+            padding: 11px;
+            margin-bottom: 7px;
+            cursor: pointer
+        }
+
+        .checkdot {
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: var(--gold-gradient);
-            color: #000;
+            border: 1.5px solid var(--line);
             display: grid;
             place-items: center;
-            font-weight: 800;
-            cursor: grab;
+            flex: none;
+            color: #fff
+        }
+
+        .checkdot svg {
+            width: 11px
+        }
+
+        .checkrow.done .checkdot {
+            background: var(--green);
+            border-color: var(--green)
+        }
+
+        .checkrow.done .rowmain b {
+            text-decoration: line-through;
+            color: #aaa
+        }
+
+        .groomHero {
+            background: #e2dfd5;
+            border-radius: 24px;
+            padding: 18px;
+            min-height: 205px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .groomHero .big {
+            font: 38px 'Fraunces', serif;
+            margin: 7px 0
+        }
+
+        .groomHorse {
             position: absolute;
-            left: 4px;
-            transition: left 0.1s ease;
-            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+            width: 145px;
+            height: 145px;
+            right: -30px;
+            bottom: -25px;
+            object-fit: cover;
+            border-radius: 50%;
+            opacity: .8
         }
 
-        .slide-text {
-            width: 100%;
-            text-align: center;
-            font-size: 12px;
+        .field {
+            margin-bottom: 11px
+        }
+
+        .field label {
+            display: block;
+            font-size: 7.5px;
             font-weight: 800;
-            color: var(--ink-2);
-            letter-spacing: 0.8px;
+            color: #77766f;
+            letter-spacing: .5px;
             text-transform: uppercase;
+            margin-bottom: 6px
         }
 
-        /* Bottom Nav */
+        .field input {
+            width: 100%;
+            height: 42px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: #fff;
+            padding: 0 14px;
+            font: 9.5px Manrope, Arial, sans-serif;
+            color: #181817
+        }
+
+        .field input::placeholder {
+            color: #b6b4ab
+        }
+
         .nav {
             position: absolute;
-            left: 16px;
-            right: 16px;
-            bottom: 18px;
-            height: 64px;
-            background: rgba(24, 24, 28, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: var(--r-pill);
+            z-index: 30;
+            left: 13px;
+            right: 13px;
+            bottom: 13px;
+            height: 63px;
+            border-radius: 999px;
+            background: rgba(20, 20, 20, .92);
+            border: 1px solid rgba(255, 255, 255, .13);
+            box-shadow: 0 18px 38px rgba(0, 0, 0, .24);
+            backdrop-filter: blur(22px);
             display: flex;
             align-items: center;
             justify-content: space-around;
-            padding: 0 8px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-            z-index: 40;
+            padding: 4px
         }
 
         .nav button {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
+            width: 49px;
+            height: 49px;
             border: 0;
+            border-radius: 50%;
             background: transparent;
-            color: var(--ink-3);
+            color: #aaa;
             display: grid;
             place-items: center;
             cursor: pointer;
-            transition: 0.2s;
+            transition: .35s cubic-bezier(.22, 1, .36, 1)
         }
 
-        .nav button.on {
-            background: var(--gold-gradient);
-            color: #000;
-            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.35);
+        .nav button svg {
+            width: 19px;
+            height: 19px;
+            stroke-width: 1.8
         }
 
-        svg {
-            display: block;
+        .nav button.active {
+            background: var(--gold);
+            color: #171717;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 17px rgba(185, 151, 79, .3)
+        }
+
+        .nav button:hover:not(.active) {
+            color: #fff;
+            transform: scale(1.08)
+        }
+
+        .note {
+            text-align: center;
+            color: #77736a;
+            font-size: 8.5px;
+            line-height: 1.5;
+            margin-top: 20px
+        }
+
+        @media(max-width:430px) {
+            body {
+                padding: 12px 8px 35px
+            }
+
+            .phone {
+                height: 760px;
+                border-radius: 39px
+            }
+
+            .viewport {
+                padding-left: 16px;
+                padding-right: 16px
+            }
+
+            .roles button {
+                font-size: 8px
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="shell">
+        <header class="header">
+            <div class="logo">B</div>
+            <b>BORNEO BERKUDA STABLE</b>
+            <span>MOBILE PWA · V2 UI/UX PREVIEW</span>
+        </header>
 
-    <div class="brandbar">
-        <h1>BORNEO BERKUDA STABLE</h1>
-        <p>Gen-Z Super-App Redesign (Gojek &amp; Livin' Touch). Pilih peran &amp; jelajahi fitur.</p>
-    </div>
-
-    <div class="roles" id="roles">
-        <button data-role="public">Non-Member</button>
-        <button data-role="member" class="on">Member</button>
-        <button data-role="admin">Admin</button>
-        <button data-role="groomer">Groomer</button>
-    </div>
-
-    <div class="phone">
-        <div class="notch">
-            <span></span><b></b>
+        <div class="roles" id="roles">
+            <button class="active" data-role="member">Member</button>
+            <button data-role="public">Non-Member</button>
+            <button data-role="admin">Admin</button>
+            <button data-role="groomer">Groomer</button>
         </div>
-        <div class="scroll" id="scroll">
 
-            <!-- ==========================================
-         1. NON-MEMBER FLOW
-         ========================================== -->
-            <section class="screen" id="s-landing">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-                    <b style="font-size:14px;letter-spacing:1px;color:var(--gold)">BBS STABLE</b>
-                    <span
-                        style="font-size:11px;color:var(--ink-2);background:var(--surface);padding:4px 10px;border-radius:var(--r-pill);border:1px solid var(--line)">✨
-                        Balikpapan</span>
-                </div>
-
-                <h2 class="page" style="font-size:32px;line-height:1.12">Vibe checking<br>&amp; riding time.</h2>
-                <p style="font-size:13px;color:var(--ink-2);line-height:1.55;margin:0 0 20px">
-                    Eksklusif privat berkuda di Balikpapan. 45 menit tenang, tanpa antre, dipandu groomer pro.
-                </p>
-
-                <div class="wallet-card">
-                    <div
-                        style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);font-weight:800">
-                        Casual Rider Pass</div>
-                    <div style="font-size:32px;font-weight:800;margin:6px 0 2px">Rp200K</div>
-                    <div style="font-size:12px;color:var(--ink-2)">Tanpa komitmen · 1 sesi privat 45 menit langsung
-                        main.</div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
-                        <span class="pill wait">INSTANT BOOK</span>
-                        <button
-                            style="width:40px;height:40px;border-radius:50%;background:var(--gold-gradient);border:0;display:grid;place-items:center;font-weight:800;cursor:pointer"
-                            data-go="s-plans">→</button>
-                    </div>
-                </div>
-
-                <div class="stats">
-                    <div class="stat">
-                        <div class="ic">⏱️</div>
-                        <b>45m</b>
-                        <span>Sesi privat</span>
-                    </div>
-                    <div class="stat">
-                        <div class="ic">🔥</div>
-                        <b>2 Rider</b>
-                        <span>Maksimal per slot</span>
-                    </div>
-                </div>
-
-                <div class="sec">
-                    <h3>Quick Access</h3>
-                </div>
-                <div class="quick-grid">
-                    <div class="quick-item" data-go="s-plans">
-                        <div class="quick-icon">💳</div><span>Paket</span>
-                    </div>
-                    <div class="quick-item" data-go="s-plans">
-                        <div class="quick-icon">🐎</div><span>Kuda</span>
-                    </div>
-                    <div class="quick-item" data-go="s-login">
-                        <div class="quick-icon">👤</div><span>Akun</span>
-                    </div>
-                    <div class="quick-item" data-go="s-plans">
-                        <div class="quick-icon">✨</div><span>Vibe</span>
-                    </div>
-                </div>
-
-                <div class="slide-action" id="slideCasual">
-                    <div class="slide-handle" id="handleCasual">→</div>
-                    <div class="slide-text">Slide untuk Casual Ride</div>
-                </div>
-
-                <button class="btn gold" data-go="s-plans" style="margin-top:10px">Lihat Membership &amp;
-                    Benefit</button>
-            </section>
-
-            <!-- Plans Page -->
-            <section class="screen" id="s-plans">
-                <div class="top">
-                    <button class="bell" data-go="s-landing">←</button>
-                    <div class="who"><b>Pilihan Membership</b><span>Super Saving Deals</span></div>
-                </div>
-
-                <div class="wallet-card">
-                    <div
-                        style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);font-weight:800">
-                        Gold Package · Best Value</div>
-                    <div style="font-size:32px;font-weight:800;margin:6px 0 2px">Rp1.600.000</div>
-                    <div style="font-size:12px;color:var(--ink-2)">10 Sesi · Berlaku 3 Bulan (Perpanjangan Rp1.5M)</div>
-                    <div
-                        style="margin-top:12px;background:rgba(255,215,0,0.08);border-radius:14px;padding:10px;font-size:11.5px;color:var(--gold)">
-                        ✨ <b>Benefit:</b> Prioritas jam favorit, 1x guest pass gratis, grooming intro.
-                    </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
-                        <span class="pill wait">MOST POPULAR</span>
-                        <button
-                            style="width:40px;height:40px;border-radius:50%;background:var(--gold-gradient);border:0;display:grid;place-items:center;font-weight:800;cursor:pointer"
-                            data-go="s-login">→</button>
-                    </div>
-                </div>
-
-                <div class="card" data-go="s-login">
-                    <div class="date" style="background:var(--surface-2)"><b>S</b><span>silv</span></div>
-                    <div class="body"><b>Silver Package · Rp850.000</b><span>5 Sesi · Berlaku 3 Bulan (Perpanjangan
-                            Rp750K)</span></div>
-                    <div style="font-weight:800">→</div>
-                </div>
-
-                <div class="sec">
-                    <h3>Cara Kerja Membership</h3>
-                </div>
-                <div
-                    style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:16px;font-size:12px;line-height:1.6;color:var(--ink-2)">
-                    1. Pilih paket &amp; transfer via QRIS/Bank.<br>
-                    2. Konfirmasi kilat ke admin via WhatsApp.<br>
-                    3. Kredit langsung masuk dan siap dipakai booking app!
-                </div>
-
-                <button class="btn gold" data-go="s-login">Gabung Member Sekarang</button>
-            </section>
-
-            <section class="screen" id="s-login">
-                <div style="height:90px"></div>
-                <div style="text-align:center">
-                    <div class="avatar" style="width:72px;height:72px;font-size:28px;margin:0 auto 20px">🐎</div>
-                    <h2 class="page" style="font-size:26px">Masuk ke BBS</h2>
-                    <p style="font-size:12.5px;color:var(--ink-2);line-height:1.5;margin:0 auto 24px;max-width:260px">
-                        Single Sign-On Google untuk akses riwayat dan sisa kredit kamu.
-                    </p>
-                </div>
-                <button class="btn gold" data-go="s-home">
-                    <span style="display:inline-flex;align-items:center;gap:8px">
-                        <span
-                            style="background:#000;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;color:#FFD700;font-size:11px;font-weight:800">G</span>
-                        Continue with Google
-                    </span>
-                </button>
-                <button class="btn dark" data-go="s-landing">Kembali</button>
-            </section>
-
-
-            <!-- ==========================================
-         2. MEMBER FLOW
-         ========================================== -->
-            <section class="screen" id="s-home">
-                <div class="top">
-                    <div class="avatar">KA</div>
-                    <div class="who"><b>Hi, Keisha ✨</b><span>Gold Member · 7 Sesi Tersisa</span></div>
-                    <div class="bell" data-go="s-notif"><i></i>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- Ticket-Style Boarding Pass for Next Ride -->
-                <div class="ticket-pass" data-go="s-detail">
-                    <div class="ticket-header">
-                        <div>
-                            <div
-                                style="font-size:9.5px;letter-spacing:1px;color:var(--gold);font-weight:800;text-transform:uppercase">
-                                Next Ride Boarding Pass</div>
-                            <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;margin-top:2px">16:00 —
-                                16:45 WITA</div>
-                            <div style="font-size:11.5px;color:var(--ink-2);margin-top:2px">Sabtu, 20 September · Arena
-                                01</div>
-                        </div>
-                        <span class="pill ok">Confirmed</span>
-                    </div>
-                    <div class="ticket-body">
-                        <span style="font-size:12px;color:var(--ink-2)">Dipandu oleh Groomer Sarah</span>
-                        <b style="color:var(--gold);font-size:11.5px">Detail Tiket →</b>
-                    </div>
-                </div>
-
-                <div class="quick-grid">
-                    <div class="quick-item" data-go="s-schedule">
-                        <div class="quick-icon">📅</div><span>Book</span>
-                    </div>
-                    <div class="quick-item" data-go="s-bookings">
-                        <div class="quick-icon">🎟️</div><span>Rides</span>
-                    </div>
-                    <div class="quick-item" data-go="s-membership">
-                        <div class="quick-icon">⚡</div><span>Gold</span>
-                    </div>
-                    <div class="quick-item" data-go="s-profile">
-                        <div class="quick-icon">⚙️</div><span>Profil</span>
-                    </div>
-                </div>
-
-                <!-- Mini Date Selector / Quick Booking Bar -->
-                <div class="sec">
-                    <h3>Quick Schedule</h3><a data-go="s-schedule">Buka kalender</a>
-                </div>
-                <div class="week">
-                    <div class="day" data-go="s-schedule"><span>Sen</span><b>15</b></div>
-                    <div class="day" data-go="s-schedule"><span>Sel</span><b>16</b><i></i></div>
-                    <div class="day" data-go="s-schedule"><span>Rab</span><b>17</b></div>
-                    <div class="day" data-go="s-schedule"><span>Kam</span><b>18</b><i></i></div>
-                    <div class="day" data-go="s-schedule"><span>Jum</span><b>19</b></div>
-                    <div class="day on" data-go="s-schedule"><span>Sab</span><b>20</b><i></i></div>
-                    <div class="day" data-go="s-schedule"><span>Min</span><b>21</b></div>
-                </div>
-
-                <button class="btn gold" data-go="s-schedule">Book a Ride Now</button>
-            </section>
-
-            <!-- Schedule Screen -->
-            <section class="screen" id="s-schedule">
-                <div class="top">
-                    <div class="who"><b style="font-size:22px;letter-spacing:-0.5px">Pilih Jadwal
-                            Sesi</b><span>September 2026</span></div>
-                </div>
-
-                <div class="chips">
-                    <button class="on">Semua</button><button>Pagi</button><button>Sore</button><button>Tersedia</button>
-                </div>
-
-                <div class="sec" style="margin-top:4px">
-                    <h3>Pagi</h3><span>07:00 — 11:00</span>
-                </div>
-                <div class="slot" data-go="s-detail"><b>07:00</b>
-                    <div class="meta">1 slot tersisa · 1/2 rider</div>
-                    <div class="dots"><i></i><i class="empty"></i></div>
-                </div>
-                <div class="slot full"><b>08:00</b>
-                    <div class="meta">Penuh · 2/2 rider</div>
-                    <div class="dots"><i></i><i></i></div>
-                </div>
-                <div class="slot" data-go="s-detail"><b>09:00</b>
-                    <div class="meta">2 slot tersisa · 0/2 rider</div>
-                    <div class="dots"><i class="empty"></i><i class="empty"></i></div>
-                </div>
-
-                <div class="sec">
-                    <h3>Sore</h3><span>13:00 — 18:00</span>
-                </div>
-                <div class="slot full"><b>13:00</b>
-                    <div class="meta">Penuh · 2/2 rider</div>
-                    <div class="dots"><i></i><i></i></div>
-                </div>
-                <div class="slot" style="border-color:var(--gold);background:var(--gold-soft)" data-go="s-detail">
-                    <b>16:00</b>
-                    <div class="meta" style="color:var(--gold);font-weight:700">Booking kamu · Confirmed</div>
-                    <div class="dots"><i></i><i></i></div>
-                </div>
-                <div class="slot" data-go="s-detail"><b>17:00</b>
-                    <div class="meta">1 slot tersisa · 1/2 rider</div>
-                    <div class="dots"><i></i><i class="empty"></i></div>
-                </div>
-            </section>
-
-            <!-- Booking Detail Screen -->
-            <section class="screen" id="s-detail">
-                <div class="top">
-                    <button class="bell" data-go="s-bookings">←</button>
-                    <div class="who"><b>Boarding Pass</b><span>#BBS-1023</span></div>
-                </div>
-
-                <div class="ticket-pass" style="cursor:default">
-                    <div class="ticket-header" style="background:linear-gradient(135deg, #1C1C24 0%, #0E0E12 100%)">
-                        <div>
-                            <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">BORNEO
-                                BERKUDA STABLE</div>
-                            <div style="font-size:24px;font-weight:800;margin-top:4px">16:00 — 16:45</div>
-                            <div style="font-size:12px;color:var(--ink-2);margin-top:2px">Sabtu, 20 September 2026</div>
-                        </div>
-                        <span class="pill ok">CONFIRMED</span>
-                    </div>
-                    <div style="padding:16px;background:var(--surface)">
-                        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
-                            <span style="color:var(--ink-2)">Peserta</span><b>Keisha &amp; Sarah</b>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
-                            <span style="color:var(--ink-2)">Kredit Dipakai</span><b>1 Sesi (Gold)</b>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;font-size:12px">
-                            <span style="color:var(--ink-2)">Batas Batal</span><b>20 Sep, 10:00 WITA</b>
-                        </div>
-                    </div>
-                    <div class="ticket-body" style="background:var(--surface-2)">
-                        <span style="font-size:11px">Arena 01 · No Antre</span>
-                        <span style="font-family:monospace;letter-spacing:2px;font-size:12px;color:var(--gold)">||| |
-                            |||| || |</span>
-                    </div>
-                </div>
-
-                <button class="btn dark" data-go="s-schedule">Reschedule Sesi</button>
-                <button class="btn" style="background:rgba(255,80,80,0.15);color:#FF6B6B" data-go="s-bookings">Batalkan
-                    Sesi</button>
-            </section>
-
-            <!-- My Bookings Screen -->
-            <section class="screen" id="s-bookings">
-                <div class="top">
-                    <div class="who"><b style="font-size:22px;letter-spacing:-0.5px">Riwayat Sesi</b><span>Tiket &amp;
-                            Aktivitas Anda</span></div>
-                </div>
-                <div class="chips">
-                    <button class="on">Mendatang</button><button>Selesai</button><button>Batal</button>
-                </div>
-
-                <div class="card" data-go="s-detail">
-                    <div class="date"><b>20</b><span>Sep</span></div>
-                    <div class="body"><b>16:00 — 16:45</b><span>Sesi sore · bersama Sarah</span></div>
-                    <span class="pill ok">Active</span>
-                </div>
-
-                <div class="card" data-go="s-detail" style="opacity:.8">
-                    <div class="date"><b>13</b><span>Sep</span></div>
-                    <div class="body"><b>16:00 — 16:45</b><span>Hadir · 1 kredit terpakai</span></div>
-                    <span class="pill done">Selesai</span>
-                </div>
-            </section>
-
-            <!-- Membership Screen -->
-            <section class="screen" id="s-membership">
-                <div class="top">
-                    <div class="who"><b style="font-size:22px;letter-spacing:-.5px">Status Member</b><span>Gold Tier
-                            Aktif</span></div>
-                </div>
-
-                <div class="wallet-card">
-                    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">GOLD MEMBERSHIP
-                    </div>
-                    <div class="big" style="font-size:28px;font-weight:800;margin:4px 0">7 Sesi Tersisa</div>
-                    <div style="font-size:12px;color:var(--ink-2)">Berakhir 20 Desember 2026</div>
-                    <div
-                        style="height:8px;background:var(--surface-2);border-radius:var(--r-pill);margin:14px 0 6px;overflow:hidden">
-                        <div style="height:100%;width:30%;background:var(--gold-gradient)"></div>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-2)">
-                        <span>3 Terpakai</span><span>7 Tersedia</span>
-                    </div>
-                </div>
-
-                <div class="sec">
-                    <h3>Riwayat Paket</h3>
-                </div>
-                <div class="card" style="cursor:default">
-                    <div class="date" style="background:var(--gold-soft)"><b
-                            style="color:var(--gold)">G</b><span>gold</span></div>
-                    <div class="body"><b>20 Sep — 20 Des 2026</b><span>10 Sesi · Rp1.600.000</span></div>
-                    <span class="pill ok">Aktif</span>
-                </div>
-
-                <button class="btn gold" data-go="s-renew">Perpanjang Membership</button>
-            </section>
-
-            <!-- Renewal Screen -->
-            <section class="screen" id="s-renew">
-                <div class="top">
-                    <button class="bell" data-go="s-membership">←</button>
-                    <div class="who"><b>Perpanjang Paket</b><span>Hemat Rp100.000</span></div>
-                </div>
-
-                <div class="wallet-card">
-                    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">GOLD EXTENSION
-                    </div>
-                    <div style="font-size:28px;font-weight:800;margin:4px 0">Rp1.500.000</div>
-                    <div style="font-size:12px;color:var(--ink-2)">10 Sesi baru · Masa aktif diperpanjang 3 bulan</div>
-                    <div style="margin-top:14px"><span class="pill wait">SPECIAL DISCOUNT</span></div>
-                </div>
-
-                <div class="sec">
-                    <h3>Konfirmasi Pembayaran</h3>
-                </div>
-                <div
-                    style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:16px;font-size:12px;line-height:1.6;color:var(--ink-2)">
-                    Hubungi admin via WhatsApp untuk validasi transfer dan aktivasi instan kredit baru Anda.
-                </div>
-                <button class="btn gold">Konfirmasi via WhatsApp</button>
-            </section>
-
-            <!-- Notifications Screen -->
-            <section class="screen" id="s-notif">
-                <div class="top">
-                    <div class="who"><b style="font-size:22px;letter-spacing:-.5px">Notifikasi</b><span>Pembaruan &amp;
-                            info terbaru</span></div>
-                </div>
-
-                <div class="card" data-go="s-detail">
-                    <div class="date" style="background:var(--lime-soft);color:var(--lime)"><b>✓</b></div>
-                    <div class="body"><b>Booking dikonfirmasi</b><span>Sesi 20 Sep jam 16:00 disetujui BBS.</span></div>
-                </div>
-                <div class="card" data-go="s-membership">
-                    <div class="date" style="background:var(--gold-soft);color:var(--gold)"><b>💳</b></div>
-                    <div class="body"><b>Pengingat Masa Aktif</b><span>Gold membership berakhir dalam 90 hari.</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Profile Screen -->
-            <section class="screen" id="s-profile">
-                <div style="text-align:center;padding:12px 0">
-                    <div class="avatar" style="width:76px;height:76px;font-size:28px;margin:0 auto 12px">KA</div>
-                    <b style="font-size:20px">Keisha Alviani</b>
-                    <div style="margin-top:6px"><span class="pill wait">GOLD MEMBER</span></div>
-                </div>
-                <div class="sec">
-                    <h3>Pengaturan Akun</h3>
-                </div>
-                <div
-                    style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:4px 16px;box-shadow:var(--sh)">
-                    <div
-                        style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px">
-                        <span>Informasi Pribadi</span><span style="color:var(--ink-3)">›</span></div>
-                    <div
-                        style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px">
-                        <span>Kontak Darurat</span><span style="color:var(--ink-3)">›</span></div>
-                    <div style="padding:14px 0;display:flex;justify-content:space-between;font-size:13px"><span>Bantuan
-                            &amp; FAQ</span><span style="color:var(--ink-3)">›</span></div>
-                </div>
-                <button class="btn dark" data-go="s-landing" style="margin-top:20px">Keluar Akun</button>
-            </section>
-
-
-            <!-- ==========================================
-         3. ADMIN FLOW
-         ========================================== -->
-            <section class="screen" id="a-home">
-                <div class="top">
-                    <div class="avatar" style="background:#FFA500">ADM</div>
-                    <div class="who"><b>Admin Dashboard</b><span>Sabtu, 20 September</span></div>
-                </div>
-
-                <div class="wallet-card">
-                    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">BUTUH TINDAKAN
-                    </div>
-                    <div style="font-size:28px;font-weight:800;margin:4px 0">4 Pending Request</div>
-                    <div style="font-size:12px;color:var(--ink-2)">2 booking request · 1 reschedule · 1 renewal</div>
-                    <div style="margin-top:14px"><button class="btn gold" style="margin:0;padding:10px 16px"
-                            data-go="a-bookings">Review Sekarang</button></div>
-                </div>
-
-                <div class="stats">
-                    <div class="stat">
-                        <div class="ic">📅</div><b>12</b><span>Sesi hari ini</span>
-                    </div>
-                    <div class="stat">
-                        <div class="ic">👥</div><b>8</b><span>Member aktif</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="screen" id="a-schedule">
-                <div class="top">
-                    <div class="who"><b style="font-size:22px">Manajemen Jadwal</b><span>20 Sep 2026</span></div>
-                </div>
-                <div class="slot"><b>07:00</b>
-                    <div class="meta">Keisha · Sarah</div><span class="pill ok">2/2</span>
-                </div>
-                <div class="slot"><b>08:00</b>
-                    <div class="meta">Andi (Casual)</div><span class="pill wait">1/2</span>
-                </div>
-                <div class="slot full"><b>10:00</b>
-                    <div class="meta">Ditutup · Perawatan kuda</div><span class="pill no">Tutup</span>
-                </div>
-            </section>
-
-            <section class="screen" id="a-bookings">
-                <div class="top">
-                    <div class="who"><b style="font-size:22px">Review Bookings</b><span>2 Pending Request</span></div>
-                </div>
-                <div class="ticket-pass" style="cursor:default">
-                    <div class="ticket-header">
-                        <div>
-                            <b style="font-size:15px">Keisha Alviani</b>
-                            <div style="font-size:11.5px;color:var(--ink-2);margin-top:2px">27 Sep · 15:00 — 15:45
-                                (Gold)</div>
-                        </div>
-                        <span class="pill wait">Pending</span>
-                    </div>
-                    <div class="ticket-body" style="gap:8px">
-                        <button class="btn gold" style="margin:0;padding:8px 16px">Approve</button>
-                        <button class="btn dark" style="margin:0;padding:8px 16px">Reject</button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="screen" id="a-members">
-                <div class="top">
-                    <div class="who"><b style="font-size:22px">Daftar Member</b><span>8 Member Aktif</span></div>
-                </div>
-                <div class="card">
-                    <div class="avatar">KA</div>
-                    <div class="body"><b>Keisha Alviani</b><span>Gold · 7 Kredit</span></div><span
-                        class="pill ok">Aktif</span>
-                </div>
-                <div class="card">
-                    <div class="avatar">SR</div>
-                    <div class="body"><b>Sarah</b><span>Silver · 3 Kredit</span></div><span class="pill ok">Aktif</span>
-                </div>
-            </section>
-
-            <section class="screen" id="a-reports">
-                <div class="top">
-                    <div class="who"><b style="font-size:22px">Laporan Bulanan</b><span>September 2026</span></div>
-                </div>
-                <div class="wallet-card">
-                    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:800">TOTAL SESI BULAN
-                        INI</div>
-                    <div style="font-size:32px;font-weight:800;margin:4px 0">126 Sesi</div>
-                    <div style="font-size:12px;color:var(--ink-2)">112 selesai · 8 batal · 6 no-show</div>
-                </div>
-                <button class="btn gold" style="margin-top:16px">Export Laporan XLSX</button>
-            </section>
-
-
-            <!-- ==========================================
-         4. GROOMER FLOW
-         ========================================== -->
-            <section class="screen" id="g-home">
-                <div class="top">
-                    <div class="avatar" style="background:#39E75F;color:#000">GR</div>
-                    <div class="who"><b>Groomer Stable</b><span>Sabtu, 20 September</span></div>
-                </div>
-
-                <div class="wallet-card" style="border-color:rgba(57,231,95,0.3)">
-                    <div style="font-size:10px;letter-spacing:1px;color:var(--lime);font-weight:800">SESI BERIKUTNYA
-                    </div>
-                    <div style="font-size:28px;font-weight:800;margin:4px 0">07:00 WITA</div>
-                    <div style="font-size:12px;color:var(--ink-2)">2 Rider · Keisha, Sarah (Arena 01)</div>
-                    <div style="margin-top:14px"><button class="btn gold" style="margin:0;padding:10px 16px"
-                            data-go="g-session">Siapkan Kuda</button></div>
-                </div>
-
-                <div class="sec">
-                    <h3>Jadwal Hari Ini</h3>
-                </div>
-                <div class="card" data-go="g-session">
-                    <div class="date"><b>07</b><span>:00</span></div>
-                    <div class="body"><b>2 Rider</b><span>Keisha · Sarah</span></div>
-                    <div style="font-weight:800">→</div>
-                </div>
-                <div class="card" data-go="g-session">
-                    <div class="date"><b>16</b><span>:00</span></div>
-                    <div class="body"><b>2 Rider</b><span>Keisha · Sarah</span></div>
-                    <div style="font-weight:800">→</div>
-                </div>
-            </section>
-
-            <section class="screen" id="g-session">
-                <div class="top">
-                    <button class="bell" data-go="g-home">←</button>
-                    <div class="who"><b>Check-in Kehadiran</b><span>Sesi 16:00 WITA</span></div>
-                </div>
-                <div class="card" style="cursor:default">
-                    <div class="avatar">KA</div>
-                    <div class="body"><b>Keisha Alviani</b><span>Gold Member</span></div>
-                    <span class="pill ok" style="cursor:pointer">Hadir ✓</span>
-                </div>
-                <div class="card" style="cursor:default">
-                    <div class="avatar">SR</div>
-                    <div class="body"><b>Sarah</b><span>Silver Member</span></div>
-                    <span class="pill no" style="cursor:pointer">No-Show</span>
-                </div>
-                <button class="btn gold" data-go="g-home">Simpan Kehadiran</button>
-            </section>
-
-        </div><!-- /scroll -->
-
-        <nav class="nav" id="nav"></nav>
+        <main id="app"></main>
+        <div class="note">Mobile-first only for this phase. Desktop/tablet layouts will be handled separately after the
+            mobile PWA experience is locked.</div>
     </div>
 
     <script>
-        const NAVS = {
-            public: [['s-landing', 'home'], ['s-plans', 'card'], ['s-login', 'user']],
-            member: [['s-home', 'home'], ['s-schedule', 'cal'], ['s-bookings', 'ticket'], ['s-membership', 'card'], ['s-profile', 'user']],
-            admin: [['a-home', 'home'], ['a-schedule', 'cal'], ['a-bookings', 'ticket'], ['a-members', 'users'], ['a-reports', 'chart']],
-            groomer: [['g-home', 'home'], ['g-session', 'ticket'], ['s-profile', 'user']]
+        const icons = {
+            home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>',
+            cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>',
+            ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 0 0 4v4a2 2 0 0 0 0 4h16a2 2 0 0 0 0-4v-4a2 2 0 0 0 0-4Z"/><path d="M12 7v2m0 3v2m0 3v1"/></svg>',
+            user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+            card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M3 10h18"/></svg>',
+            bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg>',
+            back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+            arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>',
+            users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 5.5a3 3 0 0 1 0 6"/><path d="M19 20a5 5 0 0 0-3-4.6"/></svg>',
+            chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10m6 10V4m6 16v-7m6 7H2"/></svg>',
+            check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg>',
+            lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+            horseIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c0-4 2-6 2-9 0-4 3-7 7-7 3 0 5 2 5 4 0 2-2 2-2 4 0 3 2 4 2 6"/><path d="M9 20v-3M14 20v-3"/></svg>',
+            google: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.28V6.63H1.29A11.98 11.98 0 0 0 0 12c0 1.94.46 3.77 1.29 5.37l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.63l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/></svg>',
+            whatsapp: '<svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.3-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.4.1-.2 0-.4 0-.5 0-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.3.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.6 1.4 5.2L2 22l4.9-1.3c1.5.8 3.2 1.3 5.1 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.2c-1.7 0-3.3-.5-4.6-1.3l-.3-.2-3.3.9.9-3.2-.2-.3C3.7 14.7 3.2 13.4 3.2 12 3.2 7.1 7.1 3.2 12 3.2S20.8 7.1 20.8 12 16.9 20.2 12 20.2z"/></svg>'
         };
 
-        const ICONS = {
-            home: '<path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
-            cal: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/>',
-            ticket: '<path d="M3 9a2 2 0 0 0 0 6v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 1 0-6V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>',
-            card: '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>',
-            user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-            users: '<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 5.5a3.4 3.4 0 0 1 0 6.8"/>',
-            chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'
+        const img = {
+            horse: 'https://images.unsplash.com/photo-1551884831-bbf3cdc6469e?auto=format&fit=crop&w=900&q=80',
+            horse2: 'https://images.unsplash.com/photo-1598974357801-cbca100e65d0?auto=format&fit=crop&w=900&q=80'
         };
 
-        let currentRole = 'member';
+        // Each nav item: [iconKey, label, targetPageId]
+        const nav = {
+            member: [['home', 'Home', 'home'], ['cal', 'Book', 'book'], ['ticket', 'Rides', 'rides'], ['card', 'Membership', 'membership'], ['user', 'Profile', 'profile']],
+            public: [['home', 'Home', 'home'], ['cal', 'Rides', 'rides'], ['card', 'Membership', 'membership'], ['user', 'Sign in', 'signin']],
+            admin: [['home', 'Overview', 'home'], ['cal', 'Schedule', 'schedule'], ['ticket', 'Requests', 'requests'], ['users', 'Members', 'members'], ['chart', 'Reports', 'reports']],
+            groomer: [['home', 'Today', 'home'], ['cal', 'Schedule', 'schedule'], ['ticket', 'Sessions', 'sessions'], ['user', 'Profile', 'profile']]
+        };
 
-        function svgIcon(name) {
-            return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[name] || '') + '</svg>';
+        let role = 'member';
+
+        function navBar() {
+            return '<nav class="nav">' + nav[role].map((n, i) => '<button data-page="' + n[2] + '" class="' + (i === 0 ? 'active' : '') + '" title="' + n[1] + '">' + icons[n[0]] + '</button>').join('') + '</nav>';
         }
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
-            document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.target === id));
-            const scroller = document.getElementById('scroll');
-            if (scroller) scroller.scrollTo({ top: 0, behavior: 'instant' });
+        function statusBar() {
+            return '<div class="status"><span>9:41</span><span>● ● ▪</span></div>';
         }
 
-        function buildNav() {
-            const nav = document.getElementById('nav');
-            if (!nav) return;
-            nav.innerHTML = '';
-            const list = NAVS[currentRole] || NAVS.member;
-            list.forEach(([id, icon], i) => {
-                const b = document.createElement('button');
-                b.dataset.target = id;
-                b.innerHTML = svgIcon(icon);
-                if (i === 0) b.classList.add('on');
-                b.onclick = () => showScreen(id);
-                nav.appendChild(b);
+        function memberHTML() {
+            return '<div class="phone role-member"><div class="viewport">' +
+                '<section class="screen active" data-page="home">' + statusBar() +
+                '<div class="top"><img class="avatar" src="' + img.horse2 + '"><div class="topmain"><b>Hello, Keisha.</b><span>Gold Member · 7 sessions left</span></div><button class="icon">' + icons.bell + '</button></div>' +
+                '<div class="section" style="margin-top:0"><span class="eyebrow">YOUR NEXT RIDE</span><span class="pill ok">CONFIRMED</span></div>' +
+                '<div class="ride" data-page="pass"><div class="eyebrow" style="color:#53472e">SATURDAY · 20 SEPTEMBER 2026</div><div class="time">16:00 — 16:45</div><div class="meta"><span>◉ Arena 01</span><span>♙ With Sarah</span></div></div>' +
+                '<div class="quick">' +
+                '<button data-page="book"><span class="quickIcon">' + icons.cal + '</span>Book a Ride</button>' +
+                '<button data-page="rides"><span class="quickIcon">' + icons.ticket + '</span>My Rides</button>' +
+                '<button data-page="membership"><span class="quickIcon">' + icons.card + '</span>Membership</button>' +
+                '<button data-page="profile"><span class="quickIcon">' + icons.user + '</span>Profile</button></div>' +
+                '<div class="quote"><strong>“A better you<br>rides here.”</strong><span>BORNEO BERKUDA STABLE</span></div>' +
+                '<div class="section"><b>Upcoming</b><a data-page="rides">See all</a></div>' +
+                '<div class="list"><div class="row" data-page="pass"><div class="date"><b>20</b><span>SEP</span></div><div class="rowmain"><b>16:00 — 16:45</b><span>Arena 01 · With Sarah</span></div><span class="pill ok">Confirmed</span></div>' +
+                '<div class="row" data-page="pass"><div class="date"><b>27</b><span>SEP</span></div><div class="rowmain"><b>15:00 — 15:45</b><span>Arena 01</span></div><span class="pill wait">Pending</span></div></div></section>' +
+
+                '<section class="screen" data-page="book">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><b>Book a Ride</b><span>Choose your date and time</span></div></div><h1>Book a<br><em>Ride.</em></h1>' +
+                '<div class="section" style="margin-top:20px"><b>September 2026</b><span class="sub">Choose a day</span></div><div class="calendar">' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) => '<div class="day ' + (i === 5 ? 'selected' : '') + '">' + d + '<b>' + (15 + i) + '</b></div>').join('') + '</div>' +
+                '<div class="filters"><button class="filter active">All</button><button class="filter">Morning</button><button class="filter">Afternoon</button><button class="filter">Available</button></div>' +
+                '<div class="section" style="margin-top:5px"><b>Morning</b><span class="sub">07:00 — 10:00</span></div>' +
+                [['07:00', '1 spot left', '1/2', false], ['08:00', 'Available', '0/2', false], ['09:00', 'Full', '2/2', true], ['10:00', 'Available', '0/2', false]].map((x) => '<div class="slot ' + (x[3] ? 'full' : '') + '" ' + (x[3] ? '' : 'data-page="pass"') + '><div class="slottime">' + x[0] + '</div><div class="slotmain"><b>' + x[1] + '</b>' + x[2] + ' riders</div>' + (x[3] ? '' : icons.arrow) + '</div>').join('') +
+                '<div class="section"><b>Afternoon</b><span class="sub">13:00 — 17:00</span></div>' + ['13:00', '14:00', '15:00', '16:00', '17:00'].map(t => '<div class="slot" data-page="pass"><div class="slottime">' + t + '</div><div class="slotmain"><b>Available</b>0/2 riders</div>' + icons.arrow + '</div>').join('') + '</section>' +
+
+                '<section class="screen" data-page="pass">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><b>Riding Pass</b><span>Here’s your session detail</span></div><button class="icon">' + icons.arrow + '</button></div>' +
+                '<div class="ticket"><div class="ticketTop"><span class="eyebrow">BORNEO BERKUDA STABLE</span><span class="pass">PASS #BBS-1023</span><div class="ticketTime">16:00 — 16:45</div><div class="sub">SATURDAY · 20 SEPTEMBER 2026</div></div><div class="ticketBody">' +
+                '<div class="info"><span>Riders</span><b>Keisha + Sarah</b></div><div class="info"><span>Membership</span><b>Gold (1 session)</b></div><div class="info"><span>Cancel before</span><b>20 Sep, 10:00 WITA</b></div><div class="info"><span>Arena</span><b>Arena 01</b></div></div><div class="barcode"></div></div>' +
+                '<button class="primary" style="margin-top:12px">↻ &nbsp; Reschedule</button><button class="primary" style="margin-top:8px;background:var(--redSoft);color:var(--red)">Cancel Session</button></section>' +
+
+                '<section class="screen" data-page="rides">' + statusBar() + '<div class="top"><div class="topmain"><h2>My Rides</h2><span>Your riding journey</span></div></div><div class="filters"><button class="filter active">Upcoming</button><button class="filter">Completed</button><button class="filter">Cancelled</button></div><div class="list">' +
+                [['20', '16:00 — 16:45', 'Arena 01 · With Sarah', 'Confirmed', 'ok'], ['27', '15:00 — 15:45', 'Arena 01', 'Pending', 'wait'], ['13', '16:00 — 16:45', 'Arena 01', 'Completed', 'ok']].map(x => '<div class="row" data-page="pass"><div class="date"><b>' + x[0] + '</b><span>SEP</span></div><div class="rowmain"><b>' + x[1] + '</b><span>' + x[2] + '</span></div><span class="pill ' + x[4] + '">' + x[3] + '</span></div>').join('') + '</div></section>' +
+
+                '<section class="screen" data-page="membership">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Your Membership</h2><span>Ride more, grow further.</span></div></div><div class="membership"><span class="eyebrow" style="color:#554728">GOLD MEMBER</span><div class="count">7 <small>sessions left</small></div><div class="progress"><i></i></div><div style="display:flex;justify-content:space-between;font-size:7px"><span>3 used</span><span>10 total</span></div><div style="font-size:7px;margin-top:16px">Valid until</div><b style="font-size:10px">20 December 2026</b></div><div class="section"><b>Member Benefits</b></div><div class="benefits">' + ['Priority booking access', 'Access to special events', 'Member-only updates'].map(x => '<div class="benefit">' + icons.check + '<span>' + x + '</span></div>').join('') + '</div><button class="primary" style="margin-top:12px">Renew Membership <span class="arrow">→</span></button></section>' +
+
+                '<section class="screen" data-page="profile">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Profile</h2><span>Manage your account</span></div></div><div class="profile"><img src="' + img.horse2 + '"><h2>Keisha Alviani</h2><p>keisha@gmail.com</p><span class="pill wait">GOLD MEMBER</span></div><div class="settings">' + ['Personal Information', 'Emergency Contact', 'Notifications', 'Help & FAQ'].map(x => '<div class="setting">' + icons.user + '<span>' + x + '</span>' + icons.arrow + '</div>').join('') + '</div><button class="primary" style="margin-top:12px;background:var(--redSoft);color:var(--red)">Sign Out</button></section>' +
+                '</div>' + navBar() + '</div>';
+        }
+
+        function publicHTML() {
+            return '<div class="phone role-public"><div class="viewport">' +
+
+                '<section class="screen active" data-page="home">' + statusBar() + '<div style="display:flex;justify-content:space-between;align-items:center;margin:3px 2px 16px"><div><span class="eyebrow">BORNEO BERKUDA STABLE</span><div style="font:27px \'Fraunces\',serif;margin-top:3px">BBS.</div></div><span class="pill" style="background:#eee9dd">EST. 2026</span></div><div class="hero"><img class="horse" src="' + img.horse + '"><div class="heroText"><h1>More<br>Than <em>a Ride.</em></h1><p>Horses teach us patience, presence,<br>and a kinder strength.</p><button class="primary" data-page="signin">Get Started <span class="arrow">→</span></button></div></div>' +
+                '<div style="display:flex;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0;margin-top:18px">' + [['12+', 'years riding'], ['40', 'horses'], ['500+', 'riders trained']].map((s, i) => '<div style="flex:1;text-align:center;' + (i > 0 ? 'border-left:1px solid var(--line)' : '') + '"><b style="font:22px \'Fraunces\',serif;display:block">' + s[0] + '</b><span class="sub">' + s[1] + '</span></div>').join('') + '</div>' +
+                '<div style="text-align:center;margin-top:16px;font-size:7.5px;color:#777">Already a member? <b data-page="signin" style="cursor:pointer;color:#181817">Sign In</b></div></section>' +
+
+                '<section class="screen" data-page="rides">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Available Rides</h2><span>Sign in to reserve a spot</span></div></div>' +
+                '<div class="filters"><button class="filter active">Sat 20</button><button class="filter">Sun 21</button><button class="filter">Mon 22</button></div>' +
+                [['07:00', '1 spot left', '1/2', false], ['09:00', 'Full', '2/2', true], ['13:00', 'Available', '0/2', false], ['16:00', 'Available', '0/2', false]].map(x => '<div class="slot ' + (x[3] ? 'full' : '') + '" ' + (x[3] ? '' : 'data-page="signin"') + '><div class="slottime">' + x[0] + '</div><div class="slotmain"><b>' + x[1] + '</b>' + x[2] + ' riders · Arena 01</div>' + (x[3] ? '' : icons.arrow) + '</div>').join('') +
+                '<button class="primary" style="margin-top:14px" data-page="signin">Sign in to Book <span class="arrow">→</span></button></section>' +
+
+                '<section class="screen" data-page="membership">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Membership</h2><span>Find your riding rhythm</span></div></div><h1>Ride more.<br><em>Grow further.</em></h1><div class="membership" style="margin-top:17px"><span class="eyebrow" style="color:#554728">GOLD</span><div style="font:30px \'Fraunces\',serif;margin-top:9px">10 sessions</div><div class="sub">3 months · Rp1.600.000</div></div><div class="card" style="margin-top:8px"><b style="font-size:9px">Silver</b><span class="sub" style="display:block;margin-top:4px">5 sessions · Rp850.000 · 3 months</span></div><button class="primary" style="margin-top:12px" data-page="signin">Join BBS <span class="arrow">→</span></button></section>' +
+
+                '<section class="screen" data-page="signin">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Continue to BBS</h2><span>Choose how you\'d like to continue</span></div></div>' +
+                '<div class="card"><span class="eyebrow">ALREADY A MEMBER</span><div class="sub" style="margin:8px 0 14px">Sign in with the Google account linked to your BBS membership.</div><button class="ghost">' + icons.google + '<span>Continue with Google</span></button></div>' +
+                '<div class="section" style="justify-content:center;margin:20px 0"><span class="sub" style="letter-spacing:.5px">— or —</span></div>' +
+                '<div class="card"><span class="eyebrow">NOT A MEMBER YET</span><div class="sub" style="margin:8px 0 14px">Chat with our admin to register and ask about membership packages.</div><button class="primary" style="background:#25D366">' + icons.whatsapp + '<span>Chat Admin on WhatsApp</span></button></div>' +
+                '<div class="note" style="margin-top:20px">By continuing you agree to BBS Terms &amp; Privacy Policy.</div></section>' +
+
+                '</div>' + navBar() + '</div>';
+        }
+
+        function adminHTML() {
+            return '<div class="phone role-admin"><div class="viewport">' +
+
+                '<section class="screen active" data-page="home">' + statusBar() + '<div class="top"><div class="avatar initial">AD</div><div class="topmain"><b>Good morning, Admin.</b><span>Saturday · 20 September 2026</span></div><button class="icon">' + icons.bell + '</button></div>' +
+                '<div class="adminHero" data-page="requests"><span class="eyebrow" style="color:#d8c18a">NEEDS ATTENTION</span><div class="big">4 pending requests</div><div style="font-size:8px;color:#aaa;line-height:1.5">2 bookings · 1 reschedule · 1 membership</div><button class="primary" style="margin-top:13px;background:var(--gold);color:#171717">Review now →</button></div>' +
+                '<div class="statStrip"><div class="stat"><strong>12</strong><span>Sessions</span></div><div class="stat"><strong>8</strong><span>Members</span></div><div class="stat"><strong>2</strong><span>Spots left</span></div><div class="stat"><strong>1</strong><span>Issues</span></div></div>' +
+                '<div class="section"><b>Today\'s flow</b><a data-page="schedule">View schedule</a></div><div class="list"><div class="row" data-page="schedule"><div class="date">07:00</div><div class="rowmain"><b>2 riders</b><span>Keisha · Sarah · Arena 01</span></div><span class="pill ok">Ready</span></div><div class="row" data-page="schedule"><div class="date">16:00</div><div class="rowmain"><b>2 riders</b><span>Keisha · Sarah · Arena 01</span></div><span class="pill wait">Upcoming</span></div></div></section>' +
+
+                '<section class="screen" data-page="requests">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Review Requests</h2><span>2 booking requests</span></div></div><div class="card"><span class="pill wait">PENDING</span><div style="font:20px \'Fraunces\',serif;margin-top:9px">Keisha Alviani</div><div class="sub">27 Sep · 15:00 — 15:45 · Gold</div><div style="display:flex;gap:6px;margin-top:13px"><button class="primary" style="flex:1">Approve</button><button class="primary" style="flex:1;background:#efeee9;color:#222">Reject</button></div></div><div class="section"><b>Reschedule</b><span class="sub">1 request</span></div><div class="card"><b style="font-size:9px">Sarah</b><div class="sub" style="margin-top:4px">20 Sep · 16:00 → 17:00</div><button class="primary" style="margin-top:10px;background:#efeee9;color:#222">Review change</button></div><div class="section"><b>Membership</b><span class="sub">1 request</span></div><div class="card"><b style="font-size:9px">Andi Pratama</b><div class="sub" style="margin-top:4px">Upgrade Silver → Gold</div><div style="display:flex;gap:6px;margin-top:10px"><button class="primary" style="flex:1">Approve</button><button class="primary" style="flex:1;background:#efeee9;color:#222">Reject</button></div></div></section>' +
+
+                '<section class="screen" data-page="schedule">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Today\'s Schedule</h2><span>20 September 2026</span></div></div>' + ['07:00', '08:00', '09:00', '10:00', '13:00', '14:00', '15:00', '16:00', '17:00'].map((t, i) => '<div class="slot ' + (i === 3 ? 'full' : '') + '"><div class="slottime">' + t + '</div><div class="slotmain"><b>' + (i === 3 ? 'Closed · horse care' : i % 3 === 0 ? '2 riders' : '1 rider') + '</b>' + (i === 3 ? '' : 'Arena 01') + '</div><span class="pill ' + (i === 3 ? 'no' : 'ok') + '">' + (i === 3 ? 'Closed' : 'Open') + '</span></div>').join('') + '</section>' +
+
+                '<section class="screen" data-page="members">' + statusBar() + '<div class="top"><div class="topmain"><h2>Members</h2><span>8 active members</span></div></div><div class="filters"><button class="filter active">All</button><button class="filter">Gold</button><button class="filter">Silver</button></div><div class="list">' + ['Keisha Alviani', 'Sarah', 'Andi Pratama', 'Nadia Putri'].map((n, i) => '<div class="row"><div class="avatar initial">' + n.split(' ').map(x => x[0]).join('').slice(0, 2) + '</div><div class="rowmain"><b>' + n + '</b><span>' + (i % 2 ? 'Silver' : 'Gold') + ' · ' + (i + 3) + ' credits</span></div><span class="pill ok">Active</span></div>').join('') + '</div></section>' +
+
+                '<section class="screen" data-page="reports">' + statusBar() + '<div class="top"><div class="topmain"><h2>Reports</h2><span>September 2026</span></div></div><div class="adminHero"><span class="eyebrow" style="color:#d8c18a">TOTAL SESSIONS</span><div class="big">126 sessions</div><div style="font-size:8px;color:#aaa">112 completed · 8 cancelled · 6 no-show</div></div><div class="statStrip" style="margin-top:14px"><div class="stat"><strong>89%</strong><span>Attendance</span></div><div class="stat"><strong>74%</strong><span>Utilisation</span></div><div class="stat"><strong>Rp42jt</strong><span>Revenue</span><em class="up">▲ +12%</em></div></div><div class="section"><b>Monthly trend</b><span class="sub">Last 4 weeks</span></div><div class="card" style="display:flex;align-items:flex-end;gap:6px;height:70px;padding:14px 18px">' + [38, 52, 44, 70].map(h => '<div style="flex:1;height:' + h + '%;background:var(--accentSoft);border-radius:5px 5px 0 0;position:relative"><div style="position:absolute;inset:0;border-radius:5px 5px 0 0;background:var(--accent);opacity:.85"></div></div>').join('') + '</div><button class="primary" style="margin-top:14px">Export report</button></section>' +
+
+                '</div>' + navBar() + '</div>';
+        }
+
+        function groomerHTML() {
+            return '<div class="phone role-groomer"><div class="viewport">' +
+
+                '<section class="screen active" data-page="home">' + statusBar() + '<div class="top"><div class="avatar initial" style="background:#dfe6da">GR</div><div class="topmain"><b>Good morning.</b><span>Stable team · Saturday</span></div><button class="icon">' + icons.bell + '</button></div>' +
+                '<div class="section" style="margin-top:0"><b>Prep progress</b><span class="sub">2 of 4 ready</span></div><div class="progress" style="margin-bottom:18px"><i style="width:50%"></i></div>' +
+                '<div class="groomHero" data-page="session"><span class="eyebrow">NEXT SESSION</span><div class="big">07:00</div><div class="sub">2 riders · Arena 01</div><button class="primary" style="margin-top:13px;width:auto;padding:0 20px">Prepare session →</button><img class="groomHorse" src="' + img.horse2 + '"></div>' +
+                '<div class="section"><b>Today\'s sessions</b><a data-page="sessions">See all</a></div>' + ['07:00', '09:00', '16:00', '17:00'].map((t, i) => { const done = i < 2; return '<div class="checkrow ' + (done ? 'done' : '') + '" data-page="session"><div class="checkdot">' + (done ? icons.check : '<span style=\"font-size:7px;color:#b6b4ab;font-weight:800\">' + (i + 1) + '</span>') + '</div><div class="rowmain"><b>' + t + ' · ' + (i === 2 ? '2 riders' : '1 rider') + '</b><span>' + (i % 2 ? 'Andi' : 'Keisha') + ' · Arena 01</span></div><span class="pill ' + (done ? 'ok' : 'wait') + '">' + (done ? 'Prepped' : 'Pending') + '</span></div>'; }).join('') + '</section>' +
+
+                '<section class="screen" data-page="session">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Session 16:00</h2><span>Arena 01 · 2 riders</span></div></div><div class="card"><span class="eyebrow">RIDERS</span>' + ['Keisha Alviani', 'Sarah'].map((n, i) => '<div class="setting" style="padding:10px 0"><div class="avatar initial" style="width:31px;height:31px">' + n.split(' ').map(x => x[0]).join('').slice(0, 2) + '</div><span><b style="font-size:8px">' + n + '</b><small style="display:block;color:#777;font-size:6.5px">' + (i ? 'Silver' : 'Gold') + ' member</small></span><span class="pill ' + (i ? 'wait' : 'ok') + '">' + (i ? 'Not checked' : 'Ready') + '</span></div>').join('') + '</div><div class="section"><b>Horse assignment</b></div><div class="card"><span class="sub">Assign operationally before the session.</span><button class="primary" style="margin-top:9px;background:#efeee9;color:#222">Select horse</button></div><button class="primary" style="margin-top:12px">Save attendance</button></section>' +
+
+                '<section class="screen" data-page="sessions">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Sessions</h2><span>Today · stable operations</span></div></div><div class="filters"><button class="filter active">Today</button><button class="filter">This week</button></div>' + ['07:00', '09:00', '16:00', '17:00'].map((t, i) => '<div class="slot" data-page="session"><div class="slottime">' + t + '</div><div class="slotmain"><b>' + (i === 2 ? '2 riders' : '1 rider') + '</b>' + (i % 2 ? 'Andi' : 'Keisha') + ' · Arena 01</div>' + icons.arrow + '</div>').join('') + '</section>' +
+
+                '<section class="screen" data-page="schedule">' + statusBar() + '<div class="top"><div class="topmain"><h2>Schedule</h2><span>Week overview</span></div></div><div class="calendar">' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) => '<div class="day ' + (i === 5 ? 'selected' : '') + '">' + d + '<b>' + (15 + i) + '</b></div>').join('') + '</div>' + ['07:00', '09:00', '16:00', '17:00'].map(t => '<div class="slot" data-page="session"><div class="slottime">' + t + '</div><div class="slotmain"><b>1 rider</b>Keisha · Arena 01</div>' + icons.arrow + '</div>').join('') + '</section>' +
+
+                '<section class="screen" data-page="profile">' + statusBar() + '<div class="top"><button class="icon" data-back>' + icons.back + '</button><div class="topmain"><h2>Profile</h2><span>Manage your account</span></div></div><div class="profile"><div class="avatar initial" style="width:88px;height:88px;font-size:22px;margin:auto;background:#dfe6da;border:4px solid #fff;box-shadow:0 7px 20px rgba(0,0,0,.1)">GR</div><h2>Gerry Rahman</h2><p>gerry@bbsstable.com</p><span class="pill ok">GROOMING TEAM</span></div><div class="settings">' + ['Personal Information', 'Shift Schedule', 'Notifications', 'Help & FAQ'].map(x => '<div class="setting">' + icons.user + '<span>' + x + '</span>' + icons.arrow + '</div>').join('') + '</div><button class="primary" style="margin-top:12px;background:var(--redSoft);color:var(--red)">Sign Out</button></section>' +
+
+                '</div>' + navBar() + '</div>';
+        }
+
+        function render() {
+            document.querySelectorAll('#roles button').forEach(b => b.classList.toggle('active', b.dataset.role === role));
+            const builders = { member: memberHTML, public: publicHTML, admin: adminHTML, groomer: groomerHTML };
+            document.getElementById('app').innerHTML = builders[role]();
+            wire();
+        }
+        function show(page) {
+            const phone = document.querySelector('.phone'); if (!phone) return;
+            const target = phone.querySelector('.screen[data-page="' + page + '"]');
+            if (!target) return;
+            phone.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.dataset.page === page));
+            phone.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+            phone.querySelector('.viewport').scrollTop = 0;
+        }
+        function wire() {
+            const root = document.getElementById('app');
+            root.querySelectorAll('[data-page]').forEach(el => {
+                el.addEventListener('click', function (e) {
+                    if (this.classList.contains('filter')) return;
+                    const page = this.dataset.page;
+                    if (!page) return;
+                    show(page);
+                });
             });
-            showScreen(list[0][0]);
+            root.querySelectorAll('[data-back]').forEach(el => el.addEventListener('click', () => show('home')));
+            root.querySelectorAll('.filter').forEach(el => el.addEventListener('click', function (e) {
+                e.stopPropagation();
+                this.parentElement.querySelectorAll('.filter').forEach(x => x.classList.remove('active'));
+                this.classList.add('active');
+            }));
+            root.querySelectorAll('.day').forEach(el => el.addEventListener('click', function (e) {
+                e.stopPropagation();
+                this.parentElement.querySelectorAll('.day').forEach(x => x.classList.remove('selected'));
+                this.classList.add('selected');
+            }));
         }
-
-        document.getElementById('roles').onclick = e => {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            currentRole = btn.dataset.role;
-            document.querySelectorAll('#roles button').forEach(x => x.classList.toggle('on', x === btn));
-            buildNav();
-        };
-
-        document.addEventListener('click', e => {
-            const el = e.target.closest('[data-go]');
-            if (!el) return;
-            e.stopPropagation();
-            showScreen(el.dataset.go);
-        });
-
-        document.querySelectorAll('.chips').forEach(group => {
-            group.onclick = e => {
-                const b = e.target.closest('button');
-                if (!b) return;
-                group.querySelectorAll('button').forEach(x => x.classList.remove('on'));
-                b.classList.add('on');
-            };
-        });
-
-        document.querySelectorAll('.week').forEach(w => {
-            w.onclick = e => {
-                const d = e.target.closest('.day');
-                if (!d) return;
-                w.querySelectorAll('.day').forEach(x => x.classList.remove('on'));
-                d.classList.add('on');
-            };
-        });
-
-        // Slide action simulation
-        const slideAction = document.getElementById('slideCasual');
-        const handle = document.getElementById('handleCasual');
-        if (slideAction && handle) {
-            let isDragging = false;
-            handle.onmousedown = e => { isDragging = true; };
-            window.onmouseup = () => {
-                if (!isDragging) return;
-                isDragging = false;
-                handle.style.left = '4px';
-            };
-            window.onmousemove = e => {
-                if (!isDragging) return;
-                const rect = slideAction.getBoundingClientRect();
-                let x = e.clientX - rect.left - 24;
-                if (x < 4) x = 4;
-                if (x > rect.width - 52) {
-                    x = rect.width - 52;
-                    isDragging = false;
-                    showScreen('s-plans');
-                }
-                handle.style.left = x + 'px';
-            };
-        }
-
-        buildNav();
+        document.querySelectorAll('#roles button').forEach(b => b.addEventListener('click', () => { role = b.dataset.role; render(); }));
+        render();
     </script>
 </body>
 

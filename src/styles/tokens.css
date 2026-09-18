@@ -1,36 +1,78 @@
-/* Section 66.2 — BBS design tokens. Every module consumes these, never hex. */
+/* ─── BBS V2 Design Tokens ─────────────────────────────────────
+   Single source of truth. All CSS pulls from here.
+   ─────────────────────────────────────────────────────────────── */
 :root {
-  --color-bg: #FAF9F5;
-  --color-surface: #FFFFFF;
-  --color-surface-muted: #F2F0E9;
+  /* Canvas */
+  --paper: #f7f6f1;
+  --white: #ffffff;
+  --bg:    #f7f6f1;               /* alias for Tailwind bg-bg */
 
-  --color-primary: #6B8E6B;        /* muted sage */
-  --color-primary-strong: #57795A;
-  --color-primary-soft: #E4EDE3;
+  /* Ink */
+  --ink:   #181817;
+  --muted: #7b7a74;
+  --line:  rgba(24, 24, 23, 0.09);
 
-  --color-accent: #C9A24B;         /* muted gold */
-  --color-accent-strong: #B08C38;
-  --color-accent-soft: #F5EBD3;
+  /* Brand */
+  --gold:      #b9974f;
+  --gold2:     #d8c18a;
+  --goldSoft:  #eee2c6;
+  --green:     #56705a;
+  --greenSoft: #dfe9df;
+  --red:       #c66d66;
+  --redSoft:   #f7e3e1;
 
-  --color-ink: #1E1E1A;            /* warm charcoal */
-  --color-ink-muted: #6B6A60;
-  --color-on-dark: #FFFFFF;
+  /* Radii */
+  --r-card: 22px;
+  --r-hero: 27px;
+  --r-pill: 999px;
 
-  --color-status-pending: #C99A4B;
-  --color-status-confirmed: #6B8E6B;
-  --color-status-rejected: #B5705E; /* muted terracotta */
-  --color-status-neutral: #8A8880;
+  /* Shadows */
+  --sh:     0 8px 24px rgba(24, 24, 23, 0.05);
+  --sh-nav: 0 18px 38px rgba(0, 0, 0, 0.24);
 
-  --radius-card: 24px;
-  --radius-hero: 28px;
-  --radius-pill: 999px;
+  /* Typography */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Manrope', system-ui, sans-serif;
 
-  --shadow-card: 0 8px 24px rgba(30, 30, 26, 0.06);
-  --shadow-nav: 0 12px 32px rgba(30, 30, 26, 0.18);
+  /* Motion */
+  --ease-spring:   cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --dur-fast:      120ms;
+  --dur-normal:    250ms;
+  --dur-slow:      350ms;
 
-  --space-page: 20px;
-  --nav-height: 68px;
-
-  --font-heading: 'Plus Jakarta Sans', 'Nunito', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  /* ── Legacy aliases (used by older component CSS still in globals) ── */
+  --surface:          var(--white);
+  --surface-2:        #f0efe9;
+  --color-bg:         var(--paper);
+  --color-surface:    var(--white);
+  --color-ink:        var(--ink);
+  --color-gold:       var(--gold);
+  --color-sage:       var(--green);
+  --shadow-card:      var(--sh);
+  --shadow-nav:       var(--sh-nav);
+  --radius-card:      var(--r-card);
+  --radius-hero:      var(--r-hero);
+  --radius-pill:      var(--r-pill);
+  --ink-2:            var(--muted);
+  --ink-3:            #a0a09a;
+  --gold-deep:        #9a7a37;
+  --gold-soft:        var(--goldSoft);
+  --gold-accent:      var(--goldSoft);
+  --sage:             var(--green);
+  --sage-soft:        var(--greenSoft);
+  --teal:             var(--green);
+  --teal-soft:        var(--greenSoft);
+  --clay:             var(--red);
+  --clay-soft:        var(--redSoft);
+  --lilac:            #8d86b8;
+  --lilac-soft:       #e9e6f4;
+  --border:           var(--line);
+  --border-strong:    rgba(24, 24, 23, 0.18);
+  --stable:           #ede6d8;
+  --stable-mid:       #e0d8c8;
+  --nav-height:       68px;
+  --space-page:       20px;
+  --shadow-sm:        0 2px 8px rgba(24,24,23,0.06);
+  --shadow-gold:      0 8px 24px rgba(185,151,79,0.28);
 }

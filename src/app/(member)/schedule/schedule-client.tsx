@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { submitBooking, lookupMemberByEmail } from './actions';
 
-type ParticipantState = 
+type ParticipantState =
   | { type: 'MEMBER'; memberId: string; name: string }
   | { type: 'CASUAL'; fullName: string; phone: string; name: string };
 
@@ -18,8 +19,8 @@ interface Slot {
   status: string;
 }
 
-const DAYS_SHORT  = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
-const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const DAYS_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
   const availableDates = Array.from(new Set(initialSlots.map(s => s.slot_date))).sort();
@@ -27,18 +28,16 @@ export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
     availableDates[0] || new Date().toISOString().slice(0, 10)
   );
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
-  
-  // Participants
+
   const [participants, setParticipants] = useState<ParticipantState[]>([{ type: 'MEMBER', memberId: 'me', name: 'Me' }]);
-  const [addMode, setAddMode] = useState<'NONE' | 'MEMBER' | 'CASUAL'>('NONE');
+  const [addMode,     setAddMode]     = useState<'NONE' | 'MEMBER' | 'CASUAL'>('NONE');
   const [memberEmail, setMemberEmail] = useState('');
-  const [casualName, setCasualName] = useState('');
+  const [casualName,  setCasualName]  = useState('');
   const [casualPhone, setCasualPhone] = useState('');
   const [lookupError, setLookupError] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
-
-  const [loading, setLoading]               = useState(false);
-  const [result, setResult]                 = useState<{ ok: boolean; message: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result,  setResult]  = useState<{ ok: boolean; message: string } | null>(null);
 
   const slotsForDate   = initialSlots.filter(s => s.slot_date === selectedDate);
   const morningSlots   = slotsForDate.filter(s => s.start_time.slice(0, 2) < '12');
@@ -48,25 +47,19 @@ export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
     if (!selectedSlotId) return;
     setLoading(true);
     setResult(null);
-
-    // Format payload for backend
-    // Note: 'me' is handled in the server action if memberId is not provided, 
-    // but the backend expects proper formatting for other participants.
-    // However, the action now accepts stringified JSON and uses the primary actor's memberId automatically if missing.
-    // For simplicity, we just send all participants as-is, and the server action will map 'me' to the actor.
-    const payload = participants.map(p => {
-      if (p.type === 'MEMBER') return { type: 'MEMBER', memberId: p.memberId };
-      return { type: 'CASUAL', fullName: p.fullName, phone: p.phone };
-    });
-
+    const payload = participants.map(p =>
+      p.type === 'MEMBER'
+        ? { type: 'MEMBER', memberId: p.memberId }
+        : { type: 'CASUAL', fullName: p.fullName, phone: p.phone }
+    );
     const res = await submitBooking(selectedSlotId, JSON.stringify(payload));
     setLoading(false);
     if (res.ok) {
-      setResult({ ok: true, message: 'Booking dikirim! Menunggu konfirmasi admin.' });
+      setResult({ ok: true, message: 'Booking submitted! Waiting for admin confirmation.' });
       setSelectedSlotId(null);
       setParticipants([{ type: 'MEMBER', memberId: 'me', name: 'Me' }]);
     } else {
-      setResult({ ok: false, message: res.message || 'Booking gagal. Silakan coba lagi.' });
+      setResult({ ok: false, message: res.message || 'Booking failed. Please try again.' });
     }
   };
 
@@ -78,7 +71,7 @@ export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
     setLookupLoading(false);
     if (res.ok) {
       if (participants.some(p => p.type === 'MEMBER' && p.memberId === res.memberId)) {
-        setLookupError('Member ini sudah ditambahkan.');
+        setLookupError('Member already added.');
         return;
       }
       setParticipants([...participants, { type: 'MEMBER', memberId: res.memberId, name: res.fullName }]);
@@ -90,10 +83,7 @@ export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
   };
 
   const handleAddCasual = () => {
-    if (!casualName || !casualPhone) {
-      setLookupError('Nama dan No. HP wajib diisi');
-      return;
-    }
+    if (!casualName || !casualPhone) { setLookupError('Name and phone number required'); return; }
     setParticipants([...participants, { type: 'CASUAL', fullName: casualName, phone: casualPhone, name: casualName }]);
     setAddMode('NONE');
     setCasualName('');
@@ -102,153 +92,219 @@ export function ScheduleClient({ initialSlots }: { initialSlots: Slot[] }) {
 
   return (
     <div>
+      {/* ── Top ── */}
       <div className="top">
-        <div className="who">
-          <b style={{ fontSize: '24px', letterSpacing: '-.8px' }}>Schedule</b>
-          <span>Pilih Sesi Berkuda</span>
+        <div className="topmain">
+          <h2 style={{ fontSize: '28px', marginBottom: '2px' }}>Book a<br /><em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Ride.</em></h2>
+          <span className="sub">Choose your date and time</span>
         </div>
-        <Link href="/notifications" className="bell">
-          <i></i>🔔
-        </Link>
       </div>
 
+      {/* ── Result banner ── */}
       {result && (
-        <div className="note" style={{ marginBottom: '14px', background: result.ok ? 'var(--sage-soft)' : 'var(--clay-soft)', color: 'var(--ink)' }}>
+        <div
+          className="note"
+          style={{
+            marginBottom: '14px',
+            background: result.ok ? 'var(--greenSoft)' : 'var(--redSoft)',
+            color: result.ok ? 'var(--green)' : 'var(--red)',
+          }}
+        >
           {result.message}
         </div>
       )}
 
-      <div className="week">
+      {/* ── Week Calendar ── */}
+      <div className="section" style={{ marginTop: '4px' }}>
+        <b>{(() => { const d = new Date(`${selectedDate}T00:00:00`); return `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`; })()}</b>
+        <span className="sub">Choose a day</span>
+      </div>
+
+      <div className="calendar">
         {availableDates.map(date => {
           const d = new Date(`${date}T00:00:00`);
           const isSelected = selectedDate === date;
           return (
             <div
               key={date}
-              className={`day ${isSelected ? 'on' : ''}`}
+              className={`day ${isSelected ? 'selected' : ''}`}
               onClick={() => { setSelectedDate(date); setSelectedSlotId(null); }}
             >
-              <span>{DAYS_SHORT[d.getDay()]}</span>
+              {DAYS_SHORT[d.getDay()]}
               <b>{d.getDate()}</b>
-              {isSelected && <i />}
             </div>
           );
         })}
       </div>
 
-      <div className="sec">
-        <h3>Pagi</h3>
-        <a>07:00 — 11:00</a>
-      </div>
-      {morningSlots.map(slot => {
-        const isSelected = selectedSlotId === slot.id;
-        const remaining  = slot.capacity - slot.booked_count;
-        const isFull     = remaining <= 0;
-        return (
-          <div
-            key={slot.id}
-            className={`slot ${isFull ? 'full' : ''}`}
-            style={isSelected ? { borderColor: 'var(--gold)', background: 'var(--gold-soft)' } : {}}
-            onClick={() => !isFull && setSelectedSlotId(slot.id)}
-          >
-            <b>{slot.start_time.slice(0, 5)}</b>
-            <div className="meta">{isFull ? 'Penuh' : `${remaining} tempat tersisa`}</div>
-            <div className="dots">
-              <i className={remaining < 1 ? 'empty' : ''} />
-              <i className={remaining < 2 ? 'empty' : ''} />
-            </div>
+      {/* ── Morning Slots ── */}
+      {morningSlots.length > 0 && (
+        <>
+          <div className="section" style={{ marginTop: '5px' }}>
+            <b>Morning</b>
+            <span className="sub">07:00 — 12:00</span>
           </div>
-        );
-      })}
-
-      <div className="sec">
-        <h3>Sore</h3>
-        <a>13:00 — 18:00</a>
-      </div>
-      {afternoonSlots.map(slot => {
-        const isSelected = selectedSlotId === slot.id;
-        const remaining  = slot.capacity - slot.booked_count;
-        const isFull     = remaining <= 0;
-        return (
-          <div
-            key={slot.id}
-            className={`slot ${isFull ? 'full' : ''}`}
-            style={isSelected ? { borderColor: 'var(--gold)', background: 'var(--gold-soft)' } : {}}
-            onClick={() => !isFull && setSelectedSlotId(slot.id)}
-          >
-            <b>{slot.start_time.slice(0, 5)}</b>
-            <div className="meta">{isFull ? 'Penuh' : `${remaining} tempat tersisa`}</div>
-            <div className="dots">
-              <i className={remaining < 1 ? 'empty' : ''} />
-              <i className={remaining < 2 ? 'empty' : ''} />
-            </div>
-          </div>
-        );
-      })}
-
-      {selectedSlotId && (
-        <div className="sec" style={{ marginTop: '24px' }}>
-          <h3>Participants</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-            {participants.map((p, i) => (
-              <div key={i} className="card" style={{ padding: '12px', display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <b>{p.name}</b>
-                  <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-2)' }}>{p.type === 'MEMBER' ? 'Member (Menggunakan kredit sendiri)' : 'Casual (Pembayaran terpisah)'}</span>
+          {morningSlots.map(slot => {
+            const isSelected = selectedSlotId === slot.id;
+            const remaining  = slot.capacity - slot.booked_count;
+            const isFull     = remaining <= 0;
+            return (
+              <div
+                key={slot.id}
+                className={`slot ${isFull ? 'full' : ''}`}
+                style={isSelected ? { borderColor: 'var(--gold)', background: 'var(--goldSoft)' } : {}}
+                onClick={() => !isFull && setSelectedSlotId(slot.id)}
+              >
+                <div className="slottime">{slot.start_time.slice(0, 5)}</div>
+                <div className="slotmain">
+                  <b>{isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}</b>
+                  {slot.booked_count}/{slot.capacity} riders
                 </div>
-                {p.type !== 'MEMBER' || p.memberId !== 'me' ? (
-                  <button 
-                    style={{ background: 'none', border: 'none', color: 'var(--cherry)', fontSize: '12px' }}
+                {!isFull && <ArrowRight size={16} strokeWidth={1.75} color="var(--muted)" />}
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {/* ── Afternoon Slots ── */}
+      {afternoonSlots.length > 0 && (
+        <>
+          <div className="section">
+            <b>Afternoon</b>
+            <span className="sub">13:00 — 17:00</span>
+          </div>
+          {afternoonSlots.map(slot => {
+            const isSelected = selectedSlotId === slot.id;
+            const remaining  = slot.capacity - slot.booked_count;
+            const isFull     = remaining <= 0;
+            return (
+              <div
+                key={slot.id}
+                className={`slot ${isFull ? 'full' : ''}`}
+                style={isSelected ? { borderColor: 'var(--gold)', background: 'var(--goldSoft)' } : {}}
+                onClick={() => !isFull && setSelectedSlotId(slot.id)}
+              >
+                <div className="slottime">{slot.start_time.slice(0, 5)}</div>
+                <div className="slotmain">
+                  <b>{isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}</b>
+                  {slot.booked_count}/{slot.capacity} riders
+                </div>
+                {!isFull && <ArrowRight size={16} strokeWidth={1.75} color="var(--muted)" />}
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {slotsForDate.length === 0 && (
+        <div className="note" style={{ textAlign: 'center', marginTop: '20px' }}>
+          No slots available for this date.
+        </div>
+      )}
+
+      {/* ── Participants (when slot selected) ── */}
+      {selectedSlotId && (
+        <div style={{ marginTop: '24px' }}>
+          <div className="section">
+            <b>Riders</b>
+          </div>
+
+          <div className="list" style={{ marginBottom: '12px' }}>
+            {participants.map((p, i) => (
+              <div key={i} className="row" style={{ justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '13px' }}>{p.name}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px' }}>
+                    {p.type === 'MEMBER' ? 'Member (uses own credit)' : 'Casual (separate payment)'}
+                  </div>
+                </div>
+                {!(p.type === 'MEMBER' && p.memberId === 'me') && (
+                  <button
+                    style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: '12px', cursor: 'pointer' }}
                     onClick={() => setParticipants(participants.filter((_, idx) => idx !== i))}
                   >
-                    Hapus
+                    Remove
                   </button>
-                ) : null}
+                )}
               </div>
             ))}
           </div>
 
           {addMode === 'NONE' && (
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-              <button className="btn" style={{ flex: 1, backgroundColor: 'var(--surface-2)', color: 'var(--ink)', border: '1px solid var(--cloud)' }} onClick={() => setAddMode('MEMBER')}>+ Member</button>
-              <button className="btn" style={{ flex: 1, backgroundColor: 'var(--surface-2)', color: 'var(--ink)', border: '1px solid var(--cloud)' }} onClick={() => setAddMode('CASUAL')}>+ Casual</button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                className="btn"
+                style={{ flex: 1, background: '#efeee9', color: 'var(--ink)', marginTop: 0 }}
+                onClick={() => setAddMode('MEMBER')}
+              >
+                + Member
+              </button>
+              <button
+                className="btn"
+                style={{ flex: 1, background: '#efeee9', color: 'var(--ink)', marginTop: 0 }}
+                onClick={() => setAddMode('CASUAL')}
+              >
+                + Casual
+              </button>
             </div>
           )}
 
           {addMode === 'MEMBER' && (
-            <div className="card" style={{ flexDirection: 'column', marginTop: '12px', alignItems: 'stretch' }}>
-              <b>Tambah Member</b>
-              <input type="email" placeholder="Email member" value={memberEmail} onChange={e => setMemberEmail(e.target.value)} style={{ padding: '8px', marginTop: '8px', borderRadius: '4px', border: '1px solid var(--cloud)' }} />
-              {lookupError && <span style={{ color: 'var(--cherry)', fontSize: '12px', marginTop: '4px' }}>{lookupError}</span>}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <button className="btn" style={{ flex: 1, backgroundColor: 'transparent', color: 'var(--ink)' }} onClick={() => setAddMode('NONE')}>Batal</button>
-                <button className="btn gold" style={{ flex: 1 }} onClick={handleAddMember} disabled={lookupLoading}>{lookupLoading ? 'Mencari...' : 'Tambah'}</button>
+            <div className="card" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <b style={{ fontSize: '13px' }}>Add Member</b>
+              <input
+                type="email"
+                placeholder="Member email"
+                value={memberEmail}
+                onChange={e => setMemberEmail(e.target.value)}
+                style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--line)', fontFamily: 'var(--font-body)', fontSize: '13px', width: '100%' }}
+              />
+              {lookupError && <span style={{ color: 'var(--red)', fontSize: '11px' }}>{lookupError}</span>}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="btn" style={{ flex: 1, background: '#efeee9', color: 'var(--ink)', marginTop: 0 }} onClick={() => setAddMode('NONE')}>Cancel</button>
+                <button className="btn gold" style={{ flex: 1, marginTop: 0 }} onClick={handleAddMember} disabled={lookupLoading}>
+                  {lookupLoading ? 'Searching...' : 'Add'}
+                </button>
               </div>
             </div>
           )}
 
           {addMode === 'CASUAL' && (
-            <div className="card" style={{ flexDirection: 'column', marginTop: '12px', alignItems: 'stretch' }}>
-              <b>Tambah Casual</b>
-              <input type="text" placeholder="Nama Lengkap" value={casualName} onChange={e => setCasualName(e.target.value)} style={{ padding: '8px', marginTop: '8px', borderRadius: '4px', border: '1px solid var(--cloud)' }} />
-              <input type="tel" placeholder="No. HP" value={casualPhone} onChange={e => setCasualPhone(e.target.value)} style={{ padding: '8px', marginTop: '8px', borderRadius: '4px', border: '1px solid var(--cloud)' }} />
-              {lookupError && <span style={{ color: 'var(--cherry)', fontSize: '12px', marginTop: '4px' }}>{lookupError}</span>}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <button className="btn" style={{ flex: 1, backgroundColor: 'transparent', color: 'var(--ink)' }} onClick={() => setAddMode('NONE')}>Batal</button>
-                <button className="btn gold" style={{ flex: 1 }} onClick={handleAddCasual}>Tambah</button>
+            <div className="card" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <b style={{ fontSize: '13px' }}>Add Casual Rider</b>
+              <input
+                type="text"
+                placeholder="Full name"
+                value={casualName}
+                onChange={e => setCasualName(e.target.value)}
+                style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--line)', fontFamily: 'var(--font-body)', fontSize: '13px', width: '100%' }}
+              />
+              <input
+                type="tel"
+                placeholder="Phone number"
+                value={casualPhone}
+                onChange={e => setCasualPhone(e.target.value)}
+                style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--line)', fontFamily: 'var(--font-body)', fontSize: '13px', width: '100%' }}
+              />
+              {lookupError && <span style={{ color: 'var(--red)', fontSize: '11px' }}>{lookupError}</span>}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="btn" style={{ flex: 1, background: '#efeee9', color: 'var(--ink)', marginTop: 0 }} onClick={() => setAddMode('NONE')}>Cancel</button>
+                <button className="btn gold" style={{ flex: 1, marginTop: 0 }} onClick={handleAddCasual}>Add</button>
               </div>
             </div>
           )}
         </div>
       )}
 
+      {/* ── Confirm Button ── */}
       <button
         disabled={!selectedSlotId || loading}
         onClick={handleBook}
-        className="btn gold"
-        style={{ marginTop: '18px', opacity: !selectedSlotId || loading ? 0.5 : 1, width: '100%' }}
+        className="primary"
+        style={{ marginTop: '20px', opacity: !selectedSlotId || loading ? 0.45 : 1 }}
       >
-        {loading ? 'Mengirim...' : 'Konfirmasi Booking'}
+        {loading ? 'Submitting...' : 'Confirm Booking →'}
       </button>
     </div>
   );
