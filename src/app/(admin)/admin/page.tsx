@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
+import { Users, Calendar, Ticket, ChevronRight } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
   await requireActor(['ADMIN']);
@@ -20,58 +21,73 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <div className="top" style={{ marginBottom: '24px' }}>
-        <div className="who">
-          <b style={{ fontSize: '24px', letterSpacing: '-.8px' }}>Good morning, Admin 👋</b>
-          <span>Operational Dashboard</span>
+      {/* ── Top ── */}
+      <div className="top" style={{ marginBottom: '20px' }}>
+        <div className="topmain">
+          <h2>Good morning,<br /><em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Admin.</em></h2>
+          <span className="sub">Operational Dashboard</span>
         </div>
       </div>
 
-      <div className="sec">
-        <h3>Needs Attention</h3>
+      <div className="section">
+        <b>Needs Attention</b>
       </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-        <div className="card" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: '14px', color: 'var(--ink-2)' }}>Applications</span>
-          <b style={{ fontSize: '32px', color: 'var(--ink)' }}>{pendingAppsCount}</b>
-          <Link href="/admin/applications" className="btn" style={{ width: '100%', marginTop: '12px' }}>Review →</Link>
-        </div>
-        
-        <div className="card" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: '14px', color: 'var(--ink-2)' }}>Bookings</span>
-          <b style={{ fontSize: '32px', color: 'var(--ink)' }}>{pendingBookingsCount}</b>
-          <Link href="/admin/bookings" className="btn" style={{ width: '100%', marginTop: '12px' }}>Review →</Link>
-        </div>
-
-        <div className="card" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: '14px', color: 'var(--ink-2)' }}>Reschedules</span>
-          <b style={{ fontSize: '32px', color: 'var(--ink)' }}>{rescheduleRequestsCount}</b>
-          <Link href="/admin/bookings" className="btn" style={{ width: '100%', marginTop: '12px' }}>Review →</Link>
-        </div>
-      </div>
-
-      <div className="sec">
-        <h3>Today's Overview</h3>
-      </div>
-
-      <div className="card" style={{ flexDirection: 'column', alignItems: 'flex-start', marginBottom: '32px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '16px' }}>
-          <div>
-            <b style={{ fontSize: '16px', display: 'block' }}>Sessions Today</b>
-            <span style={{ fontSize: '14px', color: 'var(--ink-2)' }}>{todaySlotsCount} active slots scheduled for today</span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>
+        <Link href="/admin/applications" className="card" style={{ flexDirection: 'column', alignItems: 'flex-start', textDecoration: 'none', padding: '16px' }}>
+          <span className="eyebrow">APPLICATIONS</span>
+          <b style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--ink)', margin: '4px 0' }}>{pendingAppsCount}</b>
+          <div className="sub" style={{ display: 'flex', alignItems: 'center', color: 'var(--gold)', fontWeight: 600 }}>
+            Review <ChevronRight size={14} style={{ marginLeft: '2px' }} />
           </div>
-        </div>
-        <Link href="/admin/schedule" className="btn gold" style={{ width: '100%' }}>Manage Today's Schedule →</Link>
+        </Link>
+        
+        <Link href="/admin/bookings" className="card" style={{ flexDirection: 'column', alignItems: 'flex-start', textDecoration: 'none', padding: '16px' }}>
+          <span className="eyebrow">BOOKINGS</span>
+          <b style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--ink)', margin: '4px 0' }}>{pendingBookingsCount}</b>
+          <div className="sub" style={{ display: 'flex', alignItems: 'center', color: 'var(--gold)', fontWeight: 600 }}>
+            Review <ChevronRight size={14} style={{ marginLeft: '2px' }} />
+          </div>
+        </Link>
+
+        <Link href="/admin/bookings" className="card" style={{ flexDirection: 'column', alignItems: 'flex-start', textDecoration: 'none', padding: '16px', gridColumn: 'span 2' }}>
+          <span className="eyebrow">RESCHEDULES</span>
+          <b style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--ink)', margin: '4px 0' }}>{rescheduleRequestsCount}</b>
+          <div className="sub" style={{ display: 'flex', alignItems: 'center', color: 'var(--gold)', fontWeight: 600 }}>
+            Review <ChevronRight size={14} style={{ marginLeft: '2px' }} />
+          </div>
+        </Link>
       </div>
 
-      <div className="sec">
-        <h3>Quick Links</h3>
+      <div className="section">
+        <b>Today's Overview</b>
       </div>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        <Link href="/admin/applications" className="btn" style={{ backgroundColor: 'white', color: 'var(--ink)', border: '1px solid var(--line)' }}>All Applications</Link>
-        <Link href="/admin/bookings" className="btn" style={{ backgroundColor: 'white', color: 'var(--ink)', border: '1px solid var(--line)' }}>All Bookings</Link>
-        <Link href="/admin/schedule" className="btn" style={{ backgroundColor: 'white', color: 'var(--ink)', border: '1px solid var(--line)' }}>Schedule View</Link>
+      <div className="card" style={{ flexDirection: 'column', alignItems: 'flex-start', marginBottom: '24px', padding: '16px' }}>
+        <b style={{ fontSize: '15px' }}>Sessions Today</b>
+        <span className="sub" style={{ marginTop: '2px', marginBottom: '16px' }}>{todaySlotsCount} active slots scheduled for today</span>
+        <Link href="/admin/schedule" style={{ width: '100%', textDecoration: 'none' }}>
+          <button className="primary" style={{ margin: 0 }}>Manage Schedule →</button>
+        </Link>
+      </div>
+
+      <div className="section">
+        <b>Quick Links</b>
+      </div>
+      <div className="settings">
+        <Link href="/admin/applications" className="setting" style={{ textDecoration: 'none' }}>
+          <Users size={16} strokeWidth={1.75} color="var(--muted)" />
+          <span style={{ color: 'var(--ink)' }}>All Applications</span>
+          <ChevronRight size={14} strokeWidth={1.75} color="var(--muted)" />
+        </Link>
+        <Link href="/admin/bookings" className="setting" style={{ textDecoration: 'none' }}>
+          <Ticket size={16} strokeWidth={1.75} color="var(--muted)" />
+          <span style={{ color: 'var(--ink)' }}>All Bookings</span>
+          <ChevronRight size={14} strokeWidth={1.75} color="var(--muted)" />
+        </Link>
+        <Link href="/admin/schedule" className="setting" style={{ textDecoration: 'none' }}>
+          <Calendar size={16} strokeWidth={1.75} color="var(--muted)" />
+          <span style={{ color: 'var(--ink)' }}>Schedule View</span>
+          <ChevronRight size={14} strokeWidth={1.75} color="var(--muted)" />
+        </Link>
       </div>
     </div>
   );

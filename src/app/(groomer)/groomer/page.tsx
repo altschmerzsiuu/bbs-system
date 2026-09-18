@@ -2,6 +2,8 @@ import React from 'react';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 import { resolveAttendanceAction, assignHorseAction } from './actions';
+import { LogOut } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js'; // We won't use it directly here for signout since this is server component, so we use a client component or link
 
 export default async function GroomerDashboardPage() {
   await requireActor(['GROOMER', 'ADMIN']);
@@ -32,15 +34,17 @@ export default async function GroomerDashboardPage() {
   return (
     <div>
       <div className="top" style={{ marginBottom: '24px' }}>
-        <div className="who">
-          <b style={{ fontSize: '24px', letterSpacing: '-.8px' }}>Field Operations 🐴</b>
-          <span>{today}</span>
+        <div className="topmain">
+          <h2>Field Operations<br /><em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Groomer.</em></h2>
+          <span className="sub">{new Date(today).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
         </div>
       </div>
 
       {safeSlots.length === 0 ? (
-        <div className="card" style={{ padding: '32px', textAlign: 'center', color: 'var(--ink-3)' }}>
-          No sessions scheduled for today.
+        <div style={{ textAlign: 'center', marginTop: '48px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'var(--goldSoft)', marginBottom: '12px' }}>✦</div>
+          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>No sessions today</div>
+          <div className="sub">Enjoy your free time!</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -50,7 +54,7 @@ export default async function GroomerDashboardPage() {
 
             return (
               <div key={slot.id} className="card" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                <b style={{ fontSize: '20px', borderBottom: '1px solid var(--line)', paddingBottom: '12px', marginBottom: '12px', width: '100%' }}>
+                <b style={{ fontFamily: 'var(--font-display)', fontSize: '24px', borderBottom: '1px solid var(--line)', paddingBottom: '12px', marginBottom: '12px', width: '100%', color: 'var(--gold)' }}>
                   {slot.start_time.slice(0, 5)}
                 </b>
 
@@ -64,47 +68,47 @@ export default async function GroomerDashboardPage() {
                       const attendance = p.attendance_records?.[0];
                       
                       return (
-                        <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: 'var(--ink-5)', borderRadius: '12px' }}>
+                        <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: '#fcfcfb', borderRadius: '12px', border: '1px solid var(--line)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <b style={{ fontSize: '16px' }}>{name}</b>
-                            <span className="chip-state" style={{ backgroundColor: p.participant_type === 'MEMBER' ? 'rgba(33,150,243,0.1)' : 'rgba(255,152,0,0.1)', color: p.participant_type === 'MEMBER' ? '#2196F3' : '#FF9800' }}>
+                            <span className={`pill ${p.participant_type === 'MEMBER' ? 'wait' : 'ok'}`}>
                               {p.participant_type}
                             </span>
                           </div>
 
                           {/* HORSE ASSIGNMENT */}
                           <div style={{ padding: '12px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--line)' }}>
-                            <b style={{ fontSize: '12px', color: 'var(--ink-2)', display: 'block', marginBottom: '8px' }}>HORSE ASSIGNMENT</b>
+                            <b style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>HORSE ASSIGNMENT</b>
                             <form action={assignHorseAction.bind(null, p.id) as any} style={{ display: 'flex', gap: '8px' }}>
                               <select 
                                 name="horseId" 
                                 defaultValue={p.horse_id || 'UNASSIGN'}
-                                style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid var(--line)', fontSize: '14px', backgroundColor: 'var(--ink-5)' }}
+                                style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '13px', backgroundColor: '#fcfcfb', fontFamily: 'var(--font-body)' }}
                               >
                                 <option value="UNASSIGN">-- Select Horse --</option>
                                 {horses?.map(h => (
                                   <option key={h.id} value={h.id}>{h.name}</option>
                                 ))}
                               </select>
-                              <button type="submit" className="btn" style={{ padding: '8px 16px' }}>Set</button>
+                              <button type="submit" className="btn gold" style={{ margin: 0, padding: '8px 16px' }}>Set</button>
                             </form>
                           </div>
 
                           {/* ATTENDANCE */}
                           <div style={{ padding: '12px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--line)' }}>
-                            <b style={{ fontSize: '12px', color: 'var(--ink-2)', display: 'block', marginBottom: '8px' }}>ATTENDANCE</b>
+                            <b style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>ATTENDANCE</b>
                             {attendance ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: attendance.status === 'ATTENDED' ? '#4CAF50' : '#F44336' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: attendance.status === 'ATTENDED' ? 'var(--green)' : 'var(--red)' }}>
                                 <b>{attendance.status}</b>
-                                <span style={{ fontSize: '12px', color: 'var(--ink-3)' }}>Recorded</span>
+                                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Recorded</span>
                               </div>
                             ) : (
                               <div style={{ display: 'flex', gap: '8px' }}>
                                 <form action={resolveAttendanceAction.bind(null, p.id, 'ATTENDED') as any} style={{ flex: 1 }}>
-                                  <button type="submit" className="btn" style={{ width: '100%', backgroundColor: '#4CAF50', color: 'white', padding: '12px' }}>Attended</button>
+                                  <button type="submit" className="btn" style={{ width: '100%', backgroundColor: 'var(--greenSoft)', color: 'var(--green)', margin: 0 }}>Attended</button>
                                 </form>
                                 <form action={resolveAttendanceAction.bind(null, p.id, 'NO_SHOW') as any} style={{ flex: 1 }}>
-                                  <button type="submit" className="btn" style={{ width: '100%', backgroundColor: 'transparent', border: '1px solid var(--ink-3)', color: 'var(--ink-1)', padding: '12px' }}>No Show</button>
+                                  <button type="submit" className="btn" style={{ width: '100%', backgroundColor: 'var(--redSoft)', color: 'var(--red)', margin: 0 }}>No Show</button>
                                 </form>
                               </div>
                             )}
