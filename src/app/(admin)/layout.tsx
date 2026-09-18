@@ -5,13 +5,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const actor = await requireActor(['ADMIN']);
   
   return (
-    <div className="shell">
-      <div className="phone role-admin">
-        <div className="viewport">
-          {children}
-        </div>
-        <BottomNavAdmin />
-      </div>
+    <div className="role-admin" style={{ maxWidth: '480px', margin: '0 auto', paddingBottom: '80px' }}>
+      {children}
+      <BottomNavAdmin />
     </div>
   );
 }

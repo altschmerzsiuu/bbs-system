@@ -4,12 +4,8 @@ export default async function GroomerLayout({ children }: { children: React.Reac
   const actor = await requireActor(['GROOMER', 'ADMIN']);
   
   return (
-    <div className="shell">
-      <div className="phone role-groomer">
-        <div className="viewport">
-          {children}
-        </div>
-      </div>
+    <div className="role-groomer" style={{ maxWidth: '480px', margin: '0 auto', paddingBottom: '80px' }}>
+      {children}
     </div>
   );
 }
