@@ -152,7 +152,7 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
         ) : (
           <div style={{ background: cardGradient, borderRadius: '24px', padding: '36px 24px', textAlign: 'center', color: 'var(--ink)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', opacity: 0.7, marginBottom: '16px', textTransform: 'uppercase' }}>No upcoming ride</div>
-            <h3 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0' }}>Book a session</h3>
+            <h3 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0' }}>Book a Session</h3>
             <p style={{ fontSize: '14px', opacity: 0.8, margin: 0 }}>Choose from available slots below</p>
           </div>
         )}

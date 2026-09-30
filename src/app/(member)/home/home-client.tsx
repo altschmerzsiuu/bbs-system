@@ -159,7 +159,7 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
           <Link href={tier !== 'Basic' ? "/schedule" : "/request?type=ride"} style={{ textDecoration: 'none', display: 'block' }}>
             <div style={{ background: cardGradient, borderRadius: '24px', padding: '36px 24px', textAlign: 'center', color: 'var(--ink)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', opacity: 0.7, marginBottom: '16px', textTransform: 'uppercase' }}>No upcoming ride</div>
-              <h3 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0' }}>Book a session</h3>
+              <h3 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0' }}>Book a Session</h3>
               <p style={{ fontSize: '14px', opacity: 0.8, margin: 0 }}>Choose from available slots below</p>
             </div>
           </Link>
@@ -234,7 +234,7 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
 
           <div style={{ padding: '0 24px', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '32px' }}>
             <div style={{ width: '100%', maxWidth: '340px', margin: '0 auto' }}>
-              <TearableTicket 
+              <TearableTicket
                 topContent={
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -257,7 +257,7 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
                       <div style={{ font: '44px/1 var(--font-display)', marginBottom: '22px' }}>
                         {nextBooking.startTime.slice(0, 5)} — {nextBooking.endTime.slice(0, 5)}
                       </div>
-                      
+
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '8px' }}>
                         <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Membership</span><span style={{ fontSize: '13px', fontWeight: 700 }}>{tier}</span></div>
                         <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Arena</span><span style={{ fontSize: '13px', fontWeight: 700 }}>Arena 01</span></div>
@@ -281,15 +281,15 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
 
             {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
-              <button 
-                className="primary" 
+              <button
+                className="primary"
                 style={{ width: '100%', height: '56px', fontSize: '15px' }}
                 onClick={() => router.push(`/bookings/${nextBooking.id}/reschedule`)}
               >
                 Reschedule
               </button>
-              <button 
-                className="primary" 
+              <button
+                className="primary"
                 style={{ width: '100%', height: '56px', fontSize: '15px', background: '#faeae9', color: '#c06c64' }}
                 onClick={async () => {
                   if (confirm('Are you sure you want to cancel this session? This action cannot be undone.')) {

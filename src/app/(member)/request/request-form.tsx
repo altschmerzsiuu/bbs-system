@@ -241,6 +241,7 @@ export default function RequestForm({
                 );
               })}
             </div>
+          ) : (
             <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '12px', fontSize: '14px', color: 'var(--ink)', textAlign: 'left', borderLeft: '4px solid var(--ink)' }}>
               <strong>Jadwal Ditentukan Admin</strong>
               <p style={{ margin: '8px 0 0', color: 'var(--muted)' }}>
