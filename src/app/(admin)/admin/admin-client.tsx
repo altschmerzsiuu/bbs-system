@@ -98,10 +98,10 @@ export function AdminClient({ stats, pending, upcoming, currentSession, pastSess
             <div className="avatar" style={{ cursor: 'pointer' }}>{adminName.substring(0, 2).toUpperCase()}</div>
           </Link>
           <div className="titles" style={{ display: 'flex', flexDirection: 'column' }}>
-            <b style={{ fontSize: '15px' }}>
+            <b style={{ fontSize: '20px', color: 'var(--ink)' }}>
               Halo, {adminName}
             </b>
-            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', marginTop: '2px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '2px', fontWeight: 500 }}>
               {todayStr} | Admin
             </span>
           </div>
