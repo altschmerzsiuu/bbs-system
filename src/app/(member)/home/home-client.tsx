@@ -155,6 +155,34 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
               </div>
             </div>
           </div>
+        ) : data.pendingRideRequest ? (
+          <div style={{ background: cardGradient, borderRadius: '24px', padding: '24px', color: 'var(--ink)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+              <div>
+                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8, marginBottom: '8px' }}>
+                  YOUR REQUEST
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 700 }}>
+                  {data.pendingRideRequest.type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'}
+                </div>
+              </div>
+              <div style={{ background: data.pendingRideRequest.status === 'APPROVED' ? '#7c9a75' : data.pendingRideRequest.status === 'FAILED' || data.pendingRideRequest.status === 'REJECTED' ? 'var(--red)' : '#f0cf65', color: data.pendingRideRequest.status === 'APPROVED' || data.pendingRideRequest.status === 'FAILED' || data.pendingRideRequest.status === 'REJECTED' ? '#fff' : '#5a4214', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+                {data.pendingRideRequest.status}
+              </div>
+            </div>
+
+            <div style={{ fontSize: '13px', opacity: 0.8, fontWeight: 500, lineHeight: 1.5, marginBottom: '16px' }}>
+              {data.pendingRideRequest.status === 'PENDING' ? 'Tim admin sedang mengalokasikan jadwal dan kuda untuk sesi Anda. Anda akan menerima notifikasi setelah disetujui.' :
+               data.pendingRideRequest.status === 'APPROVED' ? 'Request Anda telah disetujui. Sesi Anda akan segera masuk ke jadwal utama.' :
+               'Request ini tidak dapat diproses. Silakan hubungi admin untuk informasi lebih lanjut.'}
+            </div>
+            
+            {data.pendingRideRequest.status !== 'PENDING' && data.pendingRideRequest.status !== 'APPROVED' && (
+              <Link href="/request?type=ride" style={{ display: 'inline-block', fontSize: '13px', fontWeight: 700, padding: '8px 16px', background: 'var(--ink)', color: 'var(--white)', borderRadius: '100px', textDecoration: 'none' }}>
+                Book New Session
+              </Link>
+            )}
+          </div>
         ) : (
           <Link href={tier !== 'Basic' ? "/schedule" : "/request?type=ride"} style={{ textDecoration: 'none', display: 'block' }}>
             <div style={{ background: cardGradient, borderRadius: '24px', padding: '36px 24px', textAlign: 'center', color: 'var(--ink)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>

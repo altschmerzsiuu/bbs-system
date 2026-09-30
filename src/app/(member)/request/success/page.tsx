@@ -24,15 +24,6 @@ export default function RequestSuccessPage({
         Your {isMembership ? 'membership application' : 'riding request'} has been successfully received by our Admin.
       </p>
 
-      <div style={{ background: 'var(--white)', padding: '20px', borderRadius: '16px', border: '1px dashed #e0dfda', width: '100%', maxWidth: '320px', marginBottom: '32px', textAlign: 'center' }}>
-        <div style={{ fontSize: '12px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: '8px' }}>
-          Reference ID
-        </div>
-        <div style={{ fontSize: '20px', fontWeight: 700, fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
-          {displayId}
-        </div>
-      </div>
-
       <div style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <Link 
           href="/home" 
@@ -45,7 +36,7 @@ export default function RequestSuccessPage({
           Back to Home
         </Link>
         <a 
-          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_ADMIN_NUMBER}?text=${encodeURIComponent(`Halo Admin BBS, saya ingin menanyakan status request saya dengan referensi ${displayId}.`)}`} 
+          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_ADMIN_NUMBER}?text=${encodeURIComponent(`Halo Admin BBS, saya baru saja melakukan permohonan ${isMembership ? 'Membership' : 'Casual Ride'}. Mohon konfirmasinya ya!`)}`} 
           target="_blank" rel="noopener noreferrer"
           style={{ 
             width: '100%', height: '56px', background: 'var(--white)', color: 'var(--ink)', border: '1px solid #e0dfda',

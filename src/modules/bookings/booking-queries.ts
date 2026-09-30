@@ -15,7 +15,7 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
   const db = await createServerClient();
 
   // Fetch all necessary pieces in parallel
-  const [memberRes, activeMembershipRes, expiredMembershipRes, notifRes, appRes, bookingRes, recentRidesRes] = await Promise.all([
+  const [memberRes, activeMembershipRes, expiredMembershipRes, notifRes, appRes, bookingRes, recentRidesRes, ridingRequestRes] = await Promise.all([
     db.from('members').select('full_name').eq('id', memberId).single(),
 
     db.from('memberships')
@@ -65,7 +65,15 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
       .eq('member_id', memberId)
       .eq('attendance_status', 'ATTENDED')
       .not('horse_id', 'is', null)
-      .limit(5)
+      .limit(5),
+
+    db.from('riding_requests')
+      .select('id, request_type, status, preferred_date, preferred_time_start')
+      .eq('member_id', memberId)
+      .in('status', ['PENDING', 'APPROVED', 'FAILED', 'REJECTED'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
   ]);
 
   const activeRow = activeMembershipRes.data as any;
@@ -162,6 +170,13 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
       date: r.bookings?.session_slots?.slot_date ?? '',
       horseName: r.horses?.name ?? null,
     })),
+    pendingRideRequest: ridingRequestRes.data ? {
+      id: ridingRequestRes.data.id,
+      type: ridingRequestRes.data.request_type,
+      status: ridingRequestRes.data.status,
+      preferredDate: ridingRequestRes.data.preferred_date,
+      preferredTime: ridingRequestRes.data.preferred_time_start
+    } : null,
   };
 }
 

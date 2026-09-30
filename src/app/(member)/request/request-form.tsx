@@ -258,11 +258,57 @@ export default function RequestForm({
               })}
             </div>
           ) : (
-            <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '12px', fontSize: '14px', color: 'var(--ink)', textAlign: 'left', borderLeft: '4px solid var(--ink)' }}>
-              <strong>Jadwal Ditentukan Admin</strong>
-              <p style={{ margin: '8px 0 0', color: 'var(--muted)' }}>
-                Untuk layanan Casual Ride / Joy Ride, alokasi jadwal dan kuda akan dikoordinasikan lebih lanjut oleh tim admin kami setelah Anda mengirimkan permintaan ini.
-              </p>
+            <div>
+              <div style={{ padding: '12px 16px', background: '#f5f5f5', borderRadius: '12px', fontSize: '13px', color: 'var(--ink)', borderLeft: '4px solid var(--gold)', marginBottom: '16px' }}>
+                <strong>Preferred Schedule</strong><br/>
+                Pilih preferensi waktu Anda. Admin akan menyesuaikan jadwal ini dengan ketersediaan slot (memprioritaskan member aktif).
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label style={labelStyle}>Select Date</label>
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', WebkitOverflowScrolling: 'touch' }}>
+                  {availableDates.map(date => (
+                    <div
+                      key={date}
+                      onClick={() => { setSelectedDate(date); setSelectedTime(null); }}
+                      style={{
+                        padding: '12px 16px', borderRadius: '12px', minWidth: 'max-content',
+                        border: `1px solid ${selectedDate === date ? 'var(--gold)' : '#e0dfda'}`,
+                        background: selectedDate === date ? '#fbf8f1' : 'var(--white)',
+                        color: selectedDate === date ? 'var(--ink)' : 'var(--muted)',
+                        fontWeight: selectedDate === date ? 600 : 400,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {new Date(date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {selectedDate && (
+                <div>
+                  <label style={labelStyle}>Select Time</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {availableTimes.map(time => (
+                      <div
+                        key={time}
+                        onClick={() => setSelectedTime(time)}
+                        style={{
+                          padding: '10px 16px', borderRadius: '12px',
+                          border: `1px solid ${selectedTime === time ? 'var(--gold)' : '#e0dfda'}`,
+                          background: selectedTime === time ? '#fbf8f1' : 'var(--white)',
+                          color: selectedTime === time ? 'var(--ink)' : 'var(--muted)',
+                          fontWeight: selectedTime === time ? 600 : 400,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {time.slice(0, 5)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>

@@ -63,6 +63,14 @@ export interface MemberHomeViewModel {
         date: string;
         horseName: string | null;
     }[];
+
+    pendingRideRequest?: {
+        id: string;
+        type: string;
+        status: string;
+        preferredDate: string | null;
+        preferredTime: string | null;
+    } | null;
 }
 
 export interface AdminScheduleParticipant {
