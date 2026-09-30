@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
-import { AdminProfileClient } from './AdminProfileClient';
+import { AdminProfileClient } from './admin-profile-client';
 
 export default async function AdminProfilePage() {
   const actor = await requireActor(['ADMIN']);
