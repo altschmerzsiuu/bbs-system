@@ -130,7 +130,23 @@ export default function RequestForm({
 
             <div>
               <label style={labelStyle}>Domicile</label>
-              <input name="domicile" type="text" required defaultValue={initialData.domicile} style={inputStyle} placeholder="City of residence" />
+              <input 
+                name="domicile" 
+                type="text" 
+                required 
+                defaultValue={initialData.domicile} 
+                style={inputStyle} 
+                placeholder="City of residence" 
+                onChange={(e) => {
+                  const start = e.target.selectionStart;
+                  const end = e.target.selectionEnd;
+                  e.target.value = e.target.value
+                    .split(' ')
+                    .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '')
+                    .join(' ');
+                  e.target.setSelectionRange(start, end);
+                }}
+              />
             </div>
           </div>
         </section>
