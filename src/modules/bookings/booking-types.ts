@@ -101,6 +101,12 @@ export interface AdminScheduleSlot {
     closedReason: string | null;
     slotExists: boolean;
     booking: AdminScheduleBooking | null;
+    pendingRequests?: {
+        id: string;
+        memberName: string;
+        type: string;
+        status: string;
+    }[];
 }
 
 export interface AdminSessionDetailParticipant {
@@ -164,4 +170,12 @@ export interface AdminSessionDetail {
     closedReason: string | null;
 
     bookings: AdminSessionDetailBooking[];
+    pendingRequests?: {
+        id: string;
+        memberId: string;
+        memberName: string;
+        memberPhone: string;
+        type: string;
+        status: string;
+    }[];
 }

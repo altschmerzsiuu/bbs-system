@@ -211,7 +211,7 @@ export async function getAdminSchedule(
    * 2. Fetch operating schedules and existing session slots
    *    for this date in parallel.
    */
-  const [scheduleRes, slotsRes] = await Promise.all([
+  const [scheduleRes, slotsRes, requestsRes] = await Promise.all([
     db
       .from('operating_schedules')
       .select(`
@@ -265,6 +265,18 @@ export async function getAdminSchedule(
       `)
       .eq('slot_date', date)
       .order('start_time', { ascending: true }),
+      
+    db
+      .from('riding_requests')
+      .select(`
+        id,
+        request_type,
+        status,
+        preferred_time_start,
+        members ( full_name )
+      `)
+      .eq('preferred_date', date)
+      .eq('status', 'PENDING')
   ]);
 
   if (scheduleRes.error) {
@@ -277,11 +289,16 @@ export async function getAdminSchedule(
     throw new Error('FAILED_TO_LOAD_ADMIN_SCHEDULE');
   }
 
+  if (requestsRes?.error) {
+    console.error('[getAdminSchedule] riding_requests:', requestsRes.error);
+  }
+
   const operatingSchedules = scheduleRes.data ?? [];
   const sessionSlots = slotsRes.data ?? [];
+  const ridingRequests = requestsRes?.data ?? [];
 
   /*
-   * 3. Build a quick lookup map for existing session slots.
+   * 3. Build a quick lookup map for existing session slots and riding requests.
    *
    * Key:
    *   block + start_time
@@ -290,6 +307,24 @@ export async function getAdminSchedule(
    *   AFTERNOON|16:00:00
    */
   const slotMap = new Map<string, any>();
+  const requestMap = new Map<string, any[]>();
+  
+  for (const req of ridingRequests as any[]) {
+    // We group requests by preferred_time_start. 
+    // They don't have block natively, so we just group by time
+    const timeKey = req.preferred_time_start?.slice(0, 5); // "HH:MM"
+    if (!timeKey) continue;
+    
+    if (!requestMap.has(timeKey)) {
+      requestMap.set(timeKey, []);
+    }
+    requestMap.get(timeKey)!.push({
+      id: req.id,
+      memberName: req.members?.full_name || 'Unknown',
+      type: req.request_type,
+      status: req.status
+    });
+  }
 
   for (const slot of sessionSlots as any[]) {
     const key = `${slot.block}|${slot.start_time}`;
@@ -327,6 +362,9 @@ export async function getAdminSchedule(
 
       const slotKey = `${schedule.block}|${startTime}`;
       const existingSlot = slotMap.get(slotKey);
+      
+      const timeKey = startTime.slice(0, 5);
+      const pendingRequests = requestMap.get(timeKey) ?? [];
 
       /*
        * No session_slots row yet.
@@ -335,7 +373,7 @@ export async function getAdminSchedule(
         result.push({
           id: null,
           date,
-          startTime: startTime.slice(0, 5),
+          startTime: timeKey,
           endTime: endTime.slice(0, 5),
           block: schedule.block,
           capacity: schedule.default_capacity,
@@ -343,6 +381,7 @@ export async function getAdminSchedule(
           closedReason: null,
           slotExists: false,
           booking: null,
+          pendingRequests,
         });
 
         continue;
@@ -398,6 +437,7 @@ export async function getAdminSchedule(
             participants,
           }
           : null,
+        pendingRequests,
       });
     }
   }
@@ -528,6 +568,26 @@ export async function getAdminSessionDetail(
     }))
   }));
 
+  // Fetch pending riding requests for this slot
+  const { data: reqData } = await db
+    .from('riding_requests')
+    .select('id, request_type, status, member_id, members(full_name, phone)')
+    .eq('preferred_date', slot.slot_date)
+    .eq('preferred_time_start', slot.start_time)
+    .eq('status', 'PENDING');
+
+  const pendingRequests = (reqData ?? []).map(r => {
+    const mem = Array.isArray(r.members) ? r.members[0] : r.members;
+    return {
+      id: r.id,
+      memberId: r.member_id,
+      memberName: mem?.full_name || 'Unknown',
+      memberPhone: mem?.phone || '',
+      type: r.request_type,
+      status: r.status
+    };
+  });
+
   return {
     id: slot.id,
     date: slot.slot_date,
@@ -540,6 +600,7 @@ export async function getAdminSessionDetail(
     closedReason: slot.closed_reason ?? null,
 
     bookings,
+    pendingRequests,
   };
 }
 export async function ensureSlotsForDateRange(startDate: string, endDate: string) {

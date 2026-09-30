@@ -64,6 +64,32 @@ export async function approveBookingAction(bookingId: string) {
   }
 }
 
+export async function approveRidingRequestAction(requestId: string, date: string, time: string, capacity: number) {
+  try {
+    const actor = await requireActor(['ADMIN']);
+    const db = await createServerClient();
+    
+    const { error } = await db.rpc('approve_riding_request', {
+      p_request_id: requestId,
+      p_date: date,
+      p_time: time,
+      p_capacity: capacity,
+      p_actor_id: actor.userId
+    });
+
+    if (error) {
+      console.error(error);
+      return { ok: false, message: error.message };
+    }
+    
+    revalidateBookingPaths();
+    return { ok: true };
+  } catch (err: any) {
+    console.error(err);
+    return { ok: false, message: 'An unexpected error occurred.' };
+  }
+}
+
 export async function rejectBookingAction(bookingId: string, reason: string) {
   try {
     const actor = await requireActor(['ADMIN']);
