@@ -12,8 +12,8 @@ export default async function AdminProfilePage() {
   const { data: user } = await db.from('users').select('*').eq('id', actor.userId).single();
 
   return (
-    <section className="screen active" style={{ display: 'flex', flexDirection: 'column' }}>
-      <div className="appbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px' }}>
+    <section className="screen active" style={{ display: 'flex', flexDirection: 'column', paddingBottom: '100px', background: '#faf9f5', minHeight: '100vh' }}>
+      <div className="appbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid rgba(0,0,0,0.05)', background: '#fff' }}>
         <Link href="/admin">
           <button style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: '1px solid rgba(0,0,0,0.1)', background: '#fff', color: 'var(--ink)' }}>
             <ChevronLeft size={18} strokeWidth={2.5} />

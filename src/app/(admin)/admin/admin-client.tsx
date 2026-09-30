@@ -98,20 +98,18 @@ export function AdminClient({ stats, pending, upcoming, currentSession, pastSess
             <div className="avatar" style={{ cursor: 'pointer' }}>{adminName.substring(0, 2).toUpperCase()}</div>
           </Link>
           <div className="titles" style={{ display: 'flex', flexDirection: 'column' }}>
-            <b style={{ fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <b style={{ fontSize: '15px' }}>
               Halo, {adminName}
-              <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>ADMIN</span>
             </b>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px', fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>
-              {todayStr}
+            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', marginTop: '2px' }}>
+              {todayStr} | Admin
             </span>
           </div>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link href="/admin/settings" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 600 }}>
-            <Settings size={14} strokeWidth={2} />
-            Kandang
+          <Link href="/admin/settings" className="iconbtn" title="Settings Kandang" style={{ color: 'inherit' }}>
+            <Settings size={17} strokeWidth={2} />
           </Link>
           <Link href="/admin/applications" className="iconbtn" title="Notifications" style={{ color: 'inherit', position: 'relative' }}>
             {pending.total > 0 && <span className="dot" style={{ position: 'absolute', top: 4, right: 4, width: 8, height: 8, background: 'var(--red)', borderRadius: '50%' }}></span>}

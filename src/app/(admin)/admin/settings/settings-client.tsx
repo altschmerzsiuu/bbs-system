@@ -83,7 +83,7 @@ export function SettingsClient({ initialHorses, initialSettings }: { initialHors
         <button onClick={() => window.history.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <ChevronLeft size={20} strokeWidth={2} />
         </button>
-        <h1 style={{ font: '24px var(--font-display)', margin: 0, color: 'var(--ink)' }}>Settings</h1>
+        <h1 style={{ font: '24px var(--font-display)', margin: 0, color: 'var(--ink)' }}>Setting Kandang</h1>
       </div>
 
       <div style={{ padding: '24px' }}>
