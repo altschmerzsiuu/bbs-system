@@ -101,8 +101,8 @@ export function AdminClient({ stats, pending, upcoming, currentSession, pastSess
             <b style={{ fontSize: '20px', color: 'var(--ink)' }}>
               Halo, {adminName}
             </b>
-            <span style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '2px', fontWeight: 500 }}>
-              {todayStr} | Admin
+            <span style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '2px', fontWeight: 500, whiteSpace: 'nowrap' }}>
+              {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} | Admin
             </span>
           </div>
         </div>

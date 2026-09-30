@@ -109,16 +109,23 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
       </p>
 
       {/* Membership Badge */}
-      {tierName.toUpperCase() !== 'BASIC' && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-          <div style={{ background: tierName.toUpperCase() === 'GOLD' ? 'linear-gradient(135deg, #eaddbd 0%, #d0b070 100%)' : 'linear-gradient(135deg, #e0e0e0, #9e9e9e)', padding: '6px 16px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', color: tierName.toUpperCase() === 'GOLD' ? '#5a4214' : '#fff', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-            <Award size={14} strokeWidth={2.5} />
-            <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
-              {tierName.toUpperCase()} MEMBER
-            </span>
-          </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+        <div style={{ 
+          background: tierName.toUpperCase() === 'GOLD' 
+            ? 'linear-gradient(135deg, #eaddbd 0%, #d0b070 100%)' 
+            : tierName.toUpperCase() === 'SILVER'
+              ? 'linear-gradient(135deg, #e0e0e0, #9e9e9e)'
+              : 'linear-gradient(135deg, #f5f5f5, #d4d4d4)', // Basic tier color 
+          padding: '6px 16px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', 
+          color: tierName.toUpperCase() === 'GOLD' ? '#5a4214' : tierName.toUpperCase() === 'SILVER' ? '#fff' : '#555', 
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' 
+        }}>
+          <Award size={14} strokeWidth={2.5} />
+          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
+            {tierName.toUpperCase()} MEMBER
+          </span>
         </div>
-      )}
+      </div>
 
       {/* Accordion List */}
       <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #efeade', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', marginBottom: '24px', marginTop: '32px', width: '100%' }}>

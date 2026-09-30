@@ -48,9 +48,6 @@ export async function submitRequest(formData: FormData) {
   if (data.requestType === 'MEMBERSHIP_APPLICATION' && !data.planId) {
     return { error: 'Pilih paket membership.' };
   }
-  if ((data.requestType === 'CASUAL_RIDE' || data.requestType === 'JOY_RIDE') && (!data.preferredDate || !data.preferredTime)) {
-    return { error: 'Pilih jadwal riding yang tersedia.' };
-  }
 
   const db = await createServerClient();
 

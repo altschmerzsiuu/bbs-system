@@ -241,66 +241,11 @@ export default function RequestForm({
                 );
               })}
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={labelStyle}>Preferred Date</label>
-                {availableDates.length > 0 ? (
-                  <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '8px' }}>
-                    {availableDates.map(date => {
-                      const isSelected = selectedDate === date;
-                      const d = new Date(date);
-                      return (
-                        <div 
-                          key={date} 
-                          onClick={() => setSelectedDate(date)}
-                          style={{ 
-                            minWidth: '80px', padding: '12px 8px', borderRadius: '12px', textAlign: 'center', cursor: 'pointer',
-                            background: isSelected ? 'var(--ink)' : 'var(--white)',
-                            color: isSelected ? 'var(--white)' : 'var(--ink)',
-                            border: `1px solid ${isSelected ? 'var(--ink)' : '#e0dfda'}`
-                          }}
-                        >
-                          <div style={{ fontSize: '11px', opacity: 0.8, textTransform: 'uppercase', marginBottom: '4px' }}>
-                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]}
-                          </div>
-                          <div style={{ fontSize: '16px', fontWeight: 700 }}>{d.getDate()}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '12px', fontSize: '14px', color: 'var(--muted)', textAlign: 'center' }}>
-                    Belum ada jadwal yang tersedia minggu ini. Hubungi admin untuk informasi lebih lanjut.
-                  </div>
-                )}
-              </div>
-              
-              {selectedDate && (
-                <div>
-                  <label style={labelStyle}>Preferred Time</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                    {availableTimes.map(time => {
-                      const isSelected = selectedTime === time;
-                      return (
-                        <div 
-                          key={time} 
-                          onClick={() => setSelectedTime(time)}
-                          style={{ 
-                            padding: '12px', borderRadius: '12px', textAlign: 'center', cursor: 'pointer',
-                            background: isSelected ? 'var(--ink)' : 'var(--white)',
-                            color: isSelected ? 'var(--white)' : 'var(--ink)',
-                            border: `1px solid ${isSelected ? 'var(--ink)' : '#e0dfda'}`,
-                            fontSize: '14px', fontWeight: 600
-                          }}
-                        >
-                          {time.slice(0, 5)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+            <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '12px', fontSize: '14px', color: 'var(--ink)', textAlign: 'left', borderLeft: '4px solid var(--ink)' }}>
+              <strong>Jadwal Ditentukan Admin</strong>
+              <p style={{ margin: '8px 0 0', color: 'var(--muted)' }}>
+                Untuk layanan Casual Ride / Joy Ride, alokasi jadwal dan kuda akan dikoordinasikan lebih lanjut oleh tim admin kami setelah Anda mengirimkan permintaan ini.
+              </p>
             </div>
           )}
         </section>
