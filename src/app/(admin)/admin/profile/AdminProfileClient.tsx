@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@/infrastructure/supabase-browser';
+import { createClient } from '@/infrastructure/supabase-browser';
 import { LogOut, Loader2 } from 'lucide-react';
 
 export function AdminProfileClient() {
@@ -11,7 +11,7 @@ export function AdminProfileClient() {
 
   const handleLogout = async () => {
     setLoading(true);
-    const db = createBrowserClient();
+    const db = createClient();
     await db.auth.signOut();
     window.location.href = '/login';
   };
