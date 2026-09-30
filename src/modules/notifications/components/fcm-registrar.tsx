@@ -1,34 +1,43 @@
 'use client';
 
 import { useFCM } from '../hooks/use-fcm';
-import { Bell } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 
 export function FCMRegistrar() {
-  const { registerToken, isRegistering, permission } = useFCM();
+  const { registerToken, permission } = useFCM();
+  const hasShownToast = useRef(false);
 
-  if (permission === 'granted') {
-    // Optionally return null or a "Notifications Enabled" indicator
-    return null; 
-  }
+  useEffect(() => {
+    // All localStorage access must be inside useEffect (client-only)
+    if (localStorage.getItem('bbs_fcm_dismissed') === '1') return;
+    if (permission !== 'default') return;
+    if (hasShownToast.current) return;
 
-  return (
-    <div className="bg-bg-elevated p-4 rounded-xl border border-border flex items-center justify-between shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="bg-brand/10 p-2 rounded-lg text-brand">
-          <Bell className="w-5 h-5" />
-        </div>
-        <div>
-          <h3 className="text-sm font-semibold text-ink">Nyalakan Notifikasi</h3>
-          <p className="text-xs text-ink-dim max-w-[200px]">Dapatkan update jadwal dan membership.</p>
-        </div>
-      </div>
-      <button 
-        onClick={registerToken}
-        disabled={isRegistering || permission === 'denied'}
-        className="px-4 py-2 bg-brand text-ink-inverse text-xs font-semibold rounded-lg hover:bg-brand/90 disabled:opacity-50 transition-colors"
-      >
-        {isRegistering ? 'Memproses...' : permission === 'denied' ? 'Diblokir' : 'Aktifkan'}
-      </button>
-    </div>
-  );
+    hasShownToast.current = true;
+
+    const toastId = toast('Enable notifications', {
+      description: 'Stay updated on BBS',
+      icon: '🔔',
+      duration: 10000,
+      action: {
+        label: 'Enable',
+        onClick: async () => {
+          localStorage.setItem('bbs_fcm_dismissed', '1');
+          toast.dismiss(toastId);
+          await registerToken();
+          toast.success('Notifications enabled');
+        }
+      },
+      cancel: {
+        label: 'Close',
+        onClick: () => {
+          localStorage.setItem('bbs_fcm_dismissed', '1');
+          toast.dismiss(toastId);
+        }
+      }
+    });
+  }, [permission, registerToken]);
+
+  return null;
 }

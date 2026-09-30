@@ -31,10 +31,50 @@ export class BookingService {
     if (!actor.memberId) throw new DomainError('FORBIDDEN');
     const parsed = createMemberBookingSchema.parse(input);
 
+    const memberIds = new Set<string>();
     const dbPayload = parsed.participants.map(p => {
-      if (p.type === 'MEMBER') return { type: 'MEMBER', member_id: p.memberId };
+      if (p.type === 'MEMBER') {
+        if (memberIds.has(p.memberId)) {
+          throw new DomainError('DUPLICATE_PARTICIPANT');
+        }
+        memberIds.add(p.memberId);
+        return { type: 'MEMBER', member_id: p.memberId };
+      }
       return { type: 'CASUAL', full_name: p.fullName, phone: p.phone };
     });
+
+    // Check constraints for members (Max 2 sessions/day & no duplicate booking on same slot)
+    if (memberIds.size > 0) {
+      const { data: slotData } = await this.db.from('session_slots').select('slot_date').eq('id', parsed.slotId).single();
+      if (!slotData) throw new DomainError('SLOT_NOT_FOUND');
+
+      const { data: dailySlots } = await this.db.from('session_slots').select('id').eq('slot_date', slotData.slot_date);
+      const dailySlotIds = dailySlots?.map((s: any) => s.id) || [];
+
+      if (dailySlotIds.length > 0) {
+        const { data: dailyBookings } = await this.db.from('booking_participants')
+          .select('member_id, bookings!inner(slot_id, status)')
+          .in('member_id', Array.from(memberIds))
+          .in('bookings.slot_id', dailySlotIds)
+          .in('bookings.status', ['PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED']);
+          
+        if (dailyBookings && dailyBookings.length > 0) {
+          const counts: Record<string, number> = {};
+          for (const b of dailyBookings) {
+            if ((b.bookings as any).slot_id === parsed.slotId) {
+              throw new DomainError('ALREADY_BOOKED_FOR_SLOT');
+            }
+            counts[b.member_id] = (counts[b.member_id] || 0) + 1;
+          }
+
+          for (const count of Object.values(counts)) {
+            if (count >= 2) {
+              throw new DomainError('DAILY_BOOKING_LIMIT_REACHED');
+            }
+          }
+        }
+      }
+    }
 
     const { data, error } = await this.db.rpc('create_member_booking', {
       p_booking_owner_id: actor.memberId,

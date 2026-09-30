@@ -10,15 +10,15 @@ export default async function ProfilePage() {
   const actor = await requireActor(['MEMBER']);
   const db    = await createServerClient();
 
-  const { data: user }   = await db.from('users').select('*').eq('id', actor.userId).single();
-  const { data: member } = await db.from('members').select('*').eq('id', actor.memberId!).maybeSingle();
-
-  const { data: activeMembership } = await db
-    .from('memberships')
-    .select('membership_plans(name)')
-    .eq('member_id', actor.memberId!)
-    .eq('status', 'ACTIVE')
-    .maybeSingle();
+  const [
+    { data: user },
+    { data: member },
+    { data: activeMembership }
+  ] = await Promise.all([
+    db.from('users').select('*').eq('id', actor.userId).single(),
+    db.from('members').select('*').eq('id', actor.memberId!).maybeSingle(),
+    db.from('memberships').select('membership_plans(name)').eq('member_id', actor.memberId!).eq('status', 'ACTIVE').maybeSingle()
+  ]);
 
   const tierName = (activeMembership as any)?.membership_plans?.name ?? 'Basic';
   const initialAvatarUrl = user?.avatar_url || '';

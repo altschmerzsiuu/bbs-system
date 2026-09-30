@@ -39,9 +39,7 @@ export const resolveAttendanceSchema = z.object({
   participantId: uuid,
   status: z.enum(['ATTENDED', 'NO_SHOW']),
   creditAction: z.enum(['CONSUMED', 'RETURNED']),
-  reason: z.enum(['WEATHER', 'HORSE_CONDITION', 'MEMBER_EMERGENCY', 'BBS_DECISION', 'OTHER'])
-    .optional(),
-  notes: z.string().trim().max(500).optional(),
+  reason: z.string().trim().max(500).optional(),
 });
 
 export const assignHorseSchema = z.object({

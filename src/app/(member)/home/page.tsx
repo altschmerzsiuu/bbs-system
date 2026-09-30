@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getMemberHome } from '@/modules/bookings/booking-queries';
 import { requireActor } from '@/lib/auth';
 import { FCMRegistrar } from '@/modules/notifications/components/fcm-registrar';

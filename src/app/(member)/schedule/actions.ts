@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidateBookingPaths } from '@/lib/cache';
 import { BookingService } from '@/modules/bookings/booking-service';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
@@ -26,9 +26,7 @@ export async function submitBooking(slotId: string, participants?: string): Prom
       slotId, 
       participants: parsedParticipants 
     });
-    revalidatePath('/home');
-    revalidatePath('/bookings');
-    revalidatePath('/schedule');
+    revalidateBookingPaths();
     return { ok: true, bookingId };
   } catch (error) {
     return { ok: false, ...toClientError(error) };

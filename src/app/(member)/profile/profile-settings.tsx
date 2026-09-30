@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { User, Bell, HelpCircle, ChevronDown, ChevronRight, Edit3, Loader2, Award, HeartPulse } from 'lucide-react';
 import { updateProfile, uploadAvatar } from './actions';
 
@@ -76,8 +77,12 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f7f5', color: 'var(--ink)' }}>
                 <Loader2 size={24} className="animate-spin" />
               </div>
+            ) : avatarUrl ? (
+              <Image src={avatarUrl} alt="Profile" width={120} height={120} style={{ width: '100%', height: '100%', objectFit: 'cover' }} priority />
             ) : (
-              <img src={avatarUrl || "https://images.unsplash.com/photo-1598974357801-cbca100e65d0?auto=format&fit=crop&w=300&q=80"} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e8e4dc' }}>
+                <User size={48} color="#a09d94" strokeWidth={1.5} />
+              </div>
             )}
           </div>
           <button 
@@ -104,14 +109,16 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
       </p>
 
       {/* Membership Badge */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-        <div style={{ background: 'linear-gradient(135deg, #eaddbd 0%, #d0b070 100%)', padding: '6px 16px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', color: '#5a4214', boxShadow: '0 4px 12px rgba(208, 176, 112, 0.2)' }}>
-          <Award size={14} strokeWidth={2.5} />
-          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
-            {tierName.toUpperCase()} MEMBER
-          </span>
+      {tierName.toUpperCase() !== 'BASIC' && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+          <div style={{ background: tierName.toUpperCase() === 'GOLD' ? 'linear-gradient(135deg, #eaddbd 0%, #d0b070 100%)' : 'linear-gradient(135deg, #e0e0e0, #9e9e9e)', padding: '6px 16px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', color: tierName.toUpperCase() === 'GOLD' ? '#5a4214' : '#fff', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
+            <Award size={14} strokeWidth={2.5} />
+            <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
+              {tierName.toUpperCase()} MEMBER
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Accordion List */}
       <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #efeade', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', marginBottom: '24px', marginTop: '32px', width: '100%' }}>

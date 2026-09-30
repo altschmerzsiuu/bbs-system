@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, MoreHorizontal, X, Share, Star, Bell } from 'lucide-react';
 import { BookingCard } from './booking-card';
+import { TearableTicket } from '@/components/ui/tearable-ticket';
 
 export function BookingsClient({ list, currentUserId }: { list: any[], currentUserId: string }) {
   const [activeTab, setActiveTab] = useState<'Upcoming' | 'Completed' | 'Cancelled'>('Upcoming');
@@ -97,46 +98,108 @@ export function BookingsClient({ list, currentUserId }: { list: any[], currentUs
       )}
 
 
-      {/* ── Report Modal ── */}
+      {/* ── Modals ── */}
       {selectedBooking && (
         <div
           onClick={() => setSelectedBooking(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.4)' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.4)', padding: UPCOMING_STATUSES.has(selectedBooking.status) ? '40px 20px' : 0 }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '32px 24px 40px', position: 'relative' }}
+            style={{ 
+              background: UPCOMING_STATUSES.has(selectedBooking.status) ? 'transparent' : '#fff', 
+              borderRadius: UPCOMING_STATUSES.has(selectedBooking.status) ? 0 : '32px 32px 0 0', 
+              padding: UPCOMING_STATUSES.has(selectedBooking.status) ? 0 : '32px 24px 40px', 
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}
           >
-            <button
-              onClick={() => setSelectedBooking(null)}
-              style={{ position: 'absolute', top: '24px', right: '24px', background: '#f5f5f5', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}
-            >
-              <X size={16} strokeWidth={2.5} />
-            </button>
+            {UPCOMING_STATUSES.has(selectedBooking.status) ? (
+              <>
+                <button
+                  onClick={() => setSelectedBooking(null)}
+                  style={{ alignSelf: 'flex-start', marginBottom: '16px', background: '#fff', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}
+                >
+                  <X size={16} strokeWidth={2.5} />
+                </button>
+                <div style={{ width: '100%', maxWidth: '340px' }}>
+                  <TearableTicket 
+                    topContent={
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div>
+                            <h3 style={{ margin: 0, fontSize: '22px', fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>BBS</h3>
+                            <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '1px' }}>Borneo Berkuda Stable</div>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '7px' }}>
+                            <span style={{ background: 'var(--green)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '5px 11px', borderRadius: '12px', letterSpacing: '0.4px' }}>{selectedBooking.status}</span>
+                            <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase' }}>PASS #{selectedBooking.id.slice(0, 8)}</span>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: '20px' }}>
+                          <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '3px' }}>Minggu</div>
+                          <div style={{ fontSize: '14px', fontWeight: 700, borderBottom: '1px solid #e2dcd0', paddingBottom: '4px', display: 'inline-block', marginBottom: '20px' }}>{selectedBooking.session_slots.slot_date}</div>
+                          <div style={{ font: '44px/1 var(--font-display)', marginBottom: '22px' }}>{selectedBooking.session_slots.start_time.slice(0, 5)} — {selectedBooking.session_slots.end_time.slice(0, 5)}</div>
+                          
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '8px' }}>
+                            <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Membership</span><span style={{ fontSize: '13px', fontWeight: 700 }}>Gold</span></div>
+                            <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Arena</span><span style={{ fontSize: '13px', fontWeight: 700 }}>Arena 01</span></div>
+                            <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Rider</span><span style={{ fontSize: '13px', fontWeight: 700 }}>Keisha</span></div>
+                            <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Groom on duty</span><span style={{ fontSize: '13px', fontWeight: 700 }}>Ridwan</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                    bottomContent={
+                      <div style={{ padding: '18px 22px 22px' }}>
+                        <div style={{ height: '40px', background: 'repeating-linear-gradient(90deg, #181817, #181817 2px, transparent 2px, transparent 4px)', marginBottom: '8px', opacity: 0.8 }}></div>
+                        <div style={{ fontSize: '7.5px', fontWeight: 700, letterSpacing: '1.6px', textTransform: 'uppercase', textAlign: 'center', color: '#181817' }}>Good Horses Brighter People</div>
+                      </div>
+                    }
+                    stubContent={
+                      <span>BBS · GOOD HORSES BRIGHTER PEOPLE</span>
+                    }
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setSelectedBooking(null)}
+                  style={{ position: 'absolute', top: '24px', right: '24px', background: '#f5f5f5', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}
+                >
+                  <X size={16} strokeWidth={2.5} />
+                </button>
 
-            <h2 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0', color: 'var(--ink)' }}>Session Report</h2>
-            <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 24px' }}>
-              Feedback from your trainer/groomer.
-            </p>
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0', color: 'var(--ink)' }}>Session Report</h2>
+                  <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 24px' }}>
+                    Feedback from your trainer/groomer.
+                  </p>
 
-            <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', border: '1px solid #efeade' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Trainer Note</span>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--gold)' }}>Sarah</span>
-              </div>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, color: 'var(--ink)' }}>
-                "Great session today! You handled the trot perfectly and kept your heels down nicely. Next time we will focus more on cantering transitions. Keep up the good work!"
-              </p>
-            </div>
+                  <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', border: '1px solid #efeade' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Trainer Note</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--gold)' }}>Sarah</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, color: 'var(--ink)' }}>
+                      "Great session today! You handled the trot perfectly and kept your heels down nicely. Next time we will focus more on cantering transitions. Keep up the good work!"
+                    </p>
+                  </div>
 
-            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '24px' }}>
-              {[1, 2, 3, 4, 5].map(i => (
-                <Star key={i} size={28} fill="var(--gold)" color="var(--gold)" />
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>
-              Rating for this session
-            </div>
+                  <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '24px' }}>
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <Star key={i} size={28} fill="var(--gold)" color="var(--gold)" />
+                    ))}
+                  </div>
+                  <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>
+                    Rating for this session
+                  </div>
+                </div>
+              </>
+            )}
 
           </div>
         </div>

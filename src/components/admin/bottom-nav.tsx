@@ -2,34 +2,32 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Calendar, Ticket, Users, BarChart2 } from 'lucide-react';
+import { Home, Calendar, Users, BarChart2 } from 'lucide-react';
 
 export default function BottomNavAdmin() {
   const pathname = usePathname();
 
   const navItems = [
-    { href: '/admin', Icon: Home, label: 'Home' },
-    { href: '/admin/schedule', Icon: Calendar, label: 'Schedule' },
-    { href: '/admin/applications', Icon: Ticket, label: 'Requests' },
-    // /members and /reports are mocked as inactive for now
-    { href: '/admin/members', Icon: Users, label: 'Members' },
-    { href: '/admin/reports', Icon: BarChart2, label: 'Reports' },
+    { href: '/admin', Icon: Home, label: 'Beranda' },
+    { href: '/admin/schedule', Icon: Calendar, label: 'Jadwal' },
+    { href: '/admin/members', Icon: Users, label: 'Member' },
+    { href: '/admin/reports', Icon: BarChart2, label: 'Laporan' },
   ];
 
   return (
-    <nav className="nav" style={{ backgroundColor: '#252627' }}>
+    <nav className="admin-nav">
       {navItems.map(({ href, label, Icon }) => {
-        const isActive = pathname === href || (href !== '/admin' && pathname.startsWith(href));
+        // Only active for exact /admin match or sub-paths for other routes
+        const isActive = href === '/admin' ? pathname === '/admin' : pathname.startsWith(href);
         
         return (
           <Link
             key={href}
             href={href}
-            className={`navitem ${isActive ? 'active' : ''}`}
-            aria-label={label}
-            style={isActive ? { background: 'var(--gold)', color: '#171717' } : { color: '#a0a0a0' }}
+            className={isActive ? 'active' : ''}
           >
-            <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+            <Icon size={19} strokeWidth={1.8} />
+            <span>{label}</span>
           </Link>
         );
       })}

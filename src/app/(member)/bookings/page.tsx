@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import React from 'react';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
@@ -13,7 +14,7 @@ export default async function BookingsPage() {
       booking_id,
       bookings!inner (
         id, status, created_at, created_by,
-        session_slots!inner ( slot_date, start_time, end_time )
+        session_slots!bookings_slot_id_fkey!inner ( slot_date, start_time, end_time )
       )
     `)
     .eq('member_id', actor.memberId!)

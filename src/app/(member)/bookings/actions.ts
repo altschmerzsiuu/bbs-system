@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidateBookingPaths } from '@/lib/cache';
 import { BookingService } from '@/modules/bookings/booking-service';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
@@ -14,9 +14,7 @@ export async function cancelBookingAction(bookingId: string, acknowledgeLateForf
   const service = new BookingService(db as never);
   try {
     const res = await service.cancelBooking(actor, { bookingId, acknowledgeLateForfeit, reason: 'Dibatalkan oleh member' });
-    revalidatePath('/home');
-    revalidatePath('/bookings');
-    revalidatePath('/schedule');
+    revalidateBookingPaths();
     return { ok: true, data: res };
   } catch (error) {
     return { ok: false, ...toClientError(error) };
@@ -29,9 +27,7 @@ export async function requestRescheduleAction(bookingId: string, newSlotId: stri
   const service = new BookingService(db as never);
   try {
     await service.requestReschedule(actor, { bookingId, newSlotId });
-    revalidatePath('/home');
-    revalidatePath('/bookings');
-    revalidatePath('/schedule');
+    revalidateBookingPaths();
     return { ok: true };
   } catch (error) {
     return { ok: false, ...toClientError(error) };

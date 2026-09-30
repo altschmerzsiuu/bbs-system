@@ -29,9 +29,12 @@ function pillStyles(status: string): React.CSSProperties {
 export function BookingCard({ booking, isOwner, hasFeedback, onClick }: BookingCardProps) {
   const dt = formatDate(booking.session_slots.slot_date);
 
+  const isUpcoming = ['PENDING', 'CONFIRMED'].includes(booking.status);
+  const clickable = Boolean((hasFeedback || isUpcoming) && onClick);
+
   return (
     <div
-      onClick={hasFeedback ? onClick : undefined}
+      onClick={clickable ? onClick : undefined}
       style={{
         background: '#fff',
         border: '1px solid var(--line)',
@@ -40,7 +43,7 @@ export function BookingCard({ booking, isOwner, hasFeedback, onClick }: BookingC
         display: 'flex',
         alignItems: 'flex-start',
         gap: '16px',
-        cursor: hasFeedback && onClick ? 'pointer' : 'default',
+        cursor: clickable ? 'pointer' : 'default',
         boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
       }}
     >
@@ -56,7 +59,7 @@ export function BookingCard({ booking, isOwner, hasFeedback, onClick }: BookingC
           <span style={{ font: '18px var(--font-display)', color: 'var(--ink)' }}>
             {booking.session_slots.start_time.slice(0, 5)} — {booking.session_slots.end_time.slice(0, 5)}
           </span>
-          {hasFeedback && <ChevronRight size={16} color="var(--ink)" />}
+          {clickable && <ChevronRight size={16} color="var(--ink)" />}
         </div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
           Borneo Berkuda Stable

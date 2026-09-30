@@ -67,11 +67,27 @@ export function RenewModal({ plans, activeMembership }: { plans: any[], activeMe
                     {plan.duration_months} months · Rp {(plan.price_idr / 1000).toLocaleString('id-ID')}k
                   </div>
                   
-                  <form action={submitMembershipApplication.bind(null, plan.id)}>
-                    <button type="submit" style={{ width: '100%', padding: '16px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer', marginTop: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      {activeMembership ? `Renew with ${plan.name}` : `Join ${plan.name}`}
-                    </button>
-                  </form>
+                  {activeMembership ? (
+                    <a 
+                      href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_ADMIN_NUMBER}?text=${encodeURIComponent(`Halo BBS! Saya ingin memperpanjang membership dengan ${plan.name}.`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ textDecoration: 'none', display: 'block', marginTop: '24px' }}
+                    >
+                      <button style={{ width: '100%', padding: '16px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        Renew with {plan.name}
+                      </button>
+                    </a>
+                  ) : (
+                    <a
+                      href="/request?type=membership"
+                      style={{ textDecoration: 'none', display: 'block', marginTop: '24px' }}
+                    >
+                      <button style={{ width: '100%', padding: '16px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        Join {plan.name}
+                      </button>
+                    </a>
+                  )}
                 </div>
               );
             })}

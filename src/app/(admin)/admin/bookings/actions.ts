@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidateBookingPaths } from '@/lib/cache';
 import { BookingService } from '@/modules/bookings/booking-service';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
@@ -13,7 +13,7 @@ export async function approveBookingAction(bookingId: string) {
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.approveBooking(actor, bookingId);
-    revalidatePath('/admin/bookings');
+    revalidateBookingPaths();
     return { ok: true };
   } catch (err: any) {
     if (err instanceof DomainError) return { ok: false, message: err.message };
@@ -28,7 +28,7 @@ export async function rejectBookingAction(bookingId: string) {
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.rejectBooking(actor, { bookingId, reason: 'Rejected by admin' });
-    revalidatePath('/admin/bookings');
+    revalidateBookingPaths();
     return { ok: true };
   } catch (err: any) {
     if (err instanceof DomainError) return { ok: false, message: err.message };
@@ -43,7 +43,7 @@ export async function approveRescheduleAction(bookingId: string) {
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.approveReschedule(actor, bookingId);
-    revalidatePath('/admin/bookings');
+    revalidateBookingPaths();
     return { ok: true };
   } catch (err: any) {
     if (err instanceof DomainError) return { ok: false, message: err.message };
@@ -58,7 +58,7 @@ export async function rejectRescheduleAction(bookingId: string) {
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.rejectReschedule(actor, { bookingId, reason: 'Reschedule rejected by admin' });
-    revalidatePath('/admin/bookings');
+    revalidateBookingPaths();
     return { ok: true };
   } catch (err: any) {
     if (err instanceof DomainError) return { ok: false, message: err.message };
@@ -73,7 +73,7 @@ export async function cancelBookingAction(bookingId: string) {
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.cancelBooking(actor, { bookingId, reason: 'Cancelled by admin operations', acknowledgeLateForfeit: false });
-    revalidatePath('/admin/bookings');
+    revalidateBookingPaths();
     return { ok: true };
   } catch (err: any) {
     if (err instanceof DomainError) return { ok: false, message: err.message };

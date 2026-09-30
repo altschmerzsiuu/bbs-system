@@ -3,11 +3,13 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHorizontal, X, Bell } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHorizontal, X, Bell, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
+import { AlertToast } from '@/components/ui/alert-toast';
 import { submitBooking } from './actions';
 
-const DAYS_FULL   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-const MONTHS_FULL  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS_FULL = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const SlideToConfirm = ({ onConfirm, loading }: { onConfirm: () => void, loading: boolean }) => {
   const [position, setPosition] = useState(0);
@@ -28,15 +30,15 @@ const SlideToConfirm = ({ onConfirm, loading }: { onConfirm: () => void, loading
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging.current || loading) return;
     if (!sliderRef.current || !thumbRef.current) return;
-    
+
     const sliderWidth = sliderRef.current.offsetWidth;
     const thumbWidth = thumbRef.current.offsetWidth;
     const maxPos = sliderWidth - thumbWidth - 8; // 4px padding each side
-    
+
     let newPos = e.clientX - startX.current;
     if (newPos < 0) newPos = 0;
     if (newPos > maxPos) newPos = maxPos;
-    
+
     setPosition(newPos);
   };
 
@@ -46,7 +48,7 @@ const SlideToConfirm = ({ onConfirm, loading }: { onConfirm: () => void, loading
     if (thumbRef.current) {
       thumbRef.current.releasePointerCapture(e.pointerId);
     }
-    
+
     if (!sliderRef.current || !thumbRef.current) return;
     const sliderWidth = sliderRef.current.offsetWidth;
     const thumbWidth = thumbRef.current.offsetWidth;
@@ -61,7 +63,7 @@ const SlideToConfirm = ({ onConfirm, loading }: { onConfirm: () => void, loading
   };
 
   return (
-    <div 
+    <div
       ref={sliderRef}
       style={{
         position: 'relative',
@@ -119,16 +121,19 @@ interface Slot {
   status: string;
 }
 
-const DAYS_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initialSlots: Slot[], memberName?: string }) {
-  const next7Days = Array.from({length: 7}, (_, i) => {
+  const next7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    return d.toISOString().slice(0, 10);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
   });
-  
+
   const availableDates = next7Days;
   const [selectedDate, setSelectedDate] = useState<string>(availableDates[0]);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -140,28 +145,17 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [result,  setResult]  = useState<{ ok: boolean; message: string } | null>(null);
 
   let slotsForDate = initialSlots.filter(s => s.slot_date === selectedDate);
-  if (slotsForDate.length === 0) {
-    const mockMorning = [7, 8, 9, 10].map(h => ({
-      id: `mock-m-${h}`, slot_date: selectedDate, start_time: `${h.toString().padStart(2, '0')}:00:00`, end_time: `${(h+1).toString().padStart(2, '0')}:00:00`, capacity: 2, booked_count: 0, status: 'OPEN'
-    }));
-    const mockAfternoon = [13, 14, 15, 16, 17].map(h => ({
-      id: `mock-a-${h}`, slot_date: selectedDate, start_time: `${h.toString().padStart(2, '0')}:00:00`, end_time: `${(h+1).toString().padStart(2, '0')}:00:00`, capacity: 2, booked_count: 0, status: 'OPEN'
-    }));
-    slotsForDate = [...mockMorning, ...mockAfternoon];
-  }
 
-  const filteredSlots  = slotsForDate.filter(s => filter === 'Available' ? (s.capacity - s.booked_count > 0) : true);
-  const morningSlots   = filteredSlots.filter(s => s.start_time.slice(0, 2) < '12');
+  const filteredSlots = slotsForDate.filter(s => filter === 'Available' ? (s.capacity - s.booked_count > 0) : true);
+  const morningSlots = filteredSlots.filter(s => s.start_time.slice(0, 2) < '12');
   const afternoonSlots = filteredSlots.filter(s => s.start_time.slice(0, 2) >= '12');
 
   const handleBook = async () => {
     if (!selectedSlot) return;
     setLoading(true);
-    setResult(null);
-    
+
     let res: any;
     if (selectedSlot.id.startsWith('mock-')) {
       // Simulate network delay for mock slots
@@ -170,7 +164,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
     } else {
       res = await submitBooking(selectedSlot.id);
     }
-    
+
     setLoading(false);
     if (res.ok) {
       setBookedPassData({
@@ -184,7 +178,16 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
       setIsPassModalOpen(true);
       setSelectedSlot(null);
     } else {
-      setResult({ ok: false, message: res.message || 'Booking failed. Please try again.' });
+      const errMsg = res.message || 'Booking failed. Please try again.';
+      toast.custom((t) => (
+        <AlertToast 
+          title="Booking Gagal" 
+          description={errMsg} 
+          variant="destructive" 
+          onDismiss={() => toast.dismiss(t)} 
+        />
+      ));
+      setIsConfirmModalOpen(false);
     }
   };
 
@@ -195,42 +198,26 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
         <button onClick={() => window.history.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f5f7f5', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}>
           <ChevronLeft size={20} strokeWidth={2} />
         </button>
-        <Link href="/notifications" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', position: 'relative', color: 'var(--ink)', border: '1px solid #efeade' }}>
-          <Bell size={20} strokeWidth={1.75} />
-          <div style={{ position: 'absolute', top: '10px', right: '10px', width: '8px', height: '8px', background: 'var(--red)', borderRadius: '50%', border: '2px solid var(--white)' }}></div>
-        </Link>
       </div>
-      
+
       <div style={{ padding: '0 24px 24px' }}>
         <h1 style={{ font: '40px/1.1 var(--font-display)', margin: '0 0 4px 0', color: 'var(--ink)' }}>Book a Ride</h1>
         <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)', fontWeight: 500 }}>Choose your date and time</p>
       </div>
 
-      {/* ── Result banner ── */}
-      {result && (
-        <div style={{ padding: '0 24px', marginBottom: '24px' }}>
-          <div style={{ padding: '12px 16px', borderRadius: '12px', background: result.ok ? 'var(--greenSoft)' : 'var(--redSoft)', color: result.ok ? 'var(--green)' : 'var(--red)', fontSize: '13px', fontWeight: 500 }}>
-            {result.message}
-          </div>
-        </div>
-      )}
 
       {/* ── Month & Year ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 24px 12px' }}>
-        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>
-          {(() => { 
-            const d = new Date(`${selectedDate}T00:00:00`); 
-            return `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`; 
+      <div style={{ padding: '0 24px 12px' }}>
+        <h2 style={{ margin: 0, font: '24px var(--font-display)', color: 'var(--ink)' }}>
+          {(() => {
+            const d = new Date(`${selectedDate}T00:00:00`);
+            return `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
           })()}
         </h2>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fff', border: '1px solid #efeee9', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}><ChevronLeft size={16} /></button>
-          <button style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fff', border: '1px solid #efeee9', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}><ChevronRight size={16} /></button>
-        </div>
       </div>
 
       {/* ── Horizontal Calendar ── */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 24px 20px', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 24px 20px', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
         {availableDates.map(date => {
           const d = new Date(`${date}T00:00:00`);
           const isSelected = selectedDate === date;
@@ -255,13 +242,13 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
           <button
             key={f}
             onClick={() => { setFilter(f as any); setSelectedSlot(null); }}
-            style={{ 
-              padding: '6px 12px', 
-              borderRadius: '20px', 
-              border: 'none', 
-              background: filter === f ? '#eaddbd' : '#f5f7f5', 
-              color: 'var(--ink)', 
-              fontSize: '12px', 
+            style={{
+              padding: '6px 12px',
+              borderRadius: '20px',
+              border: 'none',
+              background: filter === f ? '#eaddbd' : '#f5f7f5',
+              color: 'var(--ink)',
+              fontSize: '12px',
               fontWeight: 600,
               cursor: 'pointer',
               whiteSpace: 'nowrap'
@@ -273,129 +260,135 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
       </div>
 
       <div style={{ flex: 1, padding: '0 24px' }}>
+        {morningSlots.length === 0 && afternoonSlots.length === 0 && (
+          <div style={{ padding: '64px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+              <Calendar size={28} color="var(--muted)" strokeWidth={1.5} />
+            </div>
+            <h3 style={{ margin: '0 0 8px 0', font: '24px var(--font-display)', color: 'var(--ink)' }}>No slots available</h3>
+            <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)', lineHeight: 1.5 }}>
+              There are no available slots for this date. Please check another date.
+            </p>
+          </div>
+        )}
+
         {/* ── Morning Slots ── */}
         {(filter === 'All' || filter === 'Available' || filter === 'Morning') && morningSlots.length > 0 && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Morning</h3>
-            <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>07:00 — 12:00</span>
-          </div>
-          {morningSlots.map(slot => {
-            const isSelected = selectedSlot?.id === slot.id;
-            const remaining  = slot.capacity - slot.booked_count;
-            const isFull     = remaining <= 0;
-            return (
-              <div
-                key={slot.id}
-                onClick={() => {
-                  if (!isFull) {
-                    setSelectedSlot(slot);
-                    setIsConfirmModalOpen(true);
-                  }
-                }}
-                style={{ 
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                  padding: '12px 16px', 
-                  borderRadius: '12px', 
-                  background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)', 
-                  border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9', 
-                  cursor: isFull ? 'not-allowed' : 'pointer',
-                  opacity: isFull ? 0.6 : 1,
-                  boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
-                  marginBottom: '10px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                  <div style={{ font: '22px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
-                    {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Morning</h3>
+              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>07:00 — 12:00</span>
+            </div>
+            {morningSlots.map(slot => {
+              const isSelected = selectedSlot?.id === slot.id;
+              const remaining = slot.capacity - slot.booked_count;
+              const isFull = remaining <= 0;
+              return (
+                <div
+                  key={slot.id}
+                  onClick={() => {
+                    if (!isFull) {
+                      setSelectedSlot(slot);
+                      setIsConfirmModalOpen(true);
+                    }
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
+                    border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
+                    cursor: isFull ? 'not-allowed' : 'pointer',
+                    opacity: isFull ? 0.6 : 1,
+                    boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
+                    marginBottom: '10px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                    <div style={{ font: '22px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
+                      {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                    </div>
                   </div>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </>
-      )}
 
-      {/* ── Afternoon Slots ── */}
-      {(filter === 'All' || filter === 'Available' || filter === 'Afternoon') && afternoonSlots.length > 0 && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', marginTop: '16px' }}>
-            <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Afternoon</h3>
-            <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>13:00 — 17:00</span>
-          </div>
-          {afternoonSlots.map(slot => {
-            const isSelected = selectedSlot?.id === slot.id;
-            const remaining  = slot.capacity - slot.booked_count;
-            const isFull     = remaining <= 0;
-            return (
-              <div
-                key={slot.id}
-                onClick={() => {
-                  if (!isFull) {
-                    setSelectedSlot(slot);
-                    setIsConfirmModalOpen(true);
-                  }
-                }}
-                style={{ 
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                  padding: '12px 16px', 
-                  borderRadius: '12px', 
-                  background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)', 
-                  border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9', 
-                  cursor: isFull ? 'not-allowed' : 'pointer',
-                  opacity: isFull ? 0.6 : 1,
-                  boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
-                  marginBottom: '10px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ font: '18px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
-                    {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                    </div>
                   </div>
                 </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ArrowRight size={14} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </>
-      )}
+              );
+            })}
+          </>
+        )}
 
-      {slotsForDate.length === 0 && (
-        <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--muted)', fontSize: '14px', fontWeight: 500 }}>
-          No slots available.
-        </div>
-      )}
+        {/* ── Afternoon Slots ── */}
+        {(filter === 'All' || filter === 'Available' || filter === 'Afternoon') && afternoonSlots.length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', marginTop: '16px' }}>
+              <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Afternoon</h3>
+              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>13:00 — 17:00</span>
+            </div>
+            {afternoonSlots.map(slot => {
+              const isSelected = selectedSlot?.id === slot.id;
+              const remaining = slot.capacity - slot.booked_count;
+              const isFull = remaining <= 0;
+              return (
+                <div
+                  key={slot.id}
+                  onClick={() => {
+                    if (!isFull) {
+                      setSelectedSlot(slot);
+                      setIsConfirmModalOpen(true);
+                    }
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
+                    border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
+                    cursor: isFull ? 'not-allowed' : 'pointer',
+                    opacity: isFull ? 0.6 : 1,
+                    boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
+                    marginBottom: '10px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ font: '18px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
+                      {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <ArrowRight size={14} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
 
 
 
       {/* ── Confirm Modal ── */}
       {isConfirmModalOpen && selectedSlot && (
-        <div 
+        <div
           onClick={() => setIsConfirmModalOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.4)' }}
         >
-          <div 
+          <div
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
             style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '32px 24px 40px', position: 'relative' }}
           >
             {/* Close Button */}
-            <button 
+            <button
               onClick={() => setIsConfirmModalOpen(false)}
               style={{ position: 'absolute', top: '24px', right: '24px', background: '#f5f5f5', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}
             >
@@ -406,7 +399,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
             <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 24px', textAlign: 'center' }}>
               Are you sure you want to book this session?
             </p>
-            
+
             <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', marginBottom: '24px', border: '1px solid #efeade' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Rider</span>
@@ -418,7 +411,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Time</span>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{selectedSlot.start_time.slice(0,5)} — {selectedSlot.end_time.slice(0,5)} WITA</span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{selectedSlot.start_time.slice(0, 5)} — {selectedSlot.end_time.slice(0, 5)} WITA</span>
               </div>
             </div>
 
@@ -461,7 +454,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
                     <div style={{ background: '#7c9a75', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '6px 12px', borderRadius: '12px', letterSpacing: '0.5px' }}>
                       {bookedPassData.status}
                     </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase' }}>PASS #{bookedPassData.id.substring(0,8).toUpperCase()}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase' }}>PASS #{bookedPassData.id.substring(0, 8).toUpperCase()}</div>
                   </div>
                 </div>
 
@@ -474,23 +467,23 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
 
                 <div style={{ display: 'flex', gap: '16px', fontSize: '12px', fontWeight: 600, color: '#5f5542', marginBottom: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#ebd2a4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MapPin size={10} color="#5a4214" /></div> 
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#ebd2a4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MapPin size={10} color="#5a4214" /></div>
                     Jl. Soekarno Hatta Km. 10
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#ebd2a4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserIcon size={10} color="#5a4214" /></div> 
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#ebd2a4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserIcon size={10} color="#5a4214" /></div>
                     {memberName.split(' ')[0]}
                   </div>
                 </div>
 
                 <div style={{ font: '48px/1 var(--font-display)', color: 'var(--ink)', marginBottom: '40px' }}>
-                  {bookedPassData.startTime.slice(0,5)} — {bookedPassData.endTime.slice(0,5)}
+                  {bookedPassData.startTime.slice(0, 5)} — {bookedPassData.endTime.slice(0, 5)}
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginBottom: '24px' }}>
                   <div>
                     <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Session Time</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>{bookedPassData.startTime.slice(0,5)} — {bookedPassData.endTime.slice(0,5)} WITA</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>{bookedPassData.startTime.slice(0, 5)} — {bookedPassData.endTime.slice(0, 5)} WITA</div>
                   </div>
                 </div>
 
@@ -505,7 +498,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
                 </div>
               </div>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
               <button onClick={() => router.push('/home')} className="primary" style={{ width: '100%', height: '56px', fontSize: '15px' }}>
                 Back to Home
