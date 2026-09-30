@@ -93,30 +93,31 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
                     {slot.pendingRequests!.map(req => (
                         <div key={req.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#FDFBF7', padding: '10px', borderRadius: '8px', border: '1px solid #EBE4D5' }} onClick={e => e.stopPropagation()}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{req.memberName}</span>
+                                <div 
+                                    style={{ display: 'flex', flexDirection: 'column', gap: '2px', cursor: 'pointer' }}
+                                    onClick={() => window.location.href = '/admin/applications'}
+                                >
+                                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{req.memberName}</span>
+                                </div>
                                 <span style={{ fontSize: '10px', background: '#F5EEDD', color: '#A37834', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>{req.type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual'}</span>
                             </div>
                             <div style={{ display: 'flex', gap: '6px' }}>
                                 <button 
-                                    onClick={() => {
-                                        const phone = (req as any).memberPhone || '';
-                                        if (!phone) {
-                                            alert('Nomor HP tidak tersedia');
-                                            return;
-                                        }
-                                        const message = encodeURIComponent(`Halo ${req.memberName}, dari Admin BBS. Terkait permohonan jadwal riding Anda...`);
-                                        window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        // TODO: implement Tolak
                                     }}
-                                    style={{ flex: 1, padding: '6px', background: '#25D366', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                                    style={{ flex: 1, padding: '6px', background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                                 >
-                                    WA
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    Tolak
                                 </button>
                                 <button 
                                     onClick={(e) => handleApproveRequest(e, req.id)}
                                     disabled={approvingReqId === req.id}
                                     style={{ flex: 1, padding: '6px', background: 'var(--ink)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: approvingReqId === req.id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                                 >
-                                    {approvingReqId === req.id && <Loader2 size={12} className="spin" />}
+                                    {approvingReqId === req.id ? <Loader2 size={12} className="spin" /> : <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                                     Terima
                                 </button>
                             </div>

@@ -3,12 +3,16 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save } from 'lucide-react';
 import { toast } from 'sonner';
-import { addHorse, toggleHorseStatus, updateSiteSettings } from './actions';
+import { addHorse, toggleHorseStatus, updateSiteSettings, updateAfternoonEndTime } from './actions';
 import { AlertToast } from '@/components/ui/alert-toast';
 import { useRouter } from 'next/navigation';
 
-export function SettingsClient({ initialHorses, initialSettings }: { initialHorses: any[], initialSettings: any }) {
+export function SettingsClient({ initialHorses, initialSettings, initialSchedules }: { initialHorses: any[], initialSettings: any, initialSchedules: any[] }) {
   const [horses, setHorses] = useState(initialHorses);
+  const [schedules, setSchedules] = useState(initialSchedules);
+  
+  const afternoonSchedule = initialSchedules.find(s => s.block === 'AFTERNOON');
+  const [afternoonEndTime, setAfternoonEndTime] = useState(afternoonSchedule ? afternoonSchedule.end_time.slice(0, 5) : '18:00');
   const [newHorseName, setNewHorseName] = useState('');
   const [loading, setLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
@@ -17,7 +21,6 @@ export function SettingsClient({ initialHorses, initialSettings }: { initialHors
 
   // Local settings state
   const [rescheduleHours, setRescheduleHours] = useState(initialSettings?.reschedule_hours?.toString() || '24');
-  const [packageMonths, setPackageMonths] = useState(initialSettings?.package_validity_months?.toString() || '6');
   
   const formatPrice = (val: string) => {
     const num = val.replace(/[^0-9]/g, '');
@@ -64,7 +67,6 @@ export function SettingsClient({ initialHorses, initialSettings }: { initialHors
     setSavingSettings(true);
     const payload = {
       reschedule_hours: parseInt(rescheduleHours, 10),
-      package_validity_months: parseInt(packageMonths, 10),
       admin_whatsapp: waNumber.trim()
     };
     const res = await updateSiteSettings(payload);
@@ -177,38 +179,49 @@ export function SettingsClient({ initialHorses, initialSettings }: { initialHors
               </div>
             </div>
             
-            {/* Masa Berlaku Paket */}
-            <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px' }}>
+            {/* Jam Tutup Sesi Akhir */}
+            <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
               <div style={{ width: '44px', height: '44px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px', flexShrink: 0 }}>
-                <Calendar size={20} />
+                <Clock size={20} />
               </div>
               <div style={{ flex: 1, paddingRight: '16px' }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Masa Berlaku Paket (Bulan)</div>
-                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Batas waktu tiket hangus.</div>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Jam Tutup Kandang (Sesi Terakhir)</div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Tentukan jam operasional buka sampai malam (misal 21:00).</div>
               </div>
               <div style={{ position: 'relative' }}>
                 <button 
-                  onClick={() => setOpenDropdown(openDropdown === 'package' ? null : 'package')}
+                  onClick={() => setOpenDropdown(openDropdown === 'endTime' ? null : 'endTime')}
                   style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
                 >
-                  {packageMonths} Bulan
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'package' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  {afternoonEndTime}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'endTime' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </button>
-                {openDropdown === 'package' && (
+                {openDropdown === 'endTime' && (
                   <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '120px' }}>
-                    {['1', '3', '6', '12'].map(val => (
+                    {['18:00', '19:00', '20:00', '21:00', '22:00'].map(val => (
                       <div 
                         key={val} 
-                        onClick={() => { setPackageMonths(val); setOpenDropdown(null); }}
-                        style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: packageMonths === val ? '#f4f4f5' : '#fff', color: packageMonths === val ? 'var(--ink)' : 'var(--muted)' }}
+                        onClick={async () => { 
+                          setAfternoonEndTime(val); 
+                          setOpenDropdown(null);
+                          const res = await updateAfternoonEndTime(val + ':00');
+                          if (res.ok) {
+                            toast.custom((t) => <AlertToast title="Berhasil" description={`Jam tutup diupdate ke ${val}.`} onDismiss={() => toast.dismiss(t)} />);
+                          } else {
+                            toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Unknown error'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+                          }
+                        }}
+                        style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: afternoonEndTime === val ? '#f4f4f5' : '#fff', color: afternoonEndTime === val ? 'var(--ink)' : 'var(--muted)' }}
                       >
-                        {val} Bulan
+                        {val}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             </div>
+
+
           </div>
 
           {/* CONTACT */}

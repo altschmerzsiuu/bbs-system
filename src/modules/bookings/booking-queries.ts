@@ -276,7 +276,7 @@ export async function getAdminSchedule(
         members ( full_name )
       `)
       .eq('preferred_date', date)
-      .eq('status', 'PENDING')
+      .eq('status', 'UNDER_REVIEW')
   ]);
 
   if (scheduleRes.error) {
@@ -574,7 +574,7 @@ export async function getAdminSessionDetail(
     .select('id, request_type, status, member_id, members(full_name, phone)')
     .eq('preferred_date', slot.slot_date)
     .eq('preferred_time_start', slot.start_time)
-    .eq('status', 'PENDING');
+    .eq('status', 'UNDER_REVIEW');
 
   const pendingRequests = (reqData ?? []).map(r => {
     const mem = Array.isArray(r.members) ? r.members[0] : r.members;
@@ -664,4 +664,56 @@ export async function ensureSlotsForDateRange(startDate: string, endDate: string
   if (toInsert.length > 0) {
     await db.from('session_slots').upsert(toInsert, { onConflict: 'slot_date, start_time' });
   }
+}
+
+export async function getPendingRequests() {
+  const db = await createServerClient();
+  const [riding, membership] = await Promise.all([
+    db.from('riding_requests').select('id, request_type, status, created_at, member_id, height_cm, weight_kg, shoe_size, members(full_name, phone, users(email, avatar_url))').eq('status', 'UNDER_REVIEW').order('created_at', { ascending: false }),
+    db.from('membership_applications').select('id, status, created_at, plan_id, member_id, members(full_name, phone, users(email, avatar_url)), membership_plans(name)').eq('status', 'PENDING').order('created_at', { ascending: false })
+  ]);
+
+  const ridingMapped = (riding.data || []).map(r => {
+    const mem = Array.isArray(r.members) ? r.members[0] : r.members;
+    return {
+      id: r.id,
+      category: 'riding',
+      type: r.request_type,
+      status: r.status,
+      createdAt: r.created_at,
+      memberId: r.member_id,
+      memberName: mem?.full_name || 'Unknown',
+      memberPhone: mem?.phone || '',
+      memberEmail: ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.email || '',
+      memberAvatarUrl: ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.avatar_url || '',
+      planName: null,
+      heightCm: r.height_cm,
+      weightKg: r.weight_kg,
+      shoeSize: r.shoe_size
+    };
+  });
+
+  const membershipMapped = (membership.data || []).map(r => {
+    const mem = Array.isArray(r.members) ? r.members[0] : r.members;
+    const plan = Array.isArray(r.membership_plans) ? r.membership_plans[0] : r.membership_plans;
+    return {
+      id: r.id,
+      category: 'membership',
+      type: 'MEMBERSHIP_APPLICATION',
+      status: r.status,
+      createdAt: r.created_at,
+      memberId: r.member_id,
+      memberName: mem?.full_name || 'Unknown',
+      memberPhone: mem?.phone || '',
+      memberEmail: ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.email || '',
+      memberAvatarUrl: ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.avatar_url || '',
+      planName: plan?.name || 'Unknown Plan'
+    };
+  });
+
+  const allRequests = [...ridingMapped, ...membershipMapped].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  return allRequests;
 }

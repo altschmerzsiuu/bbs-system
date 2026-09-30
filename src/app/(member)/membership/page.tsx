@@ -26,7 +26,7 @@ export default async function MembershipPage() {
     db.from('membership_plans').select('id, code, name, price_idr, credits, duration_months').order('price_idr', { ascending: false }),
     db.from('memberships').select('*, membership_plans(name)').eq('member_id', actor.memberId!).eq('status', 'ACTIVE').maybeSingle(),
     db.from('memberships').select('*, membership_plans(name)').eq('member_id', actor.memberId!).eq('status', 'PENDING_ACTIVATION').maybeSingle(),
-    db.from('membership_applications').select('*, membership_plans(name)').eq('member_id', actor.memberId!).in('status', ['PENDING_REVIEW', 'APPROVED', 'PAYMENT_CONFIRMED']).maybeSingle()
+    db.from('membership_applications').select('*, membership_plans(name)').eq('member_id', actor.memberId!).in('status', ['PENDING_REVIEW', 'APPROVED', 'PAYMENT_CONFIRMED']).order('created_at', { ascending: false }).limit(1).maybeSingle()
   ]);
 
   const initials = user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U';
@@ -138,18 +138,60 @@ export default async function MembershipPage() {
           </div>
         ) : (
           <div style={{
-            background: 'linear-gradient(135deg, #f5f7f5 0%, #eaeaea 100%)',
+            background: 'linear-gradient(135deg, #fbf8f1 0%, #f4eade 100%)',
             borderRadius: '24px',
             padding: '32px 24px',
             textAlign: 'center',
-            marginBottom: '32px'
+            marginBottom: '32px',
+            border: '1px solid #eaddbd'
           }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)' }}>NO ACTIVE MEMBERSHIP</span>
-            <div style={{ font: '28px var(--font-display)', margin: '12px 0 8px', color: 'var(--ink)' }}>
-              Start your journey
+            <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '1.5px', color: '#b08d4b' }}>NO ACTIVE MEMBERSHIP</span>
+            <div style={{ font: '32px/1.2 var(--font-display)', margin: '16px 0 12px', color: 'var(--ink)' }}>
+              Start your journey with BBS
             </div>
-            <div style={{ fontSize: '14px', color: 'var(--muted)' }}>
-              Choose a plan below to get started.
+            <div style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.5, marginBottom: '24px' }}>
+              Upgrade ke paket Gold atau Silver untuk mendapatkan akses prioritas, harga lebih hemat, dan benefit eksklusif lainnya.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
+              {(plans ?? []).map((plan: any) => {
+                const planNameLower = plan.name.toLowerCase();
+                let eyebrowColor = 'var(--muted)';
+                let cardBg = '#fff';
+                let cardTextColor = 'var(--ink)';
+                
+                if (planNameLower.includes('gold')) {
+                  eyebrowColor = '#5a4214';
+                  cardBg = 'linear-gradient(135deg, #f3e9d2, #d1a85b)';
+                } else if (planNameLower.includes('silver')) {
+                  eyebrowColor = '#333';
+                  cardBg = 'linear-gradient(135deg, #f5f5f5, #b8b8b8)';
+                }
+                
+                return (
+                  <div key={plan.id} style={{ background: cardBg, borderRadius: '20px', padding: '24px', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.5px', color: eyebrowColor }}>
+                        {plan.name.toUpperCase()}
+                      </span>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Sparkles size={14} color={eyebrowColor} />
+                      </div>
+                    </div>
+                    <div style={{ font: '32px var(--font-display)', color: cardTextColor, margin: '8px 0' }}>
+                      {plan.credits} <span style={{ fontSize: '18px', opacity: 0.8 }}>sessions</span>
+                    </div>
+                    <div style={{ fontSize: '14px', color: cardTextColor, opacity: 0.8, fontWeight: 500, marginBottom: '20px' }}>
+                      {plan.duration_months} months · Rp {(plan.price_idr / 1000).toLocaleString('id-ID')}k
+                    </div>
+                    
+                    <Link href={`/request?type=membership`} style={{ textDecoration: 'none' }}>
+                      <button style={{ width: '100%', padding: '14px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '14px', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        Join {plan.name}
+                      </button>
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -184,9 +226,9 @@ export default async function MembershipPage() {
           </div>
         )}
 
-        {(!pendingActivationMembership && (!activeApp || activeApp.status !== 'PENDING_REVIEW')) ? (
+        {(!pendingActivationMembership && (!activeApp || activeApp.status !== 'PENDING_REVIEW') && activeMembership) ? (
           <>
-            {/* ── Available Plans Modal (Join / Renew) ── */}
+            {/* ── Available Plans Modal (Renew) ── */}
             <RenewModal plans={plans || []} activeMembership={activeMembership} />
           </>
         ) : null}

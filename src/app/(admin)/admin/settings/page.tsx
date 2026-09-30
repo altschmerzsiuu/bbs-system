@@ -10,6 +10,7 @@ export default async function SettingsPage() {
   
   const { data: horses } = await db.from('horses').select('*').order('created_at', { ascending: true });
   const { data: settings } = await db.from('site_settings').select('*').eq('id', 1).single();
+  const { data: schedules } = await db.from('operating_schedules').select('*').order('day_of_week', { ascending: true });
   
-  return <SettingsClient initialHorses={horses || []} initialSettings={settings} />;
+  return <SettingsClient initialHorses={horses || []} initialSettings={settings} initialSchedules={schedules || []} />;
 }

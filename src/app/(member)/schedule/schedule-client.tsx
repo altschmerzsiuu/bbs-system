@@ -146,7 +146,14 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
 
   const [loading, setLoading] = useState(false);
 
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const currentTime = now.toTimeString().slice(0, 8);
+
   let slotsForDate = initialSlots.filter(s => s.slot_date === selectedDate);
+  if (selectedDate === todayStr) {
+    slotsForDate = slotsForDate.filter(s => s.start_time > currentTime);
+  }
 
   const filteredSlots = slotsForDate.filter(s => filter === 'Available' ? (s.capacity - s.booked_count > 0) : true);
   const morningSlots = filteredSlots.filter(s => s.start_time.slice(0, 2) < '12');
@@ -207,12 +214,12 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
 
 
       {/* ── Month & Year ── */}
-      <div style={{ padding: '0 24px 12px' }}>
-        <h2 style={{ margin: 0, font: '24px var(--font-display)', color: 'var(--ink)' }}>
-          {(() => {
-            const d = new Date(`${selectedDate}T00:00:00`);
-            return `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-          })()}
+      <div style={{ padding: '0 24px 12px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--muted)', letterSpacing: '1px' }}>
+          {new Date(`${selectedDate}T00:00:00`).getFullYear()}
+        </div>
+        <h2 style={{ margin: 0, font: '28px var(--font-display)', color: 'var(--ink)' }}>
+          {MONTHS_FULL[new Date(`${selectedDate}T00:00:00`).getMonth()]}
         </h2>
       </div>
 
@@ -327,8 +334,8 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
         {(filter === 'All' || filter === 'Available' || filter === 'Afternoon') && afternoonSlots.length > 0 && (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', marginTop: '16px' }}>
-              <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Afternoon</h3>
-              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>13:00 — 17:00</span>
+              <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Afternoon / Evening</h3>
+              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>12:00+</span>
             </div>
             {afternoonSlots.map(slot => {
               const isSelected = selectedSlot?.id === slot.id;

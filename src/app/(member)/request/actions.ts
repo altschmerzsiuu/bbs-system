@@ -126,6 +126,23 @@ export async function submitRequest(formData: FormData) {
     }
   }
 
+  const { data: admins } = await db.from('users').select('id').eq('role', 'ADMIN');
+  if (admins && admins.length > 0) {
+    const notifications = admins.map(admin => ({
+      event_type: 'NEW_RIDING_REQUEST',
+      aggregate_type: 'request',
+      aggregate_id: humanId,
+      recipient_user_id: admin.id,
+      channel: 'PWA_PUSH',
+      payload: {
+        request_id: humanId,
+        type: data.requestType,
+        member_name: data.fullName
+      }
+    }));
+    await db.from('notification_outbox').insert(notifications);
+  }
+
   revalidatePath('/', 'layout');
   
   return { 

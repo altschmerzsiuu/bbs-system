@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { submitRequest } from './actions';
 import { ArrowRight, Info, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -87,7 +87,25 @@ export default function RequestForm({
   
   // Extract unique dates for scheduler
   const availableDates = Array.from(new Set(slots.map(s => s.slot_date))).sort();
-  const availableTimes = selectedDate ? Array.from(new Set(slots.filter(s => s.slot_date === selectedDate).map(s => s.start_time))).sort() : [];
+  
+  // Filter and format available times
+  const [clientAvailableTimes, setClientAvailableTimes] = useState<{value: string, disabled: boolean}[]>([]);
+
+  useEffect(() => {
+    const rawTimes = selectedDate ? Array.from(new Set(slots.filter(s => s.slot_date === selectedDate).map(s => s.start_time))).sort() : [];
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const currentTime = now.toTimeString().slice(0, 8);
+    
+    setClientAvailableTimes(rawTimes.map(time => {
+      const isPast = selectedDate === todayStr && time <= currentTime;
+      const completelyPast = selectedDate && selectedDate < todayStr;
+      return {
+        value: time as string,
+        disabled: Boolean(isPast || completelyPast)
+      };
+    }));
+  }, [selectedDate, slots]);
 
   return (
     <div suppressHydrationWarning style={{ background: 'var(--paper)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -259,11 +277,6 @@ export default function RequestForm({
             </div>
           ) : (
             <div>
-              <div style={{ padding: '12px 16px', background: '#f5f5f5', borderRadius: '12px', fontSize: '13px', color: 'var(--ink)', borderLeft: '4px solid var(--gold)', marginBottom: '16px' }}>
-                <strong>Preferred Schedule</strong><br/>
-                Pilih preferensi waktu Anda. Admin akan menyesuaikan jadwal ini dengan ketersediaan slot (memprioritaskan member aktif).
-              </div>
-              
               <div style={{ marginBottom: '16px' }}>
                 <label style={labelStyle}>Select Date</label>
                 <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', WebkitOverflowScrolling: 'touch' }}>
@@ -290,22 +303,28 @@ export default function RequestForm({
                 <div>
                   <label style={labelStyle}>Select Time</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {availableTimes.map(time => (
-                      <div
-                        key={time}
-                        onClick={() => setSelectedTime(time)}
-                        style={{
-                          padding: '10px 16px', borderRadius: '12px',
-                          border: `1px solid ${selectedTime === time ? 'var(--gold)' : '#e0dfda'}`,
-                          background: selectedTime === time ? '#fbf8f1' : 'var(--white)',
-                          color: selectedTime === time ? 'var(--ink)' : 'var(--muted)',
-                          fontWeight: selectedTime === time ? 600 : 400,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {time.slice(0, 5)}
-                      </div>
-                    ))}
+                    {clientAvailableTimes.map(timeObj => {
+                      const isSelected = selectedTime === timeObj.value;
+                      const isDisabled = timeObj.disabled;
+                      
+                      return (
+                        <div
+                          key={timeObj.value}
+                          onClick={() => { if (!isDisabled) setSelectedTime(timeObj.value); }}
+                          style={{
+                            padding: '10px 16px', borderRadius: '12px',
+                            border: `1px solid ${isSelected ? 'var(--gold)' : '#e0dfda'}`,
+                            background: isSelected ? '#fbf8f1' : (isDisabled ? '#f5f5f5' : 'var(--white)'),
+                            color: isSelected ? 'var(--ink)' : (isDisabled ? '#d0cfca' : 'var(--muted)'),
+                            fontWeight: isSelected ? 600 : 400,
+                            cursor: isDisabled ? 'not-allowed' : 'pointer',
+                            opacity: isDisabled ? 0.6 : 1
+                          }}
+                        >
+                          {timeObj.value.slice(0, 5)}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
 
-export default function RequestSuccessPage({
-  searchParams,
-}: {
-  searchParams: { id?: string; type?: string };
+export default async function RequestSuccessPage(props: {
+  searchParams: Promise<{ id?: string; type?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const isMembership = searchParams.type === 'MEMBERSHIP_APPLICATION';
   const displayId = searchParams.id || 'BBS-REQ-XXX';
 

@@ -90,6 +90,26 @@ export async function approveRidingRequestAction(requestId: string, date: string
   }
 }
 
+export async function rejectRidingRequestAction(requestId: string) {
+  try {
+    const actor = await requireActor(['ADMIN']);
+    const db = await createServerClient();
+    
+    const { error } = await db.from('riding_requests').update({ status: 'REJECTED' }).eq('id', requestId);
+
+    if (error) {
+      console.error(error);
+      return { ok: false, message: error.message };
+    }
+    
+    revalidateBookingPaths();
+    return { ok: true };
+  } catch (err: any) {
+    console.error(err);
+    return { ok: false, message: 'An unexpected error occurred.' };
+  }
+}
+
 export async function rejectBookingAction(bookingId: string, reason: string) {
   try {
     const actor = await requireActor(['ADMIN']);

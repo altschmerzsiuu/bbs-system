@@ -131,6 +131,20 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
         router.push(`/admin/schedule?date=${dateString}`);
     };
 
+    const handlePrevMonth = () => {
+        const d = new Date(selectedDate);
+        d.setDate(1);
+        d.setMonth(d.getMonth() - 1);
+        handleSelectDate(d);
+    };
+
+    const handleNextMonth = () => {
+        const d = new Date(selectedDate);
+        d.setDate(1);
+        d.setMonth(d.getMonth() + 1);
+        handleSelectDate(d);
+    };
+
     const handleShareSchedule = async () => {
         const dateLabel = new Intl.DateTimeFormat('id-ID', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -257,12 +271,14 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
     })();
 
     const morningSlots = slots.filter(s => parseInt(s.startTime.split(':')[0]) < 12);
-    const afternoonSlots = slots.filter(s => parseInt(s.startTime.split(':')[0]) >= 12);
+    const afternoonSlots = slots.filter(s => parseInt(s.startTime.split(':')[0]) >= 12 && parseInt(s.startTime.split(':')[0]) < 18);
+    const eveningSlots = slots.filter(s => parseInt(s.startTime.split(':')[0]) >= 18);
 
     let filteredSlots = slots;
     if (activeChip === 'Slot kosong') filteredSlots = slots.filter(s => s.isOpen && (!s.booking || s.booking.participants.length === 0));
     else if (activeChip === 'Pagi') filteredSlots = morningSlots;
     else if (activeChip === 'Sore') filteredSlots = afternoonSlots;
+    else if (activeChip === 'Malam') filteredSlots = eveningSlots;
 
     return (
         <div style={{ paddingBottom: '120px' }}>
@@ -280,10 +296,46 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
             </div>
 
             {/* DATE PICKER */}
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 20px 0', marginTop: '2px' }}>
-                <button type="button" onClick={() => setIsMonthPickerOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '100px', background: '#FFF', border: '1px solid rgba(24,24,23,0.10)', fontSize: '16px', letterSpacing: '-0.025em', fontWeight: 700 }}>
-                    {MONTHS[selectedDate.getMonth()]} {selectedDate.getFullYear()}
-                    <ChevronDown size={15} />
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '8px 20px 0', marginTop: '2px' }}>
+                <button type="button" onClick={handlePrevMonth} style={{ width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#F3F4F6', color: 'var(--ink)', cursor: 'pointer' }}>
+                    <ChevronLeft size={20} />
+                </button>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <select
+                            value={selectedDate.getMonth()}
+                            onChange={(e) => {
+                                const d = new Date(selectedDate);
+                                d.setDate(1);
+                                d.setMonth(parseInt(e.target.value));
+                                handleSelectDate(d);
+                            }}
+                            style={{ appearance: 'none', WebkitAppearance: 'none', border: 'none', background: 'transparent', fontSize: '16px', letterSpacing: '-0.025em', fontWeight: 700, color: 'var(--ink)', cursor: 'pointer', outline: 'none', padding: '0 16px 0 0', position: 'relative', zIndex: 2 }}
+                        >
+                            {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                        </select>
+                        <ChevronDown size={14} style={{ position: 'absolute', right: 0, color: 'var(--ink)', zIndex: 1, pointerEvents: 'none' }} />
+                    </div>
+                    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <select
+                            value={selectedDate.getFullYear()}
+                            onChange={(e) => {
+                                const d = new Date(selectedDate);
+                                d.setDate(1);
+                                d.setFullYear(parseInt(e.target.value));
+                                handleSelectDate(d);
+                            }}
+                            style={{ appearance: 'none', WebkitAppearance: 'none', border: 'none', background: 'transparent', fontSize: '16px', letterSpacing: '-0.025em', fontWeight: 700, color: 'var(--ink)', cursor: 'pointer', outline: 'none', padding: '0 16px 0 0', position: 'relative', zIndex: 2 }}
+                        >
+                            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                        <ChevronDown size={14} style={{ position: 'absolute', right: 0, color: 'var(--ink)', zIndex: 1, pointerEvents: 'none' }} />
+                    </div>
+                </div>
+                <button type="button" onClick={handleNextMonth} style={{ width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#F3F4F6', color: 'var(--ink)', cursor: 'pointer' }}>
+                    <ChevronRight size={20} />
                 </button>
             </div>
 
@@ -374,9 +426,10 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
 
             {/* FILTER PILLS */}
             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '20px 20px 24px', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-                {['Semua', 'Slot kosong', 'Pagi', 'Sore'].map(chip => {
+                {['Semua', 'Slot kosong', 'Pagi', 'Sore', 'Malam'].map(chip => {
+                    if (chip === 'Malam' && eveningSlots.length === 0) return null;
                     const isActive = activeChip === chip;
-                    const count = chip === 'Slot kosong' ? emptySlotCount : chip === 'Pagi' ? morningSlots.length : chip === 'Sore' ? afternoonSlots.length : null;
+                    const count = chip === 'Slot kosong' ? emptySlotCount : chip === 'Pagi' ? morningSlots.length : chip === 'Sore' ? afternoonSlots.length : chip === 'Malam' ? eveningSlots.length : null;
                     return (
                         <button
                             key={chip}
@@ -395,10 +448,15 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
 
             {/* TIMELINE */}
             <div style={{ padding: '0 20px' }}>
-                {['Pagi', 'Sore'].map(block => {
+                {['Pagi', 'Sore', 'Malam'].map(block => {
                     if (activeChip !== 'Semua' && activeChip !== block && activeChip !== 'Slot kosong') return null;
 
-                    const blockSlots = filteredSlots.filter(s => block === 'Pagi' ? parseInt(s.startTime.split(':')[0]) < 12 : parseInt(s.startTime.split(':')[0]) >= 12);
+                    const blockSlots = filteredSlots.filter(s => {
+                        const h = parseInt(s.startTime.split(':')[0]);
+                        if (block === 'Pagi') return h < 12;
+                        if (block === 'Sore') return h >= 12 && h < 18;
+                        return h >= 18;
+                    });
                     if (blockSlots.length === 0) return null;
 
                     return (
@@ -477,15 +535,7 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
                 </div>
             )}
 
-            {isMonthPickerOpen && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.38)', zIndex: 90, display: 'flex', alignItems: 'flex-end' }} onClick={() => setIsMonthPickerOpen(false)}>
-                    <div onClick={event => event.stopPropagation()} style={{ width: '100%', background: '#FFF', borderRadius: '24px 24px 0 0', padding: '18px 20px 30px' }}>
-                        <div style={{ width: '36px', height: '4px', borderRadius: 99, background: '#DDD', margin: '0 auto 18px' }} />
-                        <label style={{ display: 'block', fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Pilih bulan dan tahun</label>
-                        <input type="month" value={`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`} onChange={event => { const [year, month] = event.target.value.split('-').map(Number); if (year && month) { handleSelectDate(new Date(year, month - 1, 1)); setIsMonthPickerOpen(false); } }} style={{ width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid rgba(24,24,23,0.16)', fontSize: '16px', background: '#FAFAF8' }} />
-                    </div>
-                </div>
-            )}
+
 
             {/* TUTUP SLOT MODAL */}
             {closeModalOpen && (
