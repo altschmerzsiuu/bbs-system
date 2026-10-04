@@ -1,0 +1,7 @@
+-- 20261001070402_admin_booking_notification.sql
+-- WARNING: This migration is intentionally left blank.
+-- The contents of this migration (which contained a buggy version of create_member_booking)
+-- have been correctly merged into '0041_premium_no_weekly_limit.sql'.
+-- We keep this file with this exact name so that Supabase migration history remains consistent
+-- (as it may have already been pushed to production under this filename).
+-- Running this during a clean 'db reset' will safely do nothing, allowing '0041' to be the final state.
