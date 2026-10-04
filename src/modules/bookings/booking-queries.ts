@@ -1,4 +1,4 @@
-import { createServerClient } from '@/infrastructure/supabase-server';
+import { createServerClient, createServiceRoleClient } from '@/infrastructure/supabase-server';
 
 import type {
   BookingStatus,
@@ -637,12 +637,14 @@ export async function ensureSlotsForDateRange(startDate: string, endDate: string
   const existingSet = new Set((existing || []).map(s => `${s.slot_date}|${s.start_time}`));
   const toInsert = [];
 
-  const start = new Date(startDate + 'T00:00:00');
-  const end = new Date(endDate + 'T00:00:00');
+  // Iterate in UTC so the ISO date string and weekday always agree,
+  // regardless of the server's local timezone.
+  const start = new Date(startDate + 'T00:00:00Z');
+  const end = new Date(endDate + 'T00:00:00Z');
 
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+  for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
     const dateStr = d.toISOString().split('T')[0];
-    const dayOfWeek = d.getDay();
+    const dayOfWeek = d.getUTCDay();
     const daySchedules = schedules.filter(s => s.day_of_week === dayOfWeek);
     
     for (const s of daySchedules) {
@@ -679,7 +681,14 @@ export async function ensureSlotsForDateRange(startDate: string, endDate: string
   }
 
   if (toInsert.length > 0) {
-    await db.from('session_slots').upsert(toInsert, { onConflict: 'slot_date, start_time' });
+    // session_slots is write-protected by RLS (admin only). Slot materialization
+    // is a system action triggered by authenticated pages, so use service role.
+    const { error } = await createServiceRoleClient()
+      .from('session_slots')
+      .upsert(toInsert, { onConflict: 'slot_date,start_time' });
+    if (error) {
+      console.error('[ensureSlotsForDateRange] upsert failed:', error);
+    }
   }
 }
 
