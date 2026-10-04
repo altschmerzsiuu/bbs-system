@@ -21,7 +21,7 @@ function formatDate(dateStr: string) {
 
 function pillStyles(status: string): React.CSSProperties {
   if (status === 'CONFIRMED') return { background: '#dce8dd', color: '#4c6c51' };
-  if (status === 'CANCELLED' || status === 'EXPIRED') return { background: '#f5f7f5', color: '#777a77' };
+  if (status === 'MEMBER_CANCELLED' || status === 'BBS_CANCELLED' || status === 'EXPIRED') return { background: '#f5f7f5', color: '#777a77' };
   if (['PENDING', 'RESCHEDULE_REQUESTED'].includes(status)) return { background: '#eedcb8', color: '#5a4214' };
   return { background: '#dce8dd', color: '#4c6c51' }; // Completed
 }
@@ -72,7 +72,7 @@ export function BookingCard({ booking, isOwner, hasFeedback, onClick }: BookingC
           fontWeight: 700,
           ...pillStyles(booking.status)
         }}>
-          {booking.status.replace(/_/g, ' ')}
+          {booking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : booking.status.replace(/_/g, ' ')}
         </div>
       </div>
     </div>

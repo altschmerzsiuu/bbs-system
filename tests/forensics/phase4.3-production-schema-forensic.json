@@ -1,0 +1,185 @@
+{
+  "remote_migration_history": "0019",
+  "actual_production_schema": {
+    "casual_submissions": {
+      "exists": false,
+      "columns": []
+    },
+    "casual_customers": {
+      "exists": true,
+      "columns": [
+        "id",
+        "full_name",
+        "phone",
+        "email",
+        "notes",
+        "linked_member_id",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "riding_requests": {
+      "exists": true,
+      "columns": [
+        "id",
+        "human_id",
+        "member_id",
+        "casual_customer_id",
+        "request_type",
+        "preferred_date",
+        "preferred_time_start",
+        "height_cm",
+        "weight_kg",
+        "shoe_size",
+        "status",
+        "booking_id",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "members": {
+      "exists": true,
+      "columns": [
+        "id",
+        "user_id",
+        "full_name",
+        "phone",
+        "date_of_birth",
+        "emergency_contact_name",
+        "emergency_contact_phone",
+        "notes",
+        "created_at",
+        "updated_at",
+        "domicile",
+        "height_cm",
+        "weight_kg",
+        "shoe_size"
+      ]
+    },
+    "booking_participants": {
+      "exists": true,
+      "columns": [
+        "id",
+        "booking_id",
+        "participant_type",
+        "member_id",
+        "membership_id",
+        "casual_customer_id",
+        "price_idr",
+        "created_at",
+        "horse_id",
+        "participant_status",
+        "cancellation_reason",
+        "cancelled_at",
+        "requested_slot_id",
+        "attendance_status",
+        "checked_in_at",
+        "checked_in_by",
+        "check_in_method"
+      ]
+    },
+    "site_settings": {
+      "exists": true,
+      "columns": [
+        "id",
+        "reschedule_hours",
+        "admin_whatsapp",
+        "updated_at"
+      ]
+    },
+    "membership_applications": {
+      "exists": true,
+      "columns": [
+        "id",
+        "member_id",
+        "previous_membership_id",
+        "requested_plan_id",
+        "base_price_idr",
+        "discount_idr",
+        "final_price_idr",
+        "payment_order_id",
+        "status",
+        "new_membership_id",
+        "admin_notes",
+        "created_at",
+        "updated_at",
+        "application_type",
+        "human_id"
+      ]
+    },
+    "membership_credit_ledger": {
+      "exists": true,
+      "columns": [
+        "id",
+        "membership_id",
+        "member_id",
+        "booking_id",
+        "participant_id",
+        "txn_type",
+        "delta_reserved",
+        "delta_consumed",
+        "delta_allocated",
+        "reason",
+        "actor_id",
+        "created_at"
+      ]
+    },
+    "bookings": {
+      "exists": true,
+      "columns": [
+        "id",
+        "slot_id",
+        "status",
+        "created_by",
+        "is_casual",
+        "pending_expires_at",
+        "requested_slot_id",
+        "cancellation_reason",
+        "cancelled_by",
+        "cancelled_at",
+        "notes",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "session_slots": {
+      "exists": true,
+      "columns": [
+        "id",
+        "slot_date",
+        "start_time",
+        "end_time",
+        "block",
+        "capacity",
+        "is_open",
+        "closed_reason",
+        "source_schedule_id",
+        "created_at",
+        "updated_at"
+      ]
+    }
+  },
+  "functions": {
+    "approve_riding_request": true,
+    "create_member_booking": true,
+    "assign_horse": true,
+    "cancel_booking": true,
+    "approve_reschedule": true,
+    "membership_credit_state": true
+  },
+  "migration_drift": "SIGNIFICANT",
+  "db_push_safe": "NO",
+  "dependencies_for_0041": {
+    "casual_customers": true,
+    "notification_outbox": true,
+    "membership_credit_state": true,
+    "membership_credit_ledger": true,
+    "memberships": true,
+    "members": true,
+    "bookings": true,
+    "booking_participants": true,
+    "session_slots": true,
+    "users": true
+  },
+  "dependencies_for_0041_ready": "YES"
+}

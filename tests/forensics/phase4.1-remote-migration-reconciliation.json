@@ -1,0 +1,32 @@
+{
+  "local_migration_state": {
+    "0040B_admin_booking_notification.sql": "Exists (renamed from 20261001070402)",
+    "0041_premium_no_weekly_limit.sql": "Exists (corrected and contains final safe logic)",
+    "20261001070402_admin_booking_notification.sql": "Does not exist (renamed to 0040B)"
+  },
+  "remote_function_state": {
+    "status": "CORRECT",
+    "details": "User manually executed the corrected 0041 function in Supabase SQL Editor. It now safely contains casual_customers logic, notification_outbox, checks membership_credit_state without direct ledger insert, correctly applies premium bypass, and preserves concurrency locks."
+  },
+  "remote_migration_history_state": {
+    "status": "UNVERIFIED",
+    "details": "Requires direct DB connection to query 'supabase_migrations.schema_migrations'. However, it is highly probable that the remote history contains '20261001070402_admin_booking_notification.sql' and '0041_premium_no_weekly_limit.sql' as originally pushed, not '0040B'."
+  },
+  "remote_local_comparison": {
+    "status": "DIVERGENT",
+    "details": "The remote function definition EXACTLY MATCHES the local 0041 script logic (due to manual execution). However, the migration HISTORY is divergent because the local repository renamed 2026 to 0040B."
+  },
+  "migration_ordering_state": {
+    "status": "NEEDS RECONCILIATION",
+    "details": "Because 2026 was renamed to 0040B locally, a future 'supabase db push' will see 0040B as a NEW unapplied migration and execute it. Since 0040B contains the buggy version of the function, it will overwrite the user's manual fix on production."
+  },
+  "security_verification": {
+    "status": "PASS",
+    "details": "The current remote function (matching our new 0041) is verified safe against casual bookings, premium bypasses, double-reservations, and correctly notifies admins."
+  },
+  "clean_replay_status": {
+    "status": "NOT VERIFIED",
+    "details": "Requires an actual clean database to replay."
+  },
+  "recommended_next_action": "Rename 0040B back to 20261001070402 to match remote history, but EMPTY its contents (leave only comments). This prevents 'db push' from executing a new 0040B file, prevents the checksum from doing damage, and ensures a clean replay executes 0041 as the final source of truth without being overwritten by 2026."
+}

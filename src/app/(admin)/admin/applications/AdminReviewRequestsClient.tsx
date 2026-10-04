@@ -15,7 +15,7 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [isSubmittingId, setIsSubmittingId] = useState<string | null>(null);
-  
+
   // Date/Time modal state
   const [assignModalReqId, setAssignModalReqId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -27,11 +27,11 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
       toast.custom((t) => <AlertToast title="Error" description="Tanggal dan waktu harus diisi" variant="destructive" onDismiss={() => toast.dismiss(t)} />);
       return;
     }
-    
+
     setIsSubmittingId(reqId);
     const res = await approveRidingRequestAction(reqId, selectedDate, selectedTime + ':00', selectedCapacity);
     setIsSubmittingId(null);
-    
+
     if (res.ok) {
       toast.custom((t) => <AlertToast title="Berhasil" description="Request disetujui dan jadwal dibuat" onDismiss={() => toast.dismiss(t)} />);
       setAssignModalReqId(null);
@@ -88,20 +88,20 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
       </div>
 
       <div className="tabs" data-tabgroup>
-        <button 
-          className={activeTab === 'all' ? 'active' : ''} 
+        <button
+          className={activeTab === 'all' ? 'active' : ''}
           onClick={() => setActiveTab('all')}
         >
           Semua · {requests.length}
         </button>
-        <button 
-          className={activeTab === 'riding' ? 'active' : ''} 
+        <button
+          className={activeTab === 'riding' ? 'active' : ''}
           onClick={() => setActiveTab('riding')}
         >
-          Riding · {ridingRequests.length}
+          Casual · {ridingRequests.length}
         </button>
-        <button 
-          className={activeTab === 'membership' ? 'active' : ''} 
+        <button
+          className={activeTab === 'membership' ? 'active' : ''}
           onClick={() => setActiveTab('membership')}
         >
           Membership · {membershipRequests.length}
@@ -114,7 +114,7 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
         </p>
       ) : (
         <p className="helper" style={{ textAlign: 'center', marginTop: '60px' }}>
-          Tidak ada permintaan pending! 🎉
+          Tidak ada permintaan pending!
         </p>
       )}
 
@@ -125,13 +125,13 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4B6B', background: '#E5F0F9', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 700 }}>
                   <Calendar size={14} />
-                  {req.type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'}
+                  Casual
                 </div>
               </div>
-              
+
               <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '20px' }}>
                 {req.memberAvatarUrl ? (
-                  <img src={req.memberAvatarUrl} alt={req.memberName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  <img src={req.memberAvatarUrl} alt={req.memberName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, aspectRatio: '1/1' }} />
                 ) : (
                   <div className="avatar" style={{ background: '#F5F5F7', color: 'var(--ink)', width: '48px', height: '48px', fontSize: '15px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <User size={20} />
@@ -139,7 +139,7 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
                 )}
                 <div style={{ flex: 1 }}>
                   <b style={{ fontSize: '15px', color: 'var(--ink)' }}>{req.memberName}</b>
-                  <div 
+                  <div
                     onClick={() => {
                       if (req.memberEmail) {
                         navigator.clipboard.writeText(req.memberEmail);
@@ -150,24 +150,24 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
                   >
                     {req.memberEmail || '-'}
                   </div>
-                  
+
                   {req.heightCm && req.weightKg && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: '#FDFBF7', padding: '16px', borderRadius: '12px', border: '1px solid #EBE4D5' }}>
                       <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.025em' }}>
                         {formatDateBig(req.createdAt)}
                       </div>
-                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                        <div style={{ flex: '1 1 30%', minWidth: '70px' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', fontWeight: 700 }}>Tinggi</div>
                           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{req.heightCm} cm</div>
                         </div>
-                        <div style={{ flex: '1 1 30%', minWidth: '70px' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', fontWeight: 700 }}>Berat</div>
                           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{req.weightKg} kg</div>
                         </div>
                         {req.shoeSize && (
-                          <div style={{ flex: '1 1 30%', minWidth: '70px' }}>
-                            <div style={{ fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', fontWeight: 700 }}>Sepatu</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', fontWeight: 700 }}>UK</div>
                             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{req.shoeSize}</div>
                           </div>
                         )}
@@ -176,19 +176,19 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
                   )}
                 </div>
               </div>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button 
-                    className="btn" 
-                    style={{ flex: 1, background: '#25D366', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+                  <button
+                    className="btn"
+                    style={{ flex: 1, background: '#25D366', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     onClick={() => handleWA(req.memberName, req.memberPhone, req.type)}
                   >
                     <MessageCircle size={16} /> WA
                   </button>
-                  <button 
-                    className="btn" 
-                    style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+                  <button
+                    className="btn"
+                    style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     onClick={() => {
                       setAssignModalReqId(req.id);
                       // Default to today and 15:00
@@ -223,10 +223,10 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
               </div>
               <span className="hint">{new Date(req.createdAt).toLocaleDateString('id-ID')}</span>
             </div>
-            
+
             <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '20px' }}>
               {req.memberAvatarUrl ? (
-                <img src={req.memberAvatarUrl} alt={req.memberName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                <img src={req.memberAvatarUrl} alt={req.memberName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, aspectRatio: '1/1' }} />
               ) : (
                 <div className="avatar" style={{ background: '#FFF8DC', color: '#B8860B', width: '48px', height: '48px', fontSize: '15px' }}>
                   <User size={20} />
@@ -234,7 +234,7 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
               )}
               <div>
                 <b style={{ fontSize: '15px', color: 'var(--ink)' }}>{req.memberName}</b>
-                <div 
+                <div
                   onClick={() => {
                     if (req.memberEmail) {
                       navigator.clipboard.writeText(req.memberEmail);
@@ -247,18 +247,18 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
                 </div>
               </div>
             </div>
-            
+
             <div style={{ background: '#FAFAFA', borderRadius: '12px', padding: '14px', marginBottom: '20px', border: '1px solid var(--line2)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
                 <span style={{ color: 'var(--muted)' }}>Paket</span>
                 <b style={{ color: 'var(--gold)' }}>{req.planName}</b>
               </div>
             </div>
-            
+
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
-                className="btn" 
-                style={{ flex: 1, background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+              <button
+                className="btn"
+                style={{ flex: 1, background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 onClick={async () => {
                   if (confirm('Yakin ingin menolak aplikasi ini?')) {
                     setIsSubmittingId(req.id);
@@ -270,9 +270,9 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
               >
                 <XCircle size={16} /> Tolak
               </button>
-              <button 
-                className="btn" 
-                style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+              <button
+                className="btn"
+                style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 onClick={async () => {
                   setIsSubmittingId(req.id);
                   await activateMembershipAction(req.id);
@@ -281,7 +281,7 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
                 }}
                 disabled={isSubmittingId === req.id}
               >
-                {isSubmittingId === req.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />} 
+                {isSubmittingId === req.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
                 Aktifkan
               </button>
             </div>
@@ -297,11 +297,11 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '8px' }}>Tanggal</label>
                 <div style={{ position: 'relative' }}>
-                  <input 
-                    type="date" 
-                    value={selectedDate} 
-                    onChange={e => setSelectedDate(e.target.value)} 
-                    style={{ width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid #EBE4D5', background: '#FDFBF7', outline: 'none', color: 'var(--ink)', fontWeight: 500 }} 
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={e => setSelectedDate(e.target.value)}
+                    style={{ width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid #EBE4D5', background: '#FDFBF7', outline: 'none', color: 'var(--ink)', fontWeight: 500 }}
                   />
                 </div>
               </div>
@@ -332,13 +332,13 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button 
+              <button
                 onClick={() => setAssignModalReqId(null)}
                 style={{ flex: 1, padding: '14px', borderRadius: '14px', background: '#F5F5F5', color: 'var(--ink)', border: 'none', fontWeight: 600, cursor: 'pointer' }}
               >
                 Batal
               </button>
-              <button 
+              <button
                 onClick={() => handleApproveRiding(assignModalReqId)}
                 disabled={isSubmittingId === assignModalReqId || !selectedDate || !selectedTime}
                 style={{ flex: 1, padding: '14px', borderRadius: '14px', background: 'var(--ink)', color: '#FFF', border: 'none', fontWeight: 600, cursor: (!selectedDate || !selectedTime || isSubmittingId === assignModalReqId) ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: (!selectedDate || !selectedTime) ? 0.5 : 1 }}

@@ -1,0 +1,72 @@
+{
+  "REMOTE_MIGRATION_HISTORY": "0019",
+  "ACTUAL_PRODUCTION_SCHEMA": "Manually drifted through 0041, excluding 0020.",
+  "MIGRATION_DRIFT": "SIGNIFICANT",
+  "MIGRATIONS_FULLY_VERIFIED_MANUALLY": [
+    "0021",
+    "0023",
+    "0024_fix_approve_status",
+    "0024_weekly_booking_limit",
+    "0025",
+    "0026",
+    "0027",
+    "0028",
+    "0029",
+    "0030",
+    "0031",
+    "0032",
+    "0034",
+    "0035",
+    "0036",
+    "0037",
+    "0038",
+    "0039",
+    "0040"
+  ],
+  "MIGRATIONS_PARTIALLY_APPLIED": [],
+  "MIGRATIONS_NOT_APPLIED": [
+    "0020_casual_submissions"
+  ],
+  "MIGRATIONS_OBSOLETE": [
+    "0020_casual_submissions",
+    "20261001070402_admin_booking_notification"
+  ],
+  "MIGRATIONS_UNKNOWN": [
+    "0022"
+  ],
+  "MARK_AS_APPLIED_CANDIDATES": [
+    "0021",
+    "0023",
+    "0024_fix_approve_status",
+    "0024_weekly_booking_limit",
+    "0025",
+    "0026",
+    "0027",
+    "0028",
+    "0029",
+    "0030",
+    "0031",
+    "0032",
+    "0034",
+    "0035",
+    "0036",
+    "0037",
+    "0038",
+    "0039",
+    "0040",
+    "0041",
+    "20261001070402_admin_booking_notification"
+  ],
+  "FORWARD_MIGRATION_REQUIRED": [],
+  "DO_NOT_MARK_APPLIED": [
+    "0020_casual_submissions",
+    "0022_membership_applications_insert_policy"
+  ],
+  "0041_STATUS": "APPLIED MANUALLY / HISTORY MISSING (Corrected locally)",
+  "0041_DEPENDENCIES": "READY",
+  "DB_PUSH_SAFE": "NO",
+  "MIGRATION_REPAIR_SAFE": "YES",
+  "CLEAN_REPLAY": "NOT_VERIFIED",
+  "SECURITY_CREDENTIAL_EXPOSURE": "FOUND",
+  "RECOMMENDED_NEXT_STEP": "Run migration repair to mark 0021-0041 as applied. Delete or safely bypass 0020 as it is obsolete."
+}

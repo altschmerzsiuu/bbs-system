@@ -8,7 +8,7 @@ import { DomainError } from '@/domain/shared/errors';
 
 export async function assignHorseAction(participantId: string, formData: FormData) {
   try {
-    const actor = await requireActor(['ADMIN', 'GROOMER']);
+    const actor = await requireActor(['GROOMER'], true);
     const db = await createServerClient();
     const service = new BookingService(db as never);
     
@@ -29,7 +29,7 @@ export async function assignHorseAction(participantId: string, formData: FormDat
 
 export async function resolveAttendanceAction(participantId: string, status: 'ATTENDED' | 'NO_SHOW') {
   try {
-    const actor = await requireActor(['ADMIN', 'GROOMER']);
+    const actor = await requireActor(['GROOMER'], true);
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.resolveAttendance(actor, { participantId, status, creditAction: 'CONSUMED', reason: 'OTHER' });

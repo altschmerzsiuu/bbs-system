@@ -9,7 +9,7 @@ import { toClientError } from '@/domain/shared/errors';
 export type ActionResult = { ok: true } | { ok: false; code: string; message: string };
 
 export async function approveApplicationAction(applicationId: string, formData?: FormData): Promise<void> {
-  const actor = await requireActor(['ADMIN']);
+  const actor = await requireActor(['ADMIN'], true);
   const db = await createServerClient();
   const service = new MembershipService(db as never);
   await service.approveApplication(actor, applicationId);
@@ -17,7 +17,7 @@ export async function approveApplicationAction(applicationId: string, formData?:
 }
 
 export async function confirmPaymentAction(applicationId: string, formData?: FormData): Promise<void> {
-  const actor = await requireActor(['ADMIN']);
+  const actor = await requireActor(['ADMIN'], true);
   const db = await createServerClient();
   const service = new MembershipService(db as never);
   await service.confirmPayment(actor, applicationId);
@@ -25,7 +25,7 @@ export async function confirmPaymentAction(applicationId: string, formData?: For
 }
 
 export async function activateMembershipAction(applicationId: string, formData?: FormData): Promise<void> {
-  const actor = await requireActor(['ADMIN']);
+  const actor = await requireActor(['ADMIN'], true);
   const db = await createServerClient();
   const service = new MembershipService(db as never);
   await service.activateMembership(actor, applicationId);
@@ -33,7 +33,7 @@ export async function activateMembershipAction(applicationId: string, formData?:
 }
 
 export async function rejectApplicationAction(applicationId: string, formData?: FormData): Promise<void> {
-  const actor = await requireActor(['ADMIN']);
+  const actor = await requireActor(['ADMIN'], true);
   const db = await createServerClient();
   const service = new MembershipService(db as never);
   await service.rejectApplication(actor, applicationId);

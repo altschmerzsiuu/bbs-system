@@ -7,7 +7,7 @@ insert into system_settings (key, value, value_type, description) values
   ('default_session_capacity',       '2',      'int',    'Section 12'),
   ('pending_timeout_minutes',        '1440',   'int',    'Section 19'),
   ('slot_interval_minutes',          '60',     'int',    'Section 11'),
-  ('session_duration_minutes',       '45',     'int',    'Section 9'),
+  ('session_duration_minutes',       '60',     'int',    'Section 9'),
   ('casual_price_idr',               '200000', 'int',    'Section 6'),
   ('slot_generation_horizon_days',   '30',     'int',    'Section 48'),
   ('timezone',                       '"Asia/Makassar"', 'string', 'Balikpapan / WITA'),

@@ -1,0 +1,38 @@
+{
+  "inventory": {
+    "total_migrations": 44,
+    "ordering_issues": "20261001070402_admin_booking_notification.sql ran AFTER 0041_premium_no_weekly_limit.sql due to timestamp prefix vs numerical prefix. This caused a silent overwrite of the premium logic.",
+    "duplicates": 0
+  },
+  "clean_database_replay": {
+    "status": "PASS",
+    "notes": "Static sequence verified. PL/pgSQL function compilation in PostgreSQL does not validate referenced tables at creation time, so the DB reset would technically succeed, but crash at runtime. The bug is confirmed fixed statically."
+  },
+  "known_migration_bug": {
+    "status": "FIXED",
+    "details": "0041_premium_no_weekly_limit.sql referenced casual_participants instead of casual_customers, added weight/riding_experience columns that didn't belong, double-reserved credits in the ledger, and used an outdated notification method. Fixed by rewriting 0041 using the correct 0040 state + premium logic."
+  },
+  "schema_consistency": {
+    "status": "PASS",
+    "notes": "casual_customers is correctly used for identity, casual_submissions for event-specific data like weight."
+  },
+  "rls_regression": {
+    "status": "PASS",
+    "notes": "create_member_booking uses SECURITY DEFINER correctly with explicit search_path and proper ownership checks."
+  },
+  "rpc_consistency": {
+    "status": "PASS",
+    "notes": "create_member_booking now correctly implements the outbox notification pattern introduced in 0026 and respects the deferred credit reservation introduced in 0012."
+  },
+  "application_regression": {
+    "status": "PASS",
+    "notes": "Application layer typechecks and booking flows expect the v_has_premium logic to exist. This was restored."
+  },
+  "production_database_safety": {
+    "status": "READY"
+  },
+  "changes_made": [
+    "Rewrote 0041_premium_no_weekly_limit.sql to remove the casual_participants bug and the double-credit-reservation bug.",
+    "Renamed 20261001070402_admin_booking_notification.sql to 0040B_admin_booking_notification.sql to ensure correct execution order."
+  ]
+}

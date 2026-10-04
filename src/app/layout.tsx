@@ -32,6 +32,7 @@ export const viewport: Viewport = {
 };
 
 import { Toaster } from 'sonner';
+import { NavigationProgress } from '@/components/ui/navigation-progress';
 
 export default function RootLayout({
   children,
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${manrope.variable} ${fraunces.variable}`}>
       <body suppressHydrationWarning={true}>
+        <NavigationProgress />
         <Toaster position="top-center" toastOptions={{ style: { fontFamily: 'var(--font-sans)', borderRadius: '12px' } }} />
         <SerwistProvider swUrl="/serwist/sw.js">
           {children}

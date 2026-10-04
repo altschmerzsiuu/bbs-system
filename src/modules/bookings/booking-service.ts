@@ -9,6 +9,8 @@ export interface ActorContext {
   userId: string;
   role: 'MEMBER' | 'ADMIN' | 'GROOMER';
   memberId: string | null;
+  fullName?: string | null;
+  avatarUrl?: string | null;
 }
 
 /** Postgres raises our domain codes as exception messages; translate them back. */

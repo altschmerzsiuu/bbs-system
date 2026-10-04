@@ -1,25 +1,15 @@
-import React from 'react';
-
 export default function Loading() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div style={{ width: '120px', height: '32px', background: '#efeade', borderRadius: '8px', animation: 'pulse 1.5s infinite ease-in-out' }} />
-        <div style={{ width: '40px', height: '40px', background: '#efeade', borderRadius: '50%', animation: 'pulse 1.5s infinite ease-in-out' }} />
+    <div style={{ background: 'var(--white)', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '20px 24px' }}>
+        <div className="skel" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+        <div className="skel" style={{ width: '160px', height: '28px' }} />
       </div>
-      
-      <div style={{ width: '60%', height: '48px', background: '#efeade', borderRadius: '12px', animation: 'pulse 1.5s infinite ease-in-out', marginBottom: '8px' }} />
-      <div style={{ width: '40%', height: '24px', background: '#efeade', borderRadius: '8px', animation: 'pulse 1.5s infinite ease-in-out', marginBottom: '24px' }} />
-      
-      <div style={{ width: '100%', height: '180px', background: '#efeade', borderRadius: '24px', animation: 'pulse 1.5s infinite ease-in-out' }} />
-      
-      <style>{`
-        @keyframes pulse {
-          0% { opacity: 0.6; }
-          50% { opacity: 0.3; }
-          100% { opacity: 0.6; }
-        }
-      `}</style>
+      <div style={{ padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {[1,2,3,4,5,6].map(i => (
+          <div key={i} className="skel" style={{ width: '100%', height: '72px', borderRadius: '16px' }} />
+        ))}
+      </div>
     </div>
   );
 }

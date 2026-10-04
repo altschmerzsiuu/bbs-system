@@ -15,15 +15,35 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
   const db = await createServerClient();
 
   // Fetch all necessary pieces in parallel
-  const [memberRes, activeMembershipRes, expiredMembershipRes, notifRes, appRes, bookingRes, recentRidesRes, ridingRequestRes] = await Promise.all([
-    db.from('members').select('full_name').eq('id', memberId).single(),
+  const memberIdMatches = db.from('members').select('full_name').eq('id', memberId).single();
+  
+  // Chain the RPC call immediately after the active membership is fetched
+  const activeMembershipPromise = db.from('memberships')
+    .select('id, allocated_credits, end_date, membership_plans(name)')
+    .eq('member_id', memberId)
+    .eq('status', 'ACTIVE')
+    .maybeSingle()
+    .then(async (res) => {
+      let state = null;
+      if (res.data) {
+        const rpcRes = await db.rpc('membership_credit_state', { p_membership_id: res.data.id });
+        state = Array.isArray(rpcRes.data) ? rpcRes.data[0] : rpcRes.data;
+      }
+      return { ...res, rpcState: state };
+    });
 
-    db.from('memberships')
-      .select('id, allocated_credits, end_date, membership_plans(name)')
-      .eq('member_id', memberId)
-      .eq('status', 'ACTIVE')
-      .maybeSingle(),
-
+  const [
+    memberRes, 
+    activeMembershipData, 
+    expiredMembershipRes, 
+    notifRes, 
+    appRes, 
+    bookingRes, 
+    recentRidesRes, 
+    ridingRequestRes
+  ] = await Promise.all([
+    memberIdMatches,
+    activeMembershipPromise,
     db.from('memberships')
       .select('id, allocated_credits, end_date, membership_plans(name)')
       .eq('member_id', memberId)
@@ -31,15 +51,12 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
       .order('end_date', { ascending: false })
       .limit(1)
       .maybeSingle(),
-
     db.from('notifications').select('id', { count: 'exact', head: true }).is('read_at', null),
-
     db.from('membership_applications')
       .select('id, status, application_type, final_price_idr, membership_plans(name)')
       .eq('member_id', memberId)
       .in('status', ['PENDING_REVIEW', 'APPROVED', 'PAYMENT_CONFIRMED', 'PENDING_ACTIVATION'])
       .maybeSingle(),
-
     db.from('booking_participants')
       .select(`
         booking_id,
@@ -53,20 +70,19 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
       .in('bookings.status', ['PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED'])
       .gte('bookings.session_slots.slot_date', new Date().toISOString().slice(0, 10))
       .order('slot_date', { referencedTable: 'bookings.session_slots', ascending: true }),
-      
     db.from('booking_participants')
       .select(`
         id,
         horses ( name ),
         bookings!inner (
           session_slots!inner ( slot_date )
-        )
+        ),
+        attendance_records!inner ( status )
       `)
       .eq('member_id', memberId)
-      .eq('attendance_status', 'ATTENDED')
+      .eq('attendance_records.status', 'ATTENDED')
       .not('horse_id', 'is', null)
       .limit(5),
-
     db.from('riding_requests')
       .select('id, request_type, status, preferred_date, preferred_time_start')
       .eq('member_id', memberId)
@@ -76,7 +92,7 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
       .maybeSingle()
   ]);
 
-  const activeRow = activeMembershipRes.data as any;
+  const activeRow = activeMembershipData.data as any;
   const expiredRow = expiredMembershipRes.data as any;
   const appData = appRes.data as any;
   const bookings = (bookingRes.data ?? []) as any[];
@@ -87,8 +103,7 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
 
   // Determine ACTIVE membership and credits
   if (activeRow) {
-    const { data: state } = await db.rpc('membership_credit_state', { p_membership_id: activeRow.id });
-    const s = Array.isArray(state) ? state[0] : state;
+    const s = activeMembershipData.rpcState;
     const available = s?.available ?? 0;
 
     resolvedMembership = {
@@ -479,13 +494,11 @@ export async function getAdminSessionDetail(
           price_idr,
           horse_id,
           participant_status,
-          requested_slot_id,
-          cancellation_reason,
-          cancelled_at,
-          attendance_status,
-          checked_in_at,
-          checked_in_by,
-          check_in_method,
+          attendance_records (
+            status,
+            resolved_at,
+            resolved_by
+          ),
           members (
             full_name,
             user_id,
@@ -552,14 +565,14 @@ export async function getAdminSessionDetail(
       casualCustomerId: participant.casual_customer_id ?? null,
 
       participantStatus: participant.participant_status,
-      requestedSlotId: participant.requested_slot_id ?? null,
-      cancellationReason: participant.cancellation_reason ?? null,
-      cancelledAt: participant.cancelled_at ?? null,
+      requestedSlotId: booking.requested_slot_id ?? null,
+      cancellationReason: booking.cancellation_reason ?? null,
+      cancelledAt: booking.cancelled_at ?? null,
 
-      attendanceStatus: participant.attendance_status,
-      checkedInAt: participant.checked_in_at ?? null,
-      checkedInBy: participant.checked_in_by ?? null,
-      checkInMethod: participant.check_in_method ?? null,
+      attendanceStatus: participant.attendance_records?.[0]?.status ?? 'NOT_CHECKED_IN',
+      checkedInAt: participant.attendance_records?.[0]?.resolved_at ?? null,
+      checkedInBy: participant.attendance_records?.[0]?.resolved_by ?? null,
+      checkInMethod: null,
 
       priceIdr: participant.price_idr ?? null,
 
@@ -606,16 +619,20 @@ export async function getAdminSessionDetail(
 export async function ensureSlotsForDateRange(startDate: string, endDate: string) {
   const db = await createServerClient();
   
-  // Get all operating schedules
-  const { data: schedules } = await db.from('operating_schedules').select('*').eq('is_active', true);
-  if (!schedules || schedules.length === 0) return;
+  // Get all operating schedules and existing slots concurrently
+  const [schedulesRes, existingRes] = await Promise.all([
+    db.from('operating_schedules').select('*').eq('is_active', true),
+    db
+      .from('session_slots')
+      .select('slot_date, start_time')
+      .gte('slot_date', startDate)
+      .lte('slot_date', endDate)
+  ]);
 
-  // Get existing slots in range
-  const { data: existing } = await db
-    .from('session_slots')
-    .select('slot_date, start_time')
-    .gte('slot_date', startDate)
-    .lte('slot_date', endDate);
+  const schedules = schedulesRes.data;
+  const existing = existingRes.data;
+
+  if (!schedules || schedules.length === 0) return;
     
   const existingSet = new Set((existing || []).map(s => `${s.slot_date}|${s.start_time}`));
   const toInsert = [];

@@ -11,9 +11,7 @@ export default async function AdminDashboardPage() {
   const db = await createServerClient();
   const data = await getAdminHomeData(db);
 
-  // Get admin name from users table
-  const { data: userData } = await db.from('users').select('full_name').eq('id', actor.userId).single();
-  const adminName = userData?.full_name || 'Admin';
+  const adminName = actor.fullName || 'Admin';
 
   // Formatting date in Indonesian like "Sabtu · 20 September 2026"
   const now = new Date();
@@ -31,6 +29,7 @@ export default async function AdminDashboardPage() {
         pending={data.pending}
         upcoming={data.upcoming}
         currentSession={data.currentSession}
+        pastSessions={data.pastSessions}
         todayStr={todayStr}
         adminName={adminName}
       />

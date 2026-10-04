@@ -9,20 +9,32 @@ import { cache } from 'react';
  * role dan memberId selalu dibaca dari database, tidak pernah dari klien.
  * Hasil cache hanya berlaku untuk satu request (React request cache).
  */
-export const getActor = cache(async (): Promise<ActorContext | null> => {
+export const getActor = cache(async (strict: boolean = false): Promise<ActorContext | null> => {
   const db = await createServerClient();
-  const { data: auth, error: authError } = await db.auth.getUser();
-  if (authError || !auth?.user) {
-    console.log('[getActor] auth.getUser failed or no user:', authError?.message);
-    return null;
+  
+  let user = null;
+  if (strict) {
+    const { data, error } = await db.auth.getUser();
+    if (error || !data.user) {
+      console.log('[getActor] auth.getUser failed or no user:', error?.message);
+      return null;
+    }
+    user = data.user;
+  } else {
+    const { data, error } = await db.auth.getSession();
+    if (error || !data.session?.user) {
+      console.log('[getActor] auth.getSession failed or no user:', error?.message);
+      return null;
+    }
+    user = data.session.user;
   }
 
   const { createServiceRoleClient } = await import('@/infrastructure/supabase-server');
   const serviceDb = createServiceRoleClient();
 
   const [profileRes, memberRes] = await Promise.all([
-    serviceDb.from('users').select('id, role').eq('id', auth.user.id).single(),
-    serviceDb.from('members').select('id').eq('user_id', auth.user.id).maybeSingle()
+    serviceDb.from('users').select('id, role').eq('id', user.id).single(),
+    serviceDb.from('members').select('id').eq('user_id', user.id).maybeSingle()
   ]);
 
   if (profileRes.error || !profileRes.data) {
@@ -41,8 +53,8 @@ export const getActor = cache(async (): Promise<ActorContext | null> => {
   return { userId: profile.id, role: profile.role, memberId: member?.id ?? null };
 });
 
-export async function requireActor(allowed: ActorContext['role'][]): Promise<ActorContext> {
-  const actor = await getActor();
+export async function requireActor(allowed: ActorContext['role'][], strict: boolean = false): Promise<ActorContext> {
+  const actor = await getActor(strict);
   if (!actor) {
     console.log('[requireActor] No actor found, redirecting to /login');
     redirect('/login');

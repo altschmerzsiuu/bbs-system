@@ -1,0 +1,84 @@
+{
+  "phase": "5.2.1",
+  "status": "PASS",
+  "tests": [
+    {
+      "area": "RLS",
+      "feature": "Member Data Isolation",
+      "result": "PASS",
+      "details": "Member A cannot read Member B data."
+    },
+    {
+      "area": "RLS",
+      "feature": "Role-Based Mutation",
+      "result": "PASS",
+      "details": "MEMBER and GROOMER cannot insert session_slots. ADMIN can insert."
+    },
+    {
+      "area": "RLS",
+      "feature": "Anonymous Mutation",
+      "result": "PASS",
+      "details": "Unauthenticated requests cannot modify bookings."
+    },
+    {
+      "area": "Security",
+      "feature": "RPC Context Enforcement",
+      "result": "PASS",
+      "details": "SECURITY DEFINER approve_booking fails when called by unprivileged member."
+    },
+    {
+      "area": "RPC",
+      "feature": "activate_membership",
+      "result": "PASS",
+      "details": "Creates ACTIVE membership and inserts 4 credits into membership_credit_ledger."
+    },
+    {
+      "area": "Negative State",
+      "feature": "approve_booking (Confirmed)",
+      "result": "PASS",
+      "details": "Cannot approve an already confirmed booking."
+    },
+    {
+      "area": "Negative State",
+      "feature": "reject_booking (Confirmed)",
+      "result": "PASS",
+      "details": "Cannot reject an already confirmed booking."
+    },
+    {
+      "area": "Negative State",
+      "feature": "approve_booking (Cancelled)",
+      "result": "PASS",
+      "details": "Cannot approve a cancelled booking."
+    },
+    {
+      "area": "Negative State",
+      "feature": "cancel_booking (Cancelled)",
+      "result": "PASS",
+      "details": "Cannot cancel an already cancelled booking."
+    },
+    {
+      "area": "RPC",
+      "feature": "reject_reschedule",
+      "result": "PASS",
+      "details": "Reverts booking status back to CONFIRMED and clears requested_slot_id."
+    },
+    {
+      "area": "Negative State",
+      "feature": "approve_reschedule (No Request)",
+      "result": "PASS",
+      "details": "Cannot approve reschedule if one was not requested."
+    },
+    {
+      "area": "System",
+      "feature": "Notification Outbox",
+      "result": "PASS",
+      "details": "Event triggers successfully insert into notification_outbox."
+    },
+    {
+      "area": "System",
+      "feature": "Credit Ledger State",
+      "result": "PASS",
+      "details": "membership_credit_state properly aggregates credits (allocated: 4)."
+    }
+  ]
+}

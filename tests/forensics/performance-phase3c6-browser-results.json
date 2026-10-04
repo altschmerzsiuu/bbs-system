@@ -1,0 +1,51 @@
+{
+  "environment": "development",
+  "method": "real_browser",
+  "routes": {
+    "/home": {
+      "phase3a_ttfb_ms": 587,
+      "phase3c6": {
+        "runs": [762],
+        "median_ttfb_ms": 762,
+        "median_fcp_ms": null,
+        "median_lcp_ms": null
+      }
+    },
+    "/schedule": {
+      "phase3a_ttfb_ms": 452,
+      "phase3c6": {
+        "runs": [565],
+        "median_ttfb_ms": 565,
+        "median_fcp_ms": null,
+        "median_lcp_ms": null
+      }
+    },
+    "/bookings": {
+      "phase3a_ttfb_ms": 450,
+      "phase3c6": {
+        "runs": [578],
+        "median_ttfb_ms": 578,
+        "median_fcp_ms": null,
+        "median_lcp_ms": null
+      }
+    },
+    "/admin": {
+      "phase3a_ttfb_ms": 1408,
+      "phase3c6": {
+        "runs": [685],
+        "median_ttfb_ms": 685,
+        "median_fcp_ms": null,
+        "median_lcp_ms": null
+      }
+    },
+    "/admin/schedule": {
+      "phase3a_ttfb_ms": 1470,
+      "phase3c6": {
+        "runs": [1060],
+        "median_ttfb_ms": 1060,
+        "median_fcp_ms": null,
+        "median_lcp_ms": null
+      }
+    }
+  }
+}

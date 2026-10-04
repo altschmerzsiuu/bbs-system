@@ -1,0 +1,22 @@
+{
+  "environment": "development",
+  "method": "forensic_analysis",
+  "target": "ensureSlotsForDateRange",
+  "findings": {
+    "is_postgres_rpc": false,
+    "is_typescript_function": true,
+    "queries_executed": [
+      "SELECT * FROM operating_schedules WHERE is_active = true",
+      "SELECT slot_date, start_time FROM session_slots WHERE slot_date >= $1 AND slot_date <= $2",
+      "INSERT INTO session_slots ... ON CONFLICT (slot_date, start_time) DO UPDATE"
+    ],
+    "loop_overhead": "negligible (in-memory Set intersection in Node.js)",
+    "network_roundtrips": "2 to 3 sequential Supabase REST calls",
+    "indexes_present": ["session_slots_date_idx (slot_date, start_time)"]
+  },
+  "verdict": {
+    "root_cause": "Sequential REST API round-trips in Next.js, not PostgreSQL query execution time.",
+    "primary_bottleneck": "Executing 2-3 sequential Supabase fetch() calls on every page load to check existence.",
+    "recommended_fix": "Decouple slot generation from page request, or move the entire logic into a single PL/pgSQL RPC to eliminate network waterfalls."
+  }
+}

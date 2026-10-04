@@ -19,6 +19,7 @@ export default async function AdminBookingsPage() {
     .select(`
       *,
       session_slots!bookings_slot_id_fkey(*),
+      requested_slot:session_slots!bookings_requested_slot_id_fkey(slot_date, start_time, end_time),
       booking_participants(
         *,
         members(full_name, phone),
@@ -108,8 +109,16 @@ export default async function AdminBookingsPage() {
               <span className="chip-state" style={{ backgroundColor: 'rgba(33, 150, 243, 0.1)', color: '#2196F3' }}>RESCHEDULE REQUESTED</span>
             </div>
             <div style={{ backgroundColor: 'rgba(0,0,0,0.03)', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '14px', color: 'var(--ink-2)', display: 'block' }}>Old Slot:</span>
-              <b style={{ fontSize: '14px', textDecoration: 'line-through' }}>{formatDate(b.session_slots.slot_date + 'T' + b.session_slots.start_time)}</b>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <div>
+                  <span style={{ fontSize: '13px', color: 'var(--ink-2)', display: 'block' }}>Dari:</span>
+                  <b style={{ fontSize: '14px', textDecoration: 'line-through', color: 'var(--muted)' }}>{formatDate(b.session_slots.slot_date + 'T' + b.session_slots.start_time)}</b>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--ink-2)', display: 'block' }}>Menjadi:</span>
+                  <b style={{ fontSize: '14px', color: 'var(--ink)' }}>{b.requested_slot ? formatDate(b.requested_slot.slot_date + 'T' + b.requested_slot.start_time) : 'Tidak diketahui'}</b>
+                </div>
+              </div>
             </div>
             
             <div style={{ display: 'flex', gap: '8px' }}>

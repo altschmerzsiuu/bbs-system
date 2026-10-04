@@ -16,6 +16,7 @@ export default function AdminMemberDetailClient({ member }: { member: any }) {
   const name = member.full_name;
   const phone = member.phone || '';
   const email = member.users?.email || '';
+  const avatarUrl = member.users?.avatar_url || '';
   const emergencyName = member.emergency_contact_name || 'Tidak ada data';
   const emergencyPhone = member.emergency_contact_phone || '-';
 
@@ -78,11 +79,29 @@ export default function AdminMemberDetailClient({ member }: { member: any }) {
         <Link href="/admin/members" style={{ width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#fff', color: 'var(--ink)', border: '1px solid rgba(0,0,0,0.08)', flexShrink: 0, textDecoration: 'none', marginTop: '2px' }}>
           <ChevronLeft size={22} strokeWidth={2.5} />
         </Link>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h1 style={{ fontSize: '28px', fontFamily: 'var(--font-display)', fontWeight: 600, margin: 0, color: 'var(--ink)', letterSpacing: '-0.02em', lineHeight: 1.1 }}>{name}</h1>
-          <span style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '8px' }}>
-            {email} {email && phone ? '·' : ''} {phone}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
+          {/* Profile picture */}
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '50%',
+            background: currentTierColors.bg, color: currentTierColors.text,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 700, fontSize: '18px', flexShrink: 0, overflow: 'hidden',
+            border: `2px solid ${currentTierColors.fill}22`
+          }}>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              name.substring(0, 2).toUpperCase()
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 600, margin: 0, color: 'var(--ink)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{name}</h1>
+            </div>
+            <span style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>
+              {email}{email && phone ? ' · ' : ''}{phone}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -107,9 +126,13 @@ export default function AdminMemberDetailClient({ member }: { member: any }) {
             {/* Card 1: Membership Info */}
             <div className="card" style={{ padding: '24px', marginBottom: '24px', background: currentTierColors.cardBg }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <span style={{ background: currentTierColors.bg, color: currentTierColors.text, padding: '6px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 700 }}>
-              {planName}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ background: currentTierColors.bg, color: currentTierColors.text, padding: '6px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', border: `1px solid ${currentTierColors.fill}33` }}>
+                {tier === 'gold' && '✦ '}
+                {tier === 'silver' && '◆ '}
+                {planName}
+              </span>
+            </div>
             {activeMembership && (
               <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
                 Berlaku s/d {formatDate(activeMembership.end_date)}
@@ -230,7 +253,17 @@ export default function AdminMemberDetailClient({ member }: { member: any }) {
                         onClick={() => setShowAllHistory(true)}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', padding: '8px 16px' }}
                     >
-                        Tampilkan Lebih Banyak <ChevronDown size={16} />
+                        Tampilkan Lebih Banyak ({riwayatSesi.length - 3} lagi) <ChevronDown size={16} />
+                    </button>
+                </div>
+            )}
+            {showAllHistory && riwayatSesi.length > 3 && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+                    <button 
+                        onClick={() => setShowAllHistory(false)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', padding: '8px 16px' }}
+                    >
+                        Tampilkan Lebih Sedikit
                     </button>
                 </div>
             )}

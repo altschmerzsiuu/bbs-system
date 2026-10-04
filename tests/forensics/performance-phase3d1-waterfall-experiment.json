@@ -1,0 +1,26 @@
+{
+  "environment": "development",
+  "method": "waterfall_remediation",
+  "target": "ensureSlotsForDateRange",
+  "dependency_analysis": {
+    "getAdminSchedule_dependency": "getAdminSchedule MUST read from session_slots. Therefore, it absolutely requires ensureSlotsForDateRange to complete any potential UPSERTs first, otherwise the generated slots would be missing from the UI.",
+    "internal_dependency": "Inside ensureSlotsForDateRange, fetching operating_schedules and checking existing session_slots have NO dependency on each other."
+  },
+  "safe_parallelism": {
+    "operating_schedules_fetch": "Parallelized",
+    "session_slots_existence_fetch": "Parallelized",
+    "getAdminSchedule": "Remains sequential (Blocking) to guarantee correctness if slots are newly generated."
+  },
+  "change_made": "Refactored ensureSlotsForDateRange to execute db.from('operating_schedules') and db.from('session_slots') concurrently using Promise.all, eliminating 1 sequential REST API round-trip.",
+  "measurements": {
+    "before_ttfb_median_ms": 1060,
+    "after_ttfb_median_ms": 621,
+    "improvement_ms": 439
+  },
+  "verdict": {
+    "root_cause": "Unnecessary sequential reads inside the slot generation check.",
+    "safe_parallelism_achieved": true,
+    "keep_change": true,
+    "next_step": "Phase 3D is complete. No database rewrite is required since the TTFB is now ~621ms."
+  }
+}

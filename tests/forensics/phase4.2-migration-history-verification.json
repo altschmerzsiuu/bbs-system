@@ -1,0 +1,32 @@
+{
+  "remote_migration_history": {
+    "status": "VERIFIED",
+    "method": "supabase migration list --project-ref jfbcfzhnffvgpgvebzob",
+    "last_applied": "0019_fix_rls_recursion_v2.sql",
+    "unapplied_remotely": [
+      "0020_casual_submissions.sql",
+      "...",
+      "0041_premium_no_weekly_limit.sql",
+      "20261001070402_admin_booking_notification.sql"
+    ],
+    "specifically_checked": {
+      "0040B_admin_booking_notification.sql": "NOT RECORDED",
+      "0041_premium_no_weekly_limit.sql": "NOT RECORDED",
+      "20261001070402_admin_booking_notification.sql": "NOT RECORDED"
+    }
+  },
+  "remote_function_state": {
+    "status": "CORRECT",
+    "details": "Verified via user's manual SQL execution. Contains casual_customers, notification_outbox, premium bypass, etc."
+  },
+  "local_migration_state": {
+    "status": "CONSISTENT_BUT_AWAITING_PUSH",
+    "0041": "Contains full correct function logic.",
+    "20261001070402": "Empty (comments only) to prevent overwriting 0041."
+  },
+  "db_push_safe": {
+    "status": "UNKNOWN",
+    "reason": "db push will attempt to run ALL migrations from 0020 to 2026... because they are not recorded in remote schema_migrations. For 0041 (idempotent CREATE OR REPLACE) and 2026 (empty), this is perfectly safe. However, if the user has manually created tables from 0020-0040 on production, db push will crash with 'relation already exists'."
+  },
+  "recommended_next_step": "Verify if the schema changes from 0020 to 0040 were manually applied to production. If they were NOT manually applied (which our 404 check on casual_submissions suggests), then 'supabase db push' is the correct and safe way to deploy all pending migrations, including our perfected 0041."
+}

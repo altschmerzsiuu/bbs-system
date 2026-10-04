@@ -1,0 +1,39 @@
+{
+  "REMOTE_MIGRATION_HISTORY": "0019",
+  "0020": "casual_submissions is completely missing and unused.",
+  "0022": "RLS policy verification impossible without direct DB connection or Management API token.",
+  "0041": "Verified correct because user executed it manually in Phase 4.1.",
+  "SAFE_TO_MARK_APPLIED": [
+    "0021_member_onboarding_fields.sql",
+    "0034_remove_pricing_from_site_settings.sql",
+    "0036_remove_validity_months.sql",
+    "20261001070402_admin_booking_notification.sql"
+  ],
+  "MUST_NOT_MARK_APPLIED": [
+    "0020_casual_submissions.sql"
+  ],
+  "UNKNOWN": [
+    "0022_membership_applications_insert_policy.sql",
+    "0023_riding_requests.sql",
+    "0024_fix_approve_status.sql",
+    "0024_weekly_booking_limit.sql",
+    "0025_add_participant_status.sql",
+    "0026_fix_notification_channel.sql",
+    "0027_fix_notification_aggregate.sql",
+    "0028_fix_attendance_status_cast.sql",
+    "0029_fix_cancellation_txn_type_cast.sql",
+    "0030_fix_activate_membership_record_null_check.sql",
+    "0031_reschedule_deadline_guard.sql",
+    "0032_prevent_double_booking_same_slot.sql",
+    "0035_fix_participant_identity_valid.sql",
+    "0037_fix_reschedule_hours.sql",
+    "0038_fix_riding_request_status.sql",
+    "0039_fix_slot_end_times.sql",
+    "0040_fix_member_cancellation_and_horse_assign.sql",
+    "0041_premium_no_weekly_limit.sql"
+  ],
+  "MIGRATION_REPAIR_SAFE": "NO",
+  "DB_PUSH_SAFE": "NO",
+  "CLEAN_REPLAY": "NOT_VERIFIED",
+  "RECOMMENDED_NEXT_STEP": "Provide database connection string or valid PAT to verify UNKNOWN migrations, or accept risk and manually override the UNKNOWN status."
+}

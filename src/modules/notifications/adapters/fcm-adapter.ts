@@ -101,6 +101,10 @@ export class FCMAdapter implements NotificationChannelAdapter {
         title = 'Booking Confirmed';
         body = `Your session on ${payloadData.slot_date} at ${payloadData.start_time} is confirmed.`;
         break;
+      case 'NEW_BOOKING_REQUEST':
+        title = 'New Booking Request';
+        body = `A new booking request on ${payloadData.slot_date} at ${payloadData.start_time} needs approval.`;
+        break;
       case 'BOOKING_REJECTED':
         title = 'Booking Rejected';
         body = `Your booking was rejected. Reason: ${payloadData.reason}`;

@@ -147,9 +147,11 @@ function ParticipantRow({
                             fontSize: '14px',
                             fontWeight: 600,
                             color: 'var(--ink)',
-                            whiteSpace: 'nowrap',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            wordBreak: 'break-word',
                         }}
                     >
                         {participant.name}
@@ -160,6 +162,8 @@ function ParticipantRow({
                         style={{
                             fontSize: '10px',
                             padding: '3px 8px',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0
                         }}
                     >
                         {getAttendanceLabel((participant.attendanceStatus || 'NOT_CHECKED_IN'))}
@@ -168,37 +172,36 @@ function ParticipantRow({
 
                 <div
                     style={{
-                        marginTop: '4px',
-                        fontSize: '11px',
-                        color: 'var(--muted)',
+                        marginTop: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
                     }}
                 >
-                    {participant.type === 'MEMBER'
-                        ? 'Member'
-                        : 'Casual'}
+                    <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>
+                        {participant.type === 'MEMBER'
+                            ? 'Member'
+                            : 'Casual'}
+                    </span>
+                    <div 
+                        onClick={(e) => { e.stopPropagation(); onOpenHorsePicker(); }}
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '6px', 
+                            padding: '4px 8px', 
+                            borderRadius: '100px', 
+                            background: participant.horseName ? 'rgba(0,0,0,0.04)' : 'transparent',
+                            border: participant.horseName ? 'none' : '1px dashed var(--muted)',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            color: participant.horseName ? 'var(--ink)' : 'var(--muted)',
+                        }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
+                        {participant.horseName || 'Pilih Kuda'}
+                    </div>
                 </div>
-            </div>
-
-            <div 
-                onClick={(e) => { e.stopPropagation(); onOpenHorsePicker(); }}
-                style={{ 
-                    marginRight: '8px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '6px', 
-                    padding: '4px 8px', 
-                    borderRadius: '100px', 
-                    background: participant.horseName ? 'rgba(0,0,0,0.04)' : 'transparent',
-                    border: participant.horseName ? 'none' : '1px dashed var(--muted)',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: participant.horseName ? 'var(--ink)' : 'var(--muted)',
-                    flexShrink: 0,
-                    whiteSpace: 'nowrap',
-                }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
-                {participant.horseName || 'Pilih Kuda'}
             </div>
 
             <button
@@ -281,16 +284,20 @@ export default function AdminSessionDetailClient({
     
     const [horsePickerParticipantId, setHorsePickerParticipantId] = useState<string | null>(null);
     const [isAssigningHorse, setIsAssigningHorse] = useState(false);
+    const [pendingHorseId, setPendingHorseId] = useState<string | null | undefined>(undefined); // undefined = not chosen yet
 
-    const handleAssignHorse = async (horseId: string | null) => {
-        if (!horsePickerParticipantId) return;
+    const handleAssignHorse = async () => {
+        if (!horsePickerParticipantId || pendingHorseId === undefined) return;
         setIsAssigningHorse(true);
-        const res = await assignHorseAction(horsePickerParticipantId, horseId);
+        const res = await assignHorseAction(horsePickerParticipantId, pendingHorseId);
         if (res.ok) {
+            const horseName = pendingHorseId === null ? null : horses.find(h => h.id === pendingHorseId)?.name;
+            toast.custom((t) => <AlertToast title="Berhasil" description={horseName ? `Kuda ${horseName} berhasil ditandai.` : 'Tanda kuda berhasil dilepas.'} onDismiss={() => toast.dismiss(t)} />);
             setHorsePickerParticipantId(null);
+            setPendingHorseId(undefined);
             router.refresh();
         } else {
-            toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Unknown error'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+            toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Gagal menandai kuda.'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
         }
         setIsAssigningHorse(false);
     };
@@ -301,9 +308,9 @@ export default function AdminSessionDetailClient({
     const [isSavingAttendance, setIsSavingAttendance] = useState(false);
     const [approvingBookingId, setApprovingBookingId] = useState<string | null>(null);
 
-    const participants = session.bookings.flatMap(
-        (booking) => booking.participants
-    );
+    const participants = session.bookings
+        .filter(booking => booking.status !== 'MEMBER_CANCELLED' && booking.status !== 'BBS_CANCELLED')
+        .flatMap((booking) => booking.participants);
 
     const handleMarkAttendance = async (status: 'ATTENDED' | 'NO_SHOW') => {
         if (selectedUsers.length === 0 || isSavingAttendance) return;
@@ -319,10 +326,10 @@ export default function AdminSessionDetailClient({
                 await resolveAttendanceAction(update.bookingParticipantId, update.status, update.creditAction as any);
             }
             setSelectedUsers([]);
-            alert('Absensi berhasil disimpan.');
+            toast.custom((t) => <AlertToast title="Berhasil" description={`Absensi ${status === 'ATTENDED' ? 'kehadiran' : 'tidak hadir'} berhasil disimpan.`} onDismiss={() => toast.dismiss(t)} />);
             router.refresh();
         } catch (e) {
-            alert('Terjadi kesalahan.');
+            toast.custom((t) => <AlertToast title="Gagal" description="Terjadi kesalahan saat menyimpan absensi." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
         } finally {
             setIsSavingAttendance(false);
         }
@@ -344,10 +351,10 @@ export default function AdminSessionDetailClient({
                 setIsSessionMenuOpen(false);
                 router.refresh();
             } else {
-                alert(`Gagal: ${res.message}`);
+                toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Gagal mengubah status sesi.'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
             }
         } catch (e) {
-            alert('Terjadi kesalahan saat memproses sesi.');
+            toast.custom((t) => <AlertToast title="Error" description="Terjadi kesalahan saat memproses sesi." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
         } finally {
             setIsClosingSession(false);
         }
@@ -359,12 +366,13 @@ export default function AdminSessionDetailClient({
         try {
             const res = await approveBookingAction(bookingId);
             if (res.ok) {
+                toast.custom((t) => <AlertToast title="Berhasil" description="Booking berhasil diterima." onDismiss={() => toast.dismiss(t)} />);
                 router.refresh();
             } else {
-                alert(`Gagal menerima booking: ${res.message}`);
+                toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Gagal menerima booking.'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
             }
         } catch (err: any) {
-            alert('Terjadi kesalahan saat menerima booking.');
+            toast.custom((t) => <AlertToast title="Error" description="Terjadi kesalahan saat menerima booking." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
         } finally {
             setApprovingBookingId(null);
         }
@@ -378,12 +386,13 @@ export default function AdminSessionDetailClient({
             if (res.ok) {
                 setRejectModalBookingId(null);
                 setRejectionReason('');
+                toast.custom((t) => <AlertToast title="Berhasil" description="Booking berhasil ditolak." onDismiss={() => toast.dismiss(t)} />);
                 router.refresh();
             } else {
-                alert(`Gagal menolak booking: ${res.message}`);
+                toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Gagal menolak booking.'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
             }
         } catch (err: any) {
-            alert('Terjadi kesalahan saat menolak booking.');
+            toast.custom((t) => <AlertToast title="Error" description="Terjadi kesalahan saat menolak booking." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
         } finally {
             setIsRejecting(false);
         }
@@ -683,13 +692,7 @@ export default function AdminSessionDetailClient({
                     >
                         <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Durasi</span>
                         <span style={{ fontSize: '13px', fontWeight: 600 }}>
-                            {(() => {
-                                const [startHour, startMinute] = session.startTime.split(':').map(Number);
-                                const [endHour, endMinute] = session.endTime.split(':').map(Number);
-                                const start = startHour * 60 + startMinute;
-                                const end = endHour * 60 + endMinute;
-                                return `${end - start} menit`;
-                            })()}
+                            45 menit
                         </span>
                     </div>
 
@@ -779,41 +782,80 @@ export default function AdminSessionDetailClient({
             )}
 
             {horsePickerParticipantId && (
-                <div onClick={(e) => { if(e.target === e.currentTarget && !isAssigningHorse) setHorsePickerParticipantId(null); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                    <div style={{ background: '#FFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '24px', paddingBottom: 'env(safe-area-inset-bottom, 24px)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Tandai Kuda</h2>
-                            <button disabled={isAssigningHorse} onClick={() => setHorsePickerParticipantId(null)} style={{ padding: '8px', background: '#F5F5F5', borderRadius: '50%', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+                <div onClick={(e) => { if(e.target === e.currentTarget && !isAssigningHorse) { setHorsePickerParticipantId(null); setPendingHorseId(undefined); } }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                    <div style={{ background: '#FFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '28px 24px', paddingBottom: 'max(env(safe-area-inset-bottom, 24px), 32px)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <div>
+                                <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Tandai Kuda</h2>
+                                <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '4px 0 0' }}>Pilih kuda, lalu tekan Konfirmasi</p>
+                            </div>
+                            <button disabled={isAssigningHorse} onClick={() => { setHorsePickerParticipantId(null); setPendingHorseId(undefined); }} style={{ padding: '8px', background: '#F5F5F5', borderRadius: '50%', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                            {horses.map(horse => (
-                                <button
-                                    key={horse.id}
-                                    disabled={isAssigningHorse}
-                                    onClick={() => handleAssignHorse(horse.id)}
-                                    style={{
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-                                        background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', opacity: isAssigningHorse ? 0.5 : 1
-                                    }}
-                                >
-                                    <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
-                                    </div>
-                                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink)' }}>{horse.name}</span>
-                                </button>
-                            ))}
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginTop: '24px', marginBottom: '24px' }}>
+                            {horses.map(horse => {
+                                const isSelected = pendingHorseId === horse.id;
+                                return (
+                                    <button
+                                        key={horse.id}
+                                        disabled={isAssigningHorse}
+                                        onClick={() => setPendingHorseId(isSelected ? undefined : horse.id)}
+                                        style={{
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                                            background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px',
+                                            opacity: isAssigningHorse ? 0.5 : 1,
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '52px', height: '52px', borderRadius: '16px',
+                                            background: isSelected ? 'var(--ink)' : '#f1f5f9',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            border: isSelected ? '2px solid var(--ink)' : '2px solid transparent',
+                                            transition: 'all 0.15s ease',
+                                        }}>
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={isSelected ? '#fff' : 'var(--ink)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.9 }}><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
+                                        </div>
+                                        <span style={{ fontSize: '12px', fontWeight: isSelected ? 700 : 600, color: isSelected ? 'var(--ink)' : 'var(--muted)' }}>{horse.name}</span>
+                                    </button>
+                                );
+                            })}
                             <button
                                 disabled={isAssigningHorse}
-                                onClick={() => handleAssignHorse(null)}
+                                onClick={() => setPendingHorseId(pendingHorseId === null ? undefined : null)}
                                 style={{
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-                                    background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', opacity: isAssigningHorse ? 0.5 : 1
+                                    background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px',
+                                    opacity: isAssigningHorse ? 0.5 : 1,
                                 }}
                             >
-                                <div style={{ width: '48px', height: '48px', borderRadius: '16px', border: '1px dashed #cbd5e1', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}><X size={24} /></div>
-                                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>Lepas Tanda</span>
+                                <div style={{
+                                    width: '52px', height: '52px', borderRadius: '16px',
+                                    border: pendingHorseId === null ? '2px solid var(--ink)' : '1.5px dashed #cbd5e1',
+                                    background: pendingHorseId === null ? 'var(--ink)' : '#fff',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: pendingHorseId === null ? '#fff' : '#cbd5e1',
+                                    transition: 'all 0.15s ease',
+                                }}><X size={22} /></div>
+                                <span style={{ fontSize: '12px', fontWeight: pendingHorseId === null ? 700 : 600, color: pendingHorseId === null ? 'var(--ink)' : 'var(--muted)' }}>Lepas Tanda</span>
                             </button>
                         </div>
+
+                        <button
+                            onClick={handleAssignHorse}
+                            disabled={isAssigningHorse || pendingHorseId === undefined}
+                            style={{
+                                width: '100%', padding: '16px', borderRadius: '16px',
+                                background: pendingHorseId === undefined ? 'rgba(0,0,0,0.06)' : 'var(--ink)',
+                                color: pendingHorseId === undefined ? 'var(--muted)' : '#fff',
+                                fontSize: '15px', fontWeight: 700, border: 'none',
+                                cursor: pendingHorseId === undefined ? 'default' : 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                transition: 'all 0.15s ease',
+                            }}
+                        >
+                            {isAssigningHorse ? <Loader2 size={18} className="spin" /> : <Check size={18} strokeWidth={3} />}
+                            {isAssigningHorse ? 'Menyimpan...' : 'Konfirmasi Pilihan'}
+                        </button>
                     </div>
                 </div>
             )}

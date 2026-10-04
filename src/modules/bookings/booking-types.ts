@@ -10,12 +10,23 @@
 //   | 'NO_SHOW';
 
 export type BookingStatus =
-    | 'PENDING'
-    | 'CONFIRMED'
-    | 'CANCELLED'
-    | 'NO_SHOW'
-    | 'COMPLETED'
-    | 'RESCHEDULE_REQUESTED';
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'REJECTED'
+  | 'EXPIRED'
+  | 'COMPLETED'
+  | 'MEMBER_CANCELLED'
+  | 'BBS_CANCELLED'
+  | 'RESCHEDULE_REQUESTED'
+  | 'NO_SHOW';
+
+export type ParticipantBookingStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'CANCELLED'
+  | 'NO_SHOW'
+  | 'COMPLETED'
+  | 'RESCHEDULE_REQUESTED';
 
 export type MemberHomeState =
     | 'NO_MEMBERSHIP'
@@ -81,6 +92,7 @@ export interface AdminScheduleParticipant {
     memberId: string | null;
     membershipId: string | null;
     casualCustomerId: string | null;
+    horseName?: string | null;
 }
 
 export interface AdminScheduleBooking {
@@ -118,7 +130,7 @@ export interface AdminSessionDetailParticipant {
     membershipId: string | null;
     casualCustomerId: string | null;
 
-    participantStatus: BookingStatus;
+    participantStatus: ParticipantBookingStatus;
     requestedSlotId: string | null;
     cancellationReason: string | null;
     cancelledAt: string | null;
@@ -126,8 +138,7 @@ export interface AdminSessionDetailParticipant {
     attendanceStatus:
     | 'NOT_CHECKED_IN'
     | 'ATTENDED'
-    | 'NO_SHOW'
-    | 'CANCELLED';
+    | 'NO_SHOW';
     checkedInAt: string | null;
     checkedInBy: string | null;
     checkInMethod: 'MEMBER' | 'ADMIN' | null;

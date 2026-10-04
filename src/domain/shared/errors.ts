@@ -31,6 +31,9 @@ export const DOMAIN_ERROR_CODES = [
   'DUPLICATE_PARTICIPANT',
   'ALREADY_BOOKED_FOR_SLOT',
   'DAILY_BOOKING_LIMIT_REACHED',
+  'WEEKLY_BOOKING_LIMIT_REACHED',
+  'NO_PARTICIPANTS',
+  'INVALID_PARTICIPANT_TYPE',
 ] as const;
 
 export type DomainErrorCode = (typeof DOMAIN_ERROR_CODES)[number];
@@ -62,6 +65,9 @@ const MESSAGES: Record<DomainErrorCode, string> = {
   DUPLICATE_PARTICIPANT: 'Duplicate participant in booking.',
   ALREADY_BOOKED_FOR_SLOT: 'Participant is already booked for this session.',
   DAILY_BOOKING_LIMIT_REACHED: 'Setiap member hanya dapat memesan maksimal 2 sesi dalam sehari.',
+  WEEKLY_BOOKING_LIMIT_REACHED: 'Anda telah mencapai batas maksimal pemesanan per minggu.',
+  NO_PARTICIPANTS: 'A booking must have at least one participant.',
+  INVALID_PARTICIPANT_TYPE: 'Invalid participant type specified.',
 };
 
 export class DomainError extends Error {

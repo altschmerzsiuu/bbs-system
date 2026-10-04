@@ -1,0 +1,44 @@
+{
+  "casual_submissions": {
+    "exists": false
+  },
+  "casual_customers": {
+    "exists": true,
+    "columns": []
+  },
+  "riding_requests": {
+    "exists": true,
+    "columns": []
+  },
+  "members": {
+    "exists": true,
+    "columns": []
+  },
+  "booking_participants": {
+    "exists": true,
+    "columns": []
+  },
+  "site_settings": {
+    "exists": true,
+    "columns": []
+  },
+  "membership_applications": {
+    "exists": true,
+    "columns": []
+  },
+  "approve_riding_request": {
+    "exists": true
+  },
+  "create_member_booking": {
+    "exists": true
+  },
+  "assign_horse": {
+    "exists": true
+  },
+  "cancel_booking": {
+    "exists": true
+  },
+  "approve_reschedule": {
+    "exists": true
+  }
+}

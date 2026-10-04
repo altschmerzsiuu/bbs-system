@@ -1,25 +1,34 @@
-import React from 'react';
-
 export default function Loading() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div style={{ width: '120px', height: '32px', background: '#efeade', borderRadius: '8px', animation: 'pulse 1.5s infinite ease-in-out' }} />
-        <div style={{ width: '40px', height: '40px', background: '#efeade', borderRadius: '50%', animation: 'pulse 1.5s infinite ease-in-out' }} />
+    <div style={{ background: 'var(--white)', minHeight: '100vh', padding: '0' }}>
+      {/* Header row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 24px 12px' }}>
+        <div className="skel" style={{ width: '48px', height: '48px', borderRadius: '50%' }} />
+        <div className="skel" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
       </div>
-      
-      <div style={{ width: '60%', height: '48px', background: '#efeade', borderRadius: '12px', animation: 'pulse 1.5s infinite ease-in-out', marginBottom: '8px' }} />
-      <div style={{ width: '40%', height: '24px', background: '#efeade', borderRadius: '8px', animation: 'pulse 1.5s infinite ease-in-out', marginBottom: '24px' }} />
-      
-      <div style={{ width: '100%', height: '180px', background: '#efeade', borderRadius: '24px', animation: 'pulse 1.5s infinite ease-in-out' }} />
-      
-      <style>{`
-        @keyframes pulse {
-          0% { opacity: 0.6; }
-          50% { opacity: 0.3; }
-          100% { opacity: 0.6; }
-        }
-      `}</style>
+      {/* Greeting */}
+      <div style={{ padding: '12px 24px 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="skel" style={{ width: '140px', height: '28px' }} />
+        <div className="skel" style={{ width: '220px', height: '52px' }} />
+        <div className="skel" style={{ width: '130px', height: '22px', borderRadius: '100px' }} />
+      </div>
+      {/* Next ride card */}
+      <div style={{ padding: '0 24px' }}>
+        <div className="skel" style={{ width: '100%', height: '200px', borderRadius: '24px' }} />
+      </div>
+      {/* Quick grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px', padding: '24px' }}>
+        {[1,2,3].map(i => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div className="skel" style={{ width: '72px', height: '72px', borderRadius: '24px' }} />
+            <div className="skel" style={{ width: '60px', height: '14px', borderRadius: '6px' }} />
+          </div>
+        ))}
+      </div>
+      {/* Quote banner */}
+      <div style={{ padding: '0 24px' }}>
+        <div className="skel" style={{ width: '100%', height: '160px', borderRadius: '24px' }} />
+      </div>
     </div>
   );
 }

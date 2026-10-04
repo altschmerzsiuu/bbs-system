@@ -14,7 +14,7 @@ export type ActionResult = { ok: true; bookingId: string } | { ok: false; code: 
  * kredit semuanya divalidasi di dalam transaksi database (Section 64.22).
  */
 export async function submitBooking(slotId: string, participants?: string): Promise<ActionResult> {
-  const actor = await requireActor(['MEMBER']);
+  const actor = await requireActor(['MEMBER'], true);
   const db = await createServerClient();
   const service = new BookingService(db as never);
   try {
@@ -36,7 +36,7 @@ export async function submitBooking(slotId: string, participants?: string): Prom
 export type LookupResult = { ok: true; memberId: string; fullName: string } | { ok: false; message: string };
 
 export async function lookupMemberByEmail(email: string): Promise<LookupResult> {
-  const actor = await requireActor(['MEMBER']);
+  const actor = await requireActor(['MEMBER'], true);
   const db = await createServerClient();
 
   const { data: member } = await db

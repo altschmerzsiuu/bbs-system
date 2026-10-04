@@ -1,0 +1,50 @@
+[
+  {
+    "area": "RLS",
+    "name": "Member A cannot read Member B",
+    "expected": "0 rows",
+    "actual": "0 rows",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "RLS",
+    "name": "Member cannot insert slot",
+    "expected": "Error",
+    "actual": "Error",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "RLS",
+    "name": "Groomer cannot insert slot",
+    "expected": "Error",
+    "actual": "Error",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "RLS",
+    "name": "Admin can insert slot",
+    "expected": "Success",
+    "actual": "Success",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "RLS",
+    "name": "Anon cannot update bookings",
+    "expected": "Error or 0 rows",
+    "actual": "Error",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "RPC Security",
+    "name": "Member cannot approve booking",
+    "expected": "Error",
+    "actual": "Error",
+    "passed": true,
+    "details": "BOOKING_NOT_FOUND"
+  }
+]

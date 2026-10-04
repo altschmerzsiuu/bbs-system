@@ -10,24 +10,27 @@ export default async function SchedulePage() {
 
   const today = new Date().toISOString().slice(0, 10);
   const next7Days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  await ensureSlotsForDateRange(today, next7Days);
 
-  const [
-    { data: member },
-    { data: slots }
-  ] = await Promise.all([
-    db.from('members').select('full_name').eq('id', actor.memberId!).single(),
-    db.from('session_slots')
-      .select(`
-        id, slot_date, start_time, end_time, capacity, is_open,
-        bookings!bookings_slot_id_fkey(id, status, booking_participants(id))
-      `)
-      .gte('slot_date', today)
-      .lte('slot_date', next7Days)
-      .eq('is_open', true)
-      .order('slot_date', { ascending: true })
-      .order('start_time', { ascending: true })
+  const [slotsData, { data: settings }] = await Promise.all([
+    (async () => {
+      await ensureSlotsForDateRange(today, next7Days);
+      const { data } = await db.from('session_slots')
+        .select(`
+          id, slot_date, start_time, end_time, capacity, is_open,
+          bookings!bookings_slot_id_fkey(id, status, booking_participants(id))
+        `)
+        .gte('slot_date', today)
+        .lte('slot_date', next7Days)
+        .eq('is_open', true)
+        .order('slot_date', { ascending: true })
+        .order('start_time', { ascending: true });
+      return data;
+    })(),
+    db.from('site_settings').select('admin_whatsapp').eq('id', 1).single()
   ]);
+
+  const slots = slotsData;
+
 
   const mappedSlots = (slots ?? []).map((s: any) => {
     let count = 0;
@@ -46,5 +49,5 @@ export default async function SchedulePage() {
     };
   });
 
-  return <ScheduleClient initialSlots={mappedSlots} memberName={member?.full_name ?? 'Rider'} />;
+  return <ScheduleClient initialSlots={mappedSlots} memberName={actor.fullName ?? 'Rider'} adminWa={settings?.admin_whatsapp || '6281234567890'} />;
 }

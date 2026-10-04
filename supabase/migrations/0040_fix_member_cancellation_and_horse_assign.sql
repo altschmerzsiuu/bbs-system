@@ -61,8 +61,8 @@ begin
           (membership_id, member_id, booking_id, participant_id, txn_type,
            delta_reserved, reason, actor_id)
         values (p.membership_id, p.member_id, p_booking_id, p.id,
-                case when p_source = 'BBS' then 'BBS_CANCELLATION_RETURN'
-                     else 'EARLY_CANCELLATION_RETURN' end,
+                (case when p_source = 'BBS' then 'BBS_CANCELLATION_RETURN'
+                     else 'EARLY_CANCELLATION_RETURN' end)::credit_txn_type,
                 -1, p_reason, p_actor_id);
       end if;
     end if;

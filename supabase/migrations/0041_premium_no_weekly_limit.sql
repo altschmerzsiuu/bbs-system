@@ -156,7 +156,7 @@ begin
       'BOOKING',
       v_booking_id,
       v_admin_user_id,
-      'PWA_PUSH',
+      'FCM',
       jsonb_build_object(
         'booking_id', v_booking_id,
         'slot_date', v_slot.slot_date,

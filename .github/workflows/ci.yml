@@ -1,0 +1,54 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Supabase Local DB Reset
+        run: supabase db reset
+        
+      - name: Unit Tests
+        run: npm run test
+
+      - name: Behavioral Regression Tests
+        run: |
+          node tests/forensics/phase5.2_tests.mjs
+          node tests/forensics/phase5.2.1_tests.mjs
+          node tests/forensics/phase5.2.1_part2.mjs
+
+      - name: Setup CI Environment
+        run: |
+          npx supabase status -o env >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" >> $GITHUB_ENV
+
+      - name: Production Build
+        run: |
+          export NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY
+          npm run build

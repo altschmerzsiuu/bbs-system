@@ -1,0 +1,5852 @@
+[
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.updated_at",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.user_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.data",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.read_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "user_devices.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "user_devices.user_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "user_devices.is_active",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "user_devices.last_seen_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "user_devices.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "schedule_overrides.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "schedule_overrides.override_date",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "schedule_overrides.block",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "schedule_overrides.is_closed",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "schedule_overrides.capacity_override",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "schedule_overrides.created_by",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "schedule_overrides.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.entity_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.attempts",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.next_retry_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "horses.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "horses.status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "horses.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "horses.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "site_settings.id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "site_settings.reschedule_hours",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "site_settings.updated_at",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "fcm_tokens.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "fcm_tokens.user_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "fcm_tokens.device_info",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "fcm_tokens.last_active",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "fcm_tokens.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.aggregate_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.recipient_user_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.channel",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.payload",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.attempts",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.available_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.sent_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.member_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.casual_customer_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.request_type",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.preferred_date",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.preferred_time_start",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.height_cm",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.weight_kg",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.shoe_size",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.status",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.booking_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.created_at",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.date_of_birth",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.created_at",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.updated_at",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.height_cm",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.weight_kg",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.shoe_size",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "users.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "users.role",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "users.is_active",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "users.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "users.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "system_settings.value",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "system_settings.updated_by",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "system_settings.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.actor_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.actor_role",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.entity_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.old_data",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.new_data",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.price_idr",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.extension_discount_idr",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.credits",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.duration_months",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.is_active",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.member_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.plan_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.start_date",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.end_date",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.allocated_credits",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.price_paid_idr",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.previous_membership_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.activated_by",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.activated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "memberships.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.membership_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.member_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.booking_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.participant_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.txn_type",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.delta_reserved",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.delta_consumed",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.delta_allocated",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.actor_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.day_of_week",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.block",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.start_time",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.end_time",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.session_duration_minutes",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.slot_interval_minutes",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.default_capacity",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.is_active",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "operating_schedules.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.slot_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.created_by",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.is_casual",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.pending_expires_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.requested_slot_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.cancelled_by",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.cancelled_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.booking_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.participant_type",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.member_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.membership_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.casual_customer_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.price_idr",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.created_at",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.horse_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.participant_status",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_status_history.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_status_history.booking_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_status_history.from_status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_status_history.to_status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_status_history.actor_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_status_history.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_slot_history.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_slot_history.booking_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_slot_history.from_slot_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_slot_history.to_slot_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_slot_history.actor_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_slot_history.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "attendance_records.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "attendance_records.booking_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "attendance_records.participant_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "attendance_records.status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "attendance_records.resolved_by",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "attendance_records.resolved_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.slot_date",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.start_time",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.end_time",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.block",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.capacity",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.is_open",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.source_schedule_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "casual_customers.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "casual_customers.linked_member_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "casual_customers.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "casual_customers.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.member_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.membership_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.amount_idr",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.metadata",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.updated_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.member_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.previous_membership_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.requested_plan_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.base_price_idr",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.discount_idr",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.final_price_idr",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.payment_order_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.new_membership_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.created_at",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.updated_at",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_transactions.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_transactions.payment_order_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_transactions.status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_transactions.amount_idr",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_transactions.raw_payload",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_transactions.confirmed_by",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_transactions.created_at",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.user_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.full_name",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.phone",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "session_slots.closed_reason",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.emergency_contact_name",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.emergency_contact_phone",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.notes",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.admin_notes",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.event_type",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "members.domicile",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "site_settings.admin_whatsapp",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.application_type",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "casual_customers.full_name",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "casual_customers.phone",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "users.email",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "users.full_name",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "users.avatar_url",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "casual_customers.email",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "casual_customers.notes",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.human_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "user_devices.device_token",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "system_settings.key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_credit_ledger.reason",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "system_settings.value_type",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "system_settings.description",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "user_devices.platform",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_transactions.provider_event_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_status_history.reason",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.provider",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.provider_ref",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.action",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.entity_type",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.entity_type",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "horses.name",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.target",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "audit_logs.reason",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.operation",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_slot_history.reason",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.code",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_plans.name",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "payment_orders.idempotency_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.aggregate_type",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notification_outbox.last_error",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "integration_sync_jobs.last_error",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.event_type",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "attendance_records.credit_action",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "attendance_records.reason",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.title",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.body",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "riding_requests.human_id",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.cancellation_reason",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "schedule_overrides.reason",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.delivery_status",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "bookings.notes",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.delivery_error",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "notifications.dedupe_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "membership_applications.status",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "COLUMN",
+    "object": "fcm_tokens.token",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.cancellation_reason",
+    "local": "MISSING",
+    "production": "EXISTS",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "HIGH",
+    "evidence": "Present in production baseline, absent locally"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.cancelled_at",
+    "local": "MISSING",
+    "production": "EXISTS",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "HIGH",
+    "evidence": "Present in production baseline, absent locally"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.requested_slot_id",
+    "local": "MISSING",
+    "production": "EXISTS",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "HIGH",
+    "evidence": "Present in production baseline, absent locally"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.attendance_status",
+    "local": "MISSING",
+    "production": "EXISTS",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "HIGH",
+    "evidence": "Present in production baseline, absent locally"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.checked_in_at",
+    "local": "MISSING",
+    "production": "EXISTS",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "HIGH",
+    "evidence": "Present in production baseline, absent locally"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.checked_in_by",
+    "local": "MISSING",
+    "production": "EXISTS",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "HIGH",
+    "evidence": "Present in production baseline, absent locally"
+  },
+  {
+    "category": "COLUMN",
+    "object": "booking_participants.check_in_method",
+    "local": "MISSING",
+    "production": "EXISTS",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "HIGH",
+    "evidence": "Present in production baseline, absent locally"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "memberships.memberships_member_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "memberships.memberships_plan_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "memberships.memberships_previous_membership_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "system_settings.system_settings_value_type_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "system_settings.system_settings_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "audit_logs.audit_logs_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "users.users_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "users.users_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "members.members_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "members.members_user_id_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "members.members_user_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_plans.membership_plans_price_idr_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_plans.membership_plans_extension_discount_idr_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_plans.membership_plans_credits_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_plans.membership_plans_duration_months_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_plans.membership_plans_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_plans.membership_plans_code_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "memberships.memberships_allocated_credits_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "memberships.membership_dates_valid",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "memberships.memberships_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "memberships.memberships_activated_by_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_credit_ledger.membership_credit_ledger_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_credit_ledger.membership_credit_ledger_membership_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_credit_ledger.membership_credit_ledger_member_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_credit_ledger.membership_credit_ledger_actor_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "operating_schedules.operating_schedules_day_of_week_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "operating_schedules.operating_schedules_session_duration_minutes_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "operating_schedules.operating_schedules_slot_interval_minutes_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "operating_schedules.operating_schedules_default_capacity_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "operating_schedules.schedule_block_valid",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "operating_schedules.schedule_start_on_hour",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "operating_schedules.operating_schedules_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "operating_schedules.operating_schedules_day_of_week_block_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "schedule_overrides.schedule_overrides_capacity_override_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "schedule_overrides.schedule_overrides_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "schedule_overrides.schedule_overrides_override_date_block_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "schedule_overrides.schedule_overrides_created_by_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "session_slots.session_slots_capacity_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "session_slots.slot_start_on_hour",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "session_slots.slot_times_valid",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "session_slots.session_slots_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "session_slots.session_slots_slot_date_start_time_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "session_slots.session_slots_source_schedule_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "casual_customers.casual_customers_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "casual_customers.casual_customers_linked_member_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "bookings.bookings_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "bookings.bookings_slot_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "bookings.bookings_created_by_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "bookings.bookings_requested_slot_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "bookings.bookings_cancelled_by_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_participants.booking_participants_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_participants.booking_participants_booking_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_participants.booking_participants_member_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_participants.booking_participants_membership_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_participants.booking_participants_casual_customer_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_status_history.booking_status_history_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_status_history.booking_status_history_booking_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_status_history.booking_status_history_actor_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_slot_history.booking_slot_history_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_slot_history.booking_slot_history_booking_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_slot_history.booking_slot_history_from_slot_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_slot_history.booking_slot_history_to_slot_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_slot_history.booking_slot_history_actor_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "fcm_tokens.fcm_tokens_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "fcm_tokens.fcm_tokens_token_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "fcm_tokens.fcm_tokens_user_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "attendance_records.attendance_records_credit_action_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "attendance_records.attendance_records_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "attendance_records.attendance_records_participant_id_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "attendance_records.attendance_records_booking_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "attendance_records.attendance_records_participant_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "attendance_records.attendance_records_resolved_by_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_credit_ledger.credit_ledger_booking_fk",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_credit_ledger.credit_ledger_participant_fk",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_orders.payment_orders_amount_idr_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_orders.payment_orders_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_orders.payment_orders_idempotency_key_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_orders.payment_orders_member_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_orders.payment_orders_membership_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_transactions.payment_transactions_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_transactions.payment_transactions_payment_order_id_provider_event_id_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_transactions.payment_transactions_payment_order_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "payment_transactions.payment_transactions_confirmed_by_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.renewal_requests_member_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.renewal_requests_previous_membership_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.renewal_requests_requested_plan_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.renewal_requests_payment_order_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.renewal_requests_new_membership_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.membership_applications_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "notification_outbox.notification_outbox_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "notifications.notifications_delivery_status_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "notifications.notifications_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "notifications.notifications_user_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "user_devices.user_devices_platform_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "user_devices.user_devices_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "user_devices.user_devices_device_token_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "user_devices.user_devices_user_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "integration_sync_jobs.integration_sync_jobs_operation_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "integration_sync_jobs.integration_sync_jobs_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.membership_applications_application_type_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.membership_applications_status_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "horses.horses_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_participants.booking_participants_horse_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "site_settings.site_settings_id_check",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "site_settings.site_settings_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "notification_outbox.notification_outbox_recipient_user_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "riding_requests.has_owner",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "riding_requests.riding_requests_pkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "riding_requests.riding_requests_human_id_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "riding_requests.riding_requests_member_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "riding_requests.riding_requests_casual_customer_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "riding_requests.riding_requests_booking_id_fkey",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "membership_applications.membership_applications_human_id_key",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "CONSTRAINT",
+    "object": "booking_participants.participant_identity_valid",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "RLS",
+    "object": "members.members_self",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "members.members_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "users.users_admin_all",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "users.users_self_update",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "users.users_self_select",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "system_settings.settings_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "system_settings.settings_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "audit_logs.audit_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "membership_plans.plans_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "membership_plans.plans_public_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "memberships.memberships_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "memberships.memberships_owner",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "membership_credit_ledger.ledger_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "membership_credit_ledger.ledger_owner",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "operating_schedules.schedules_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "operating_schedules.schedules_public_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "bookings.bookings_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "bookings.bookings_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "booking_participants.participants_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "booking_participants.participants_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "booking_status_history.status_history_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "booking_slot_history.slot_history_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "attendance_records.attendance_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "attendance_records.attendance_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "session_slots.slots_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "session_slots.slots_public_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "casual_customers.casual_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "payment_orders.payment_orders_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "payment_orders.payment_orders_owner",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "membership_applications.membership_applications_insert",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "RLS",
+    "object": "membership_applications.membership_applications_admin",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "RLS",
+    "object": "membership_applications.membership_applications_owner",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "RLS",
+    "object": "payment_transactions.payment_txn_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "notifications.notifications_mark_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "notifications.notifications_owner",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "user_devices.devices_owner",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "schedule_overrides.overrides_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "schedule_overrides.overrides_read",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "integration_sync_jobs.sync_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "horses.horses_all",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "horses.horses_select",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "site_settings.site_settings_update",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "site_settings.site_settings_select",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "fcm_tokens.Admins can view all FCM tokens",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "fcm_tokens.Users can manage their own FCM tokens",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "notification_outbox.Admins can view all outbox records",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "notification_outbox.Users can view their own outbox records",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "RLS",
+    "object": "riding_requests.riding_requests_insert_own",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "RLS",
+    "object": "riding_requests.riding_requests_select_own",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "RLS",
+    "object": "riding_requests.riding_requests_admin",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int4_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey4_in",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey4_out",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey8_in",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey8_out",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey16_in",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey16_out",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey32_in",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey32_out",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey_var_in",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey_var_out",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "cash_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "date_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "float4_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "float8_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "int2_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "int4_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "int8_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "interval_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "oid_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "time_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "ts_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "tstz_dist",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_oid_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_oid_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_oid_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_oid_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_decompress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_var_decompress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_var_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_oid_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_oid_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_oid_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_oid_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int2_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int2_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int2_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int2_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int2_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int2_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int2_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int2_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int4_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int4_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int4_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int4_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int4_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int4_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int4_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int8_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int8_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int8_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int8_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int8_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int8_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int8_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_int8_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float4_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float4_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float4_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float4_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float4_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float4_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float4_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float4_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float8_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float8_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float8_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float8_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float8_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float8_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float8_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_float8_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_ts_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_ts_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_tstz_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_tstz_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_ts_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_tstz_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_ts_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_ts_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_ts_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_ts_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_ts_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_time_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_time_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_timetz_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_time_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_timetz_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_time_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_time_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_time_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_time_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_time_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_date_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_date_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_date_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_date_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_date_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_date_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_date_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_date_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_decompress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_intv_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_cash_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_cash_distance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_cash_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_cash_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_cash_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_cash_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_cash_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_cash_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_text_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bpchar_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_text_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bpchar_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_text_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_text_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_text_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_text_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bytea_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bytea_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bytea_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bytea_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bytea_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bytea_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_numeric_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_numeric_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_numeric_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_numeric_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_numeric_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_numeric_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bit_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bit_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bit_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bit_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bit_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bit_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_inet_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_inet_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_inet_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_inet_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_inet_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_inet_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_uuid_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_uuid_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_uuid_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_uuid_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_uuid_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_uuid_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_uuid_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad8_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad8_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad8_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad8_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad8_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad8_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_macad8_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_enum_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_enum_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_enum_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_enum_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_enum_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_enum_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_enum_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey2_in",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbtreekey2_out",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bool_consistent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bool_compress",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bool_fetch",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bool_penalty",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bool_picksplit",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bool_union",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "gbt_bool_same",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "current_app_role",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "current_member_id",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "is_admin",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "membership_credit_state",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "setting_int",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "slot_occupancy",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "raise_domain_error",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "claim_pending_notifications",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "mark_notification_sent",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "mark_notification_failed",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "generate_session_slots",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "expire_pending_bookings",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "expire_memberships",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "authz_groomer_can_access_member",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "approve_riding_request",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "create_member_booking",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "daily_maintenance",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "request_reschedule",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "assign_horse",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "authz_is_booking_participant",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "authz_groomer_can_access_booking",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "activate_membership",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "approve_booking",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "reject_booking",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "activate_pending_memberships",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "approve_reschedule",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "reject_reschedule",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "trg_membership_application_notifications",
+    "local": "EXISTS",
+    "production": "MISSING/UNKNOWN",
+    "classification": "POTENTIAL DRIFT",
+    "severity": "MEDIUM",
+    "evidence": "Present locally, absent in production baseline"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "resolve_attendance",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  },
+  {
+    "category": "FUNCTION",
+    "object": "cancel_booking",
+    "local": "EXISTS",
+    "production": "EXISTS",
+    "classification": "MATCH",
+    "severity": "LOW",
+    "evidence": "Identical definitions"
+  }
+]

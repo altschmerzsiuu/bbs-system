@@ -52,7 +52,7 @@ export default async function MembershipPage() {
   const progressBg  = isSilver ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.4)';
 
   return (
-    <div style={{ background: 'var(--white)', minHeight: '100vh', paddingBottom: '40px' }}>
+    <div style={{ background: 'var(--white)', paddingBottom: '32px' }}>
       {/* ── Top Header ── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '16px 24px' }}>
         <div>

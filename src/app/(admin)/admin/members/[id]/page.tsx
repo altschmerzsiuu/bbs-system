@@ -18,7 +18,7 @@ export default async function AdminMemberDetail({ params }: { params: Promise<{ 
       created_at,
       emergency_contact_name,
       emergency_contact_phone,
-      users ( email ),
+      users ( email, avatar_url ),
       memberships (
         id,
         status,
@@ -35,7 +35,8 @@ export default async function AdminMemberDetail({ params }: { params: Promise<{ 
     .from('booking_participants')
     .select(`
       id,
-      status,
+      participant_status,
+      attendance_records ( status ),
       bookings!inner (
         status,
         session_slots (
@@ -60,8 +61,9 @@ export default async function AdminMemberDetail({ params }: { params: Promise<{ 
     
     if (b.status === 'CONFIRMED' || b.status === 'COMPLETED') {
         totalSessions++;
-        if (bp.status === 'ATTENDED') attended++;
-        else if (bp.status === 'NO_SHOW') noShow++;
+        const aStatus = bp.attendance_records?.[0]?.status;
+        if (aStatus === 'ATTENDED') attended++;
+        else if (aStatus === 'NO_SHOW') noShow++;
     }
 
     return {

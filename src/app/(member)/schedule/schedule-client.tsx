@@ -7,6 +7,8 @@ import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHo
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
 import { submitBooking } from './actions';
+import { cancelBookingAction } from '../bookings/actions';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const DAYS_FULL = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -124,7 +126,7 @@ interface Slot {
 const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initialSlots: Slot[], memberName?: string }) {
+export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '6281234567890' }: { initialSlots: Slot[], memberName?: string, adminWa?: string }) {
   const next7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
@@ -137,7 +139,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
   const availableDates = next7Days;
   const [selectedDate, setSelectedDate] = useState<string>(availableDates[0]);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
-  const [filter, setFilter] = useState<'All' | 'Morning' | 'Afternoon' | 'Available'>('All');
+  const [filter, setFilter] = useState<'All' | 'Morning' | 'Afternoon' | 'Evening' | 'Available'>('All');
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isPassModalOpen, setIsPassModalOpen] = useState(false);
@@ -156,8 +158,12 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
   }
 
   const filteredSlots = slotsForDate.filter(s => filter === 'Available' ? (s.capacity - s.booked_count > 0) : true);
-  const morningSlots = filteredSlots.filter(s => s.start_time.slice(0, 2) < '12');
-  const afternoonSlots = filteredSlots.filter(s => s.start_time.slice(0, 2) >= '12');
+  const morningSlots = filteredSlots.filter(s => parseInt(s.start_time.slice(0, 2)) < 12);
+  const afternoonSlots = filteredSlots.filter(s => {
+    const h = parseInt(s.start_time.slice(0, 2));
+    return h >= 12 && h < 18;
+  });
+  const eveningSlots = filteredSlots.filter(s => parseInt(s.start_time.slice(0, 2)) >= 18);
 
   const handleBook = async () => {
     if (!selectedSlot) return;
@@ -245,7 +251,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
 
       {/* ── Filters ── */}
       <div style={{ display: 'flex', gap: '8px', padding: '0 24px 16px', overflowX: 'auto', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-        {['All', 'Morning', 'Afternoon', 'Available'].map(f => (
+        {['All', 'Morning', 'Afternoon', 'Evening', 'Available'].map(f => (
           <button
             key={f}
             onClick={() => { setFilter(f as any); setSelectedSlot(null); }}
@@ -334,10 +340,61 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
         {(filter === 'All' || filter === 'Available' || filter === 'Afternoon') && afternoonSlots.length > 0 && (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', marginTop: '16px' }}>
-              <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Afternoon / Evening</h3>
-              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>12:00+</span>
+              <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Afternoon</h3>
+              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>12:00 — 18:00</span>
             </div>
             {afternoonSlots.map(slot => {
+              const isSelected = selectedSlot?.id === slot.id;
+              const remaining = slot.capacity - slot.booked_count;
+              const isFull = remaining <= 0;
+              return (
+                <div
+                  key={slot.id}
+                  onClick={() => {
+                    if (!isFull) {
+                      setSelectedSlot(slot);
+                      setIsConfirmModalOpen(true);
+                    }
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
+                    border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
+                    cursor: isFull ? 'not-allowed' : 'pointer',
+                    opacity: isFull ? 0.6 : 1,
+                    boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
+                    marginBottom: '10px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ font: '18px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
+                      {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <ArrowRight size={14} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* ── Evening Slots ── */}
+        {(filter === 'All' || filter === 'Available' || filter === 'Evening') && eveningSlots.length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', marginTop: '16px' }}>
+              <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Evening</h3>
+              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>18:00+</span>
+            </div>
+            {eveningSlots.map(slot => {
               const isSelected = selectedSlot?.id === slot.id;
               const remaining = slot.capacity - slot.booked_count;
               const isFull = remaining <= 0;
@@ -385,22 +442,33 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
 
 
       {/* ── Confirm Modal ── */}
+      <AnimatePresence>
       {isConfirmModalOpen && selectedSlot && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           onClick={() => setIsConfirmModalOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.4)' }}
         >
-          <div
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            drag="y"
+            dragConstraints={{ top: 0 }}
+            dragElastic={0.05}
+            onDragEnd={(e, info) => {
+              if (info.offset.y > 100 || info.velocity.y > 500) {
+                setIsConfirmModalOpen(false);
+              }
+            }}
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
-            style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '32px 24px 40px', position: 'relative' }}
+            style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '16px 24px 40px', position: 'relative' }}
           >
-            {/* Close Button */}
-            <button
-              onClick={() => setIsConfirmModalOpen(false)}
-              style={{ position: 'absolute', top: '24px', right: '24px', background: '#f5f5f5', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}
-            >
-              <X size={16} strokeWidth={2.5} />
-            </button>
+            {/* Drag Handle Indicator */}
+            <div style={{ width: '40px', height: '4px', background: '#e0e0e0', borderRadius: '2px', margin: '0 auto 24px' }} />
 
             <h2 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0', color: 'var(--ink)', textAlign: 'center' }}>Confirm Booking</h2>
             <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 24px', textAlign: 'center' }}>
@@ -423,9 +491,10 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
             </div>
 
             <SlideToConfirm loading={loading} onConfirm={handleBook} />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* ── Riding Pass Modal ── */}
       {isPassModalOpen && bookedPassData && (
@@ -506,8 +575,66 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider' }: { initial
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
-              <button onClick={() => router.push('/home')} className="primary" style={{ width: '100%', height: '56px', fontSize: '15px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <button
+                className="primary"
+                style={{ flex: 1, height: '52px', fontSize: '14px', fontWeight: 700 }}
+                onClick={() => {
+                  const dateObj = new Date(`${bookedPassData.date}T00:00:00`);
+                  const dateStr = `${dateObj.getDate()} ${MONTHS_FULL[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+                  const timeStr = bookedPassData.startTime.slice(0, 5);
+                  const msg = encodeURIComponent(`Halo admin, saya ingin reschedule jadwal saya pada ${dateStr}, jam ${timeStr}.`);
+                  window.open(`https://wa.me/${adminWa.replace(/^0/, '62').replace(/\D/g, '')}?text=${msg}`, '_blank');
+                }}
+              >
+                Reschedule via WA
+              </button>
+              <button
+                className="primary"
+                style={{ flex: 1, height: '52px', fontSize: '14px', fontWeight: 700, background: '#faeae9', color: '#c06c64' }}
+                onClick={() => {
+                  toast.custom((t) => (
+                    <div style={{
+                      background: '#fff',
+                      borderRadius: '16px',
+                      padding: '16px 20px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      maxWidth: '380px',
+                      width: '100%'
+                    }}>
+                      <div style={{ fontWeight: 700, fontSize: '15px', color: '#111827', marginBottom: '6px' }}>Batalkan sesi?</div>
+                      <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '14px', lineHeight: 1.4 }}>Kredit tidak akan dikembalikan jika dibatalkan kurang dari batas waktu.</div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => toast.dismiss(t)}
+                          style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#f5f7f5', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: 'var(--ink)' }}
+                        >Batal</button>
+                        <button
+                          onClick={async () => {
+                            toast.dismiss(t);
+                            const res = await cancelBookingAction(bookedPassData.id, true);
+                            if (res.ok) {
+                              toast.custom((t2) => <AlertToast title="Berhasil" description="Sesi berhasil dibatalkan." onDismiss={() => toast.dismiss(t2)} />);
+                              setIsPassModalOpen(false);
+                              router.refresh();
+                            } else {
+                              toast.custom((t2) => <AlertToast title="Gagal" description={res.message || 'Terjadi kesalahan.'} variant="destructive" onDismiss={() => toast.dismiss(t2)} />);
+                            }
+                          }}
+                          style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#c06c64', border: 'none', fontSize: '13px', fontWeight: 700, cursor: 'pointer', color: '#fff' }}
+                        >Ya, Batalkan</button>
+                      </div>
+                    </div>
+                  ), { duration: Infinity });
+                }}
+              >
+                Cancel Session
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+              <button onClick={() => router.push('/home')} className="primary" style={{ width: '100%', height: '56px', fontSize: '15px', background: 'var(--paper)', color: 'var(--ink)' }}>
                 Back to Home
               </button>
             </div>

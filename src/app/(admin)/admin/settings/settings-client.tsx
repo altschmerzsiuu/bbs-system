@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save } from 'lucide-react';
+import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { addHorse, toggleHorseStatus, updateSiteSettings, updateAfternoonEndTime } from './actions';
+import { addHorse, toggleHorseStatus, updateSiteSettings, updateAfternoonEndTime, deleteHorse } from './actions';
 import { AlertToast } from '@/components/ui/alert-toast';
 import { useRouter } from 'next/navigation';
 
@@ -17,6 +17,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
   const [loading, setLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [confirmDeleteHorse, setConfirmDeleteHorse] = useState<{ id: string; name: string } | null>(null);
   const router = useRouter();
 
   // Local settings state
@@ -33,15 +34,16 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
 
   const handleAddHorse = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newHorseName.trim()) return;
+    if (!newHorseName.trim()) {
+      toast.custom((t) => <AlertToast title="Nama kosong" description="Masukkan nama kuda terlebih dahulu sebelum menambahkan." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+      return;
+    }
     setLoading(true);
     const res = await addHorse(newHorseName.trim());
     if (res.ok) {
       setNewHorseName('');
       toast.custom((t) => <AlertToast title="Berhasil" description="Kuda berhasil ditambahkan." onDismiss={() => toast.dismiss(t)} />);
       router.refresh();
-      // Optimistically add it for instant UI
-      setHorses([...horses, { id: 'temp-'+Date.now(), name: newHorseName.trim(), status: 'ACTIVE' }]);
     } else {
       toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Unknown error'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
     }
@@ -60,6 +62,24 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
       // Revert if failed
       setHorses(horses.map(h => h.id === id ? { ...h, status: status } : h));
       toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Unknown error'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    }
+  };
+
+  const handleDeleteHorse = async (id: string, name: string) => {
+    setConfirmDeleteHorse({ id, name });
+  };
+
+  const executeDeleteHorse = async () => {
+    if (!confirmDeleteHorse) return;
+    const { id } = confirmDeleteHorse;
+    setConfirmDeleteHorse(null);
+
+    const res = await deleteHorse(id);
+    if (res.ok) {
+      toast.custom((t) => <AlertToast title="Berhasil" description="Kuda berhasil dihapus." onDismiss={() => toast.dismiss(t)} />);
+      router.refresh();
+    } else {
+      toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Gagal menghapus kuda'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
     }
   };
 
@@ -119,12 +139,21 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                   {horse.status === 'INACTIVE' && <span style={{ fontSize: '11px', padding: '2px 8px', background: '#fee2e2', color: '#b91c1c', borderRadius: '100px', fontWeight: 700 }}>Istirahat</span>}
                 </div>
               </div>
-              <button 
-                onClick={() => handleToggleStatus(horse.id, horse.status)}
-                style={{ padding: '8px 16px', borderRadius: '8px', border: horse.status === 'ACTIVE' ? '1px solid rgba(0,0,0,0.1)' : 'none', background: horse.status === 'ACTIVE' ? '#fff' : '#4a5d23', color: horse.status === 'ACTIVE' ? 'var(--ink)' : '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
-              >
-                {horse.status === 'ACTIVE' ? 'Istirahatkan' : 'Aktifkan'}
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => handleToggleStatus(horse.id, horse.status)}
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: horse.status === 'ACTIVE' ? '1px solid rgba(0,0,0,0.1)' : 'none', background: horse.status === 'ACTIVE' ? '#fff' : '#4a5d23', color: horse.status === 'ACTIVE' ? 'var(--ink)' : '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {horse.status === 'ACTIVE' ? 'Istirahatkan' : 'Aktifkan'}
+                </button>
+                <button 
+                  onClick={() => handleDeleteHorse(horse.id, horse.name)}
+                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: '#fff', color: 'var(--red)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  title="Hapus Kuda"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
           ))}
           {horses.length === 0 && (
@@ -256,6 +285,42 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
           </div>
         </div>
       </div>
+
+      {/* Confirm Delete Horse Modal */}
+      {confirmDeleteHorse && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex',
+          alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#FFF', borderRadius: '24px', padding: '24px',
+            width: 'calc(100% - 48px)', maxWidth: '320px', textAlign: 'center'
+          }}>
+            <div style={{ background: '#fee2e2', color: '#b91c1c', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Trash2 size={24} />
+            </div>
+            <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>Hapus Kuda?</h3>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '24px', lineHeight: '1.5' }}>
+              Yakin ingin menghapus kuda <b>{confirmDeleteHorse.name}</b>? Kalau kuda ini sudah pernah dipakai di sesi, penghapusan tidak bisa dilakukan.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setConfirmDeleteHorse(null)}
+                style={{ flex: 1, padding: '12px', borderRadius: '100px', border: '1px solid var(--line)', background: '#FFF', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
+              >
+                Kembali
+              </button>
+              <button
+                onClick={executeDeleteHorse}
+                style={{ flex: 1, padding: '12px', borderRadius: '100px', border: 'none', background: '#b91c1c', color: '#FFF', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ padding: '24px', paddingTop: 0, paddingBottom: '48px' }}>
         <button 

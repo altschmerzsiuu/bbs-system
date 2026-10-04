@@ -1,0 +1,540 @@
+[
+  {
+    "unified_forensic_report": {
+      "RLS": [
+        {
+          "cmd": "ALL",
+          "qual": "is_admin()",
+          "roles": [
+            "public"
+          ],
+          "tablename": "membership_applications",
+          "policyname": "membership_applications_admin",
+          "with_check": "is_admin()"
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "tablename": "membership_applications",
+          "policyname": "membership_applications_insert",
+          "with_check": "(member_id = current_member_id())"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "((member_id = current_member_id()) OR is_admin())",
+          "roles": [
+            "public"
+          ],
+          "tablename": "membership_applications",
+          "policyname": "membership_applications_owner",
+          "with_check": null
+        },
+        {
+          "cmd": "ALL",
+          "qual": "is_admin()",
+          "roles": [
+            "public"
+          ],
+          "tablename": "riding_requests",
+          "policyname": "riding_requests_admin",
+          "with_check": "is_admin()"
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "tablename": "riding_requests",
+          "policyname": "riding_requests_insert_own",
+          "with_check": "((member_id IS NOT NULL) AND (member_id = ( SELECT members.id\n   FROM members\n  WHERE (members.user_id = auth.uid()))))"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "((member_id IS NOT NULL) AND (member_id = ( SELECT members.id\n   FROM members\n  WHERE (members.user_id = auth.uid()))))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "riding_requests",
+          "policyname": "riding_requests_select_own",
+          "with_check": null
+        }
+      ],
+      "COLUMNS": [
+        {
+          "data_type": "uuid",
+          "table_name": "booking_participants",
+          "column_name": "id",
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "booking_participants",
+          "column_name": "booking_id",
+          "column_default": null
+        },
+        {
+          "data_type": "USER-DEFINED",
+          "table_name": "booking_participants",
+          "column_name": "participant_type",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "booking_participants",
+          "column_name": "member_id",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "booking_participants",
+          "column_name": "membership_id",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "booking_participants",
+          "column_name": "casual_customer_id",
+          "column_default": null
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "booking_participants",
+          "column_name": "price_idr",
+          "column_default": null
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "booking_participants",
+          "column_name": "created_at",
+          "column_default": "now()"
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "booking_participants",
+          "column_name": "horse_id",
+          "column_default": null
+        },
+        {
+          "data_type": "USER-DEFINED",
+          "table_name": "booking_participants",
+          "column_name": "participant_status",
+          "column_default": "'PENDING'::booking_status"
+        },
+        {
+          "data_type": "text",
+          "table_name": "booking_participants",
+          "column_name": "cancellation_reason",
+          "column_default": null
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "booking_participants",
+          "column_name": "cancelled_at",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "booking_participants",
+          "column_name": "requested_slot_id",
+          "column_default": null
+        },
+        {
+          "data_type": "USER-DEFINED",
+          "table_name": "booking_participants",
+          "column_name": "attendance_status",
+          "column_default": "'NOT_CHECKED_IN'::attendance_status"
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "booking_participants",
+          "column_name": "checked_in_at",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "booking_participants",
+          "column_name": "checked_in_by",
+          "column_default": null
+        },
+        {
+          "data_type": "USER-DEFINED",
+          "table_name": "booking_participants",
+          "column_name": "check_in_method",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "members",
+          "column_name": "id",
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "members",
+          "column_name": "user_id",
+          "column_default": null
+        },
+        {
+          "data_type": "text",
+          "table_name": "members",
+          "column_name": "full_name",
+          "column_default": null
+        },
+        {
+          "data_type": "text",
+          "table_name": "members",
+          "column_name": "phone",
+          "column_default": null
+        },
+        {
+          "data_type": "date",
+          "table_name": "members",
+          "column_name": "date_of_birth",
+          "column_default": null
+        },
+        {
+          "data_type": "text",
+          "table_name": "members",
+          "column_name": "emergency_contact_name",
+          "column_default": null
+        },
+        {
+          "data_type": "text",
+          "table_name": "members",
+          "column_name": "emergency_contact_phone",
+          "column_default": null
+        },
+        {
+          "data_type": "text",
+          "table_name": "members",
+          "column_name": "notes",
+          "column_default": null
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "members",
+          "column_name": "created_at",
+          "column_default": "now()"
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "members",
+          "column_name": "updated_at",
+          "column_default": "now()"
+        },
+        {
+          "data_type": "text",
+          "table_name": "members",
+          "column_name": "domicile",
+          "column_default": null
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "members",
+          "column_name": "height_cm",
+          "column_default": null
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "members",
+          "column_name": "weight_kg",
+          "column_default": null
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "members",
+          "column_name": "shoe_size",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "membership_applications",
+          "column_name": "id",
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "membership_applications",
+          "column_name": "member_id",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "membership_applications",
+          "column_name": "previous_membership_id",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "membership_applications",
+          "column_name": "requested_plan_id",
+          "column_default": null
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "membership_applications",
+          "column_name": "base_price_idr",
+          "column_default": null
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "membership_applications",
+          "column_name": "discount_idr",
+          "column_default": "0"
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "membership_applications",
+          "column_name": "final_price_idr",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "membership_applications",
+          "column_name": "payment_order_id",
+          "column_default": null
+        },
+        {
+          "data_type": "text",
+          "table_name": "membership_applications",
+          "column_name": "status",
+          "column_default": "'PENDING'::text"
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "membership_applications",
+          "column_name": "new_membership_id",
+          "column_default": null
+        },
+        {
+          "data_type": "text",
+          "table_name": "membership_applications",
+          "column_name": "admin_notes",
+          "column_default": null
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "membership_applications",
+          "column_name": "created_at",
+          "column_default": "now()"
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "membership_applications",
+          "column_name": "updated_at",
+          "column_default": "now()"
+        },
+        {
+          "data_type": "text",
+          "table_name": "membership_applications",
+          "column_name": "application_type",
+          "column_default": "'NEW'::text"
+        },
+        {
+          "data_type": "text",
+          "table_name": "membership_applications",
+          "column_name": "human_id",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "riding_requests",
+          "column_name": "id",
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "data_type": "text",
+          "table_name": "riding_requests",
+          "column_name": "human_id",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "riding_requests",
+          "column_name": "member_id",
+          "column_default": null
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "riding_requests",
+          "column_name": "casual_customer_id",
+          "column_default": null
+        },
+        {
+          "data_type": "USER-DEFINED",
+          "table_name": "riding_requests",
+          "column_name": "request_type",
+          "column_default": null
+        },
+        {
+          "data_type": "date",
+          "table_name": "riding_requests",
+          "column_name": "preferred_date",
+          "column_default": null
+        },
+        {
+          "data_type": "time without time zone",
+          "table_name": "riding_requests",
+          "column_name": "preferred_time_start",
+          "column_default": null
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "riding_requests",
+          "column_name": "height_cm",
+          "column_default": null
+        },
+        {
+          "data_type": "numeric",
+          "table_name": "riding_requests",
+          "column_name": "weight_kg",
+          "column_default": null
+        },
+        {
+          "data_type": "integer",
+          "table_name": "riding_requests",
+          "column_name": "shoe_size",
+          "column_default": null
+        },
+        {
+          "data_type": "USER-DEFINED",
+          "table_name": "riding_requests",
+          "column_name": "status",
+          "column_default": "'UNDER_REVIEW'::riding_request_status"
+        },
+        {
+          "data_type": "uuid",
+          "table_name": "riding_requests",
+          "column_name": "booking_id",
+          "column_default": null
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "riding_requests",
+          "column_name": "created_at",
+          "column_default": "now()"
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "riding_requests",
+          "column_name": "updated_at",
+          "column_default": "now()"
+        },
+        {
+          "data_type": "integer",
+          "table_name": "site_settings",
+          "column_name": "id",
+          "column_default": "1"
+        },
+        {
+          "data_type": "integer",
+          "table_name": "site_settings",
+          "column_name": "reschedule_hours",
+          "column_default": "24"
+        },
+        {
+          "data_type": "text",
+          "table_name": "site_settings",
+          "column_name": "admin_whatsapp",
+          "column_default": "'8123194014'::text"
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "table_name": "site_settings",
+          "column_name": "updated_at",
+          "column_default": "now()"
+        }
+      ],
+      "FUNCTIONS": [
+        {
+          "arguments": "p_application_id uuid, p_admin_id uuid",
+          "function_name": "activate_membership",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.activate_membership(p_application_id uuid, p_admin_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_app record;\n  v_plan record;\n  v_current_membership record;\n  v_new_membership_id uuid;\n  v_start_date date;\n  v_end_date date;\n  v_status membership_status;\n  v_user_id uuid;\n  v_has_active boolean;\nbegin\n  -- 1. Lock the application\n  select * into v_app\n  from membership_applications\n  where id = p_application_id\n  for update;\n\n  if v_app is null then\n    raise exception 'APPLICATION_NOT_FOUND';\n  end if;\n\n  if v_app.status != 'PAYMENT_CONFIRMED' then\n    raise exception 'INVALID_APPLICATION_STATUS';\n  end if;\n\n  -- Resolve user_id early for notification\n  select user_id into v_user_id from members where id = v_app.member_id;\n\n  -- 2. Get plan details\n  select * into v_plan\n  from membership_plans\n  where id = v_app.requested_plan_id;\n\n  -- 3. Check member's current active membership\n  select * into v_current_membership\n  from memberships\n  where member_id = v_app.member_id and status = 'ACTIVE'\n  for update;\n  \n  v_has_active := FOUND;\n\n  if v_has_active then\n    -- Early Renewal (Scenario B)\n    v_status := 'PENDING_ACTIVATION';\n    if v_current_membership.end_date >= current_date then\n      v_start_date := v_current_membership.end_date + interval '1 day';\n    else\n      v_start_date := current_date;\n    end if;\n  else\n    -- Expired / No Active Membership (Scenario A)\n    v_status := 'ACTIVE';\n    v_start_date := current_date;\n  end if;\n\n  v_end_date := v_start_date + (v_plan.duration_months || ' months')::interval;\n\n  -- 4. Insert membership\n  insert into memberships (\n    member_id, plan_id, status, start_date, end_date,\n    allocated_credits, price_paid_idr, previous_membership_id,\n    activated_by, activated_at\n  ) values (\n    v_app.member_id, v_app.requested_plan_id, v_status, v_start_date, v_end_date,\n    v_plan.credits, v_app.final_price_idr, v_app.previous_membership_id,\n    p_admin_id, now()\n  ) returning id into v_new_membership_id;\n\n  -- 5. Create Ledger Entry for allocation\n  insert into membership_credit_ledger (\n    membership_id, member_id, txn_type, delta_allocated, reason, actor_id\n  ) values (\n    v_new_membership_id, v_app.member_id, 'MEMBERSHIP_ALLOCATION', v_plan.credits, 'Membership Activation', p_admin_id\n  );\n\n  -- 6. Update Application\n  update membership_applications\n  set status = 'ACTIVATED',\n      new_membership_id = v_new_membership_id,\n      updated_at = now()\n  where id = p_application_id;\n\n  -- NOTIFICATION INSTRUMENTATION\n  if v_status = 'ACTIVE' then\n    insert into notification_outbox (event_type, aggregate_type, aggregate_id, recipient_user_id, channel, payload)\n    values ('MEMBERSHIP_ACTIVATED', 'membership', v_new_membership_id, v_user_id, 'FCM', jsonb_build_object(\n      'membership_id', v_new_membership_id,\n      'plan_name', v_plan.name,\n      'start_date', v_start_date,\n      'end_date', v_end_date\n    )) on conflict do nothing;\n  end if;\n\nend;\n$function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "",
+          "function_name": "activate_pending_memberships",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.activate_pending_memberships()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  m record; \n  v_activated int := 0;\n  v_skipped int := 0;\n  v_today date := (now() at time zone 'Asia/Jakarta')::date;\n  v_plan record;\n  v_user_id uuid;\nbegin\n  for m in select * from memberships\n           where status = 'PENDING_ACTIVATION'\n             and start_date <= v_today\n           for update loop\n    \n    -- Invariant: Must NOT activate if an ACTIVE membership already exists for this member\n    if not exists (\n      select 1 from memberships\n      where member_id = m.member_id and status = 'ACTIVE'\n    ) then\n      update memberships set status = 'ACTIVE', updated_at = now() where id = m.id;\n      \n      -- NOTIFICATION INSTRUMENTATION\n      select user_id into v_user_id from members where id = m.member_id;\n      select * into v_plan from membership_plans where id = m.plan_id;\n      \n      insert into notification_outbox (event_type, aggregate_type, aggregate_id, recipient_user_id, channel, payload)\n      values ('MEMBERSHIP_ACTIVATED', 'membership', m.id, v_user_id, 'FCM', jsonb_build_object(\n        'membership_id', m.id,\n        'plan_name', v_plan.name,\n        'start_date', m.start_date,\n        'end_date', m.end_date\n      )) on conflict do nothing;\n\n      v_activated := v_activated + 1;\n    else\n      -- Do NOT mutate the pending membership, just skip it and report the conflict\n      v_skipped := v_skipped + 1;\n    end if;\n  end loop;\n  \n  return jsonb_build_object(\n    'activated', v_activated,\n    'skipped_due_to_conflict', v_skipped\n  );\nend $function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_booking_id uuid, p_actor_id uuid",
+          "function_name": "approve_reschedule",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.approve_reschedule(p_booking_id uuid, p_actor_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_booking bookings%rowtype;\n  v_new_slot session_slots%rowtype;\n  v_old_slot session_slots%rowtype;\n  v_participants int;\n  v_history_id uuid;\nbegin\n  select * into v_booking from bookings where id = p_booking_id for update;\n  if v_booking.status <> 'RESCHEDULE_REQUESTED' then\n    perform raise_domain_error('INVALID_RESCHEDULE');\n  end if;\n  if v_booking.requested_slot_id is null then perform raise_domain_error('INVALID_RESCHEDULE'); end if;\n\n  select * into v_new_slot from session_slots where id = v_booking.requested_slot_id for update;\n  if not found or not v_new_slot.is_open then perform raise_domain_error('SLOT_CLOSED'); end if;\n  select count(*) into v_participants from booking_participants where booking_id = p_booking_id;\n  if slot_occupancy(v_new_slot.id) + v_participants > v_new_slot.capacity then\n    perform raise_domain_error('SLOT_FULL');\n  end if;\n  \n  select * into v_old_slot from session_slots where id = v_booking.slot_id;\n\n  insert into booking_slot_history (booking_id, from_status, to_status, actor_id, reason)\n  values (p_booking_id, v_booking.slot_id, v_new_slot.id, p_actor_id, 'reschedule approved');\n\n  -- Credit reservation is untouched: the same reservation follows the booking.\n  update bookings set slot_id = v_new_slot.id, requested_slot_id = null,\n         status = 'CONFIRMED', updated_at = now()\n   where id = p_booking_id;\n   \n  insert into booking_status_history (booking_id, from_status, to_status, actor_id)\n  values (p_booking_id, 'RESCHEDULE_REQUESTED', 'CONFIRMED', p_actor_id)\n  returning id into v_history_id;\n\n  -- NOTIFICATION INSTRUMENTATION\n  -- Notify Owner\n  insert into notification_outbox (event_type, aggregate_type, aggregate_id, recipient_user_id, channel, payload)\n  values ('RESCHEDULE_APPROVED', 'booking', p_booking_id, v_booking.created_by, 'FCM', jsonb_build_object(\n    'booking_id', p_booking_id,\n    'old_slot_date', v_old_slot.slot_date,\n    'old_start_time', v_old_slot.start_time,\n    'new_slot_date', v_new_slot.slot_date,\n    'new_start_time', v_new_slot.start_time\n  )) on conflict do nothing;\n\n  -- Notify Member Participants\n  insert into notification_outbox (event_type, aggregate_type, aggregate_id, recipient_user_id, channel, payload)\n  select 'RESCHEDULE_APPROVED', 'booking', p_booking_id, m.user_id, 'FCM', jsonb_build_object(\n    'booking_id', p_booking_id,\n    'old_slot_date', v_old_slot.slot_date,\n    'old_start_time', v_old_slot.start_time,\n    'new_slot_date', v_new_slot.slot_date,\n    'new_start_time', v_new_slot.start_time\n  )\n  from booking_participants bp\n  join members m on m.id = bp.member_id\n  where bp.booking_id = p_booking_id and bp.participant_type = 'MEMBER'\n    and m.user_id != v_booking.created_by\n  on conflict do nothing;\n\nend $function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_request_id uuid, p_date date, p_time time without time zone, p_capacity integer, p_actor_id uuid",
+          "function_name": "approve_riding_request",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.approve_riding_request(p_request_id uuid, p_date date, p_time time without time zone, p_capacity integer, p_actor_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n    v_member_id uuid;\n    v_status text;\n    v_slot_id uuid;\n    v_booking_id uuid;\n    v_is_casual boolean;\nBEGIN\n    -- 1. Get request\n    SELECT member_id, status INTO v_member_id, v_status\n    FROM riding_requests\n    WHERE id = p_request_id;\n    \n    IF NOT FOUND THEN\n        RAISE EXCEPTION 'REQUEST_NOT_FOUND';\n    END IF;\n    \n    IF v_status <> 'UNDER_REVIEW' THEN\n        RAISE EXCEPTION 'REQUEST_NOT_UNDER_REVIEW';\n    END IF;\n\n    -- 2. Find or create session_slot\n    SELECT id INTO v_slot_id\n    FROM session_slots\n    WHERE slot_date = p_date AND start_time = p_time;\n    \n    IF NOT FOUND THEN\n        INSERT INTO session_slots (slot_date, start_time, end_time, block, capacity, is_open)\n        VALUES (\n            p_date, \n            p_time, \n            p_time + interval '1 hour', \n            CASE \n                WHEN extract(hour from p_time) < 12 THEN 'MORNING'\n                ELSE 'AFTERNOON'\n            END,\n            p_capacity, \n            true\n        ) RETURNING id INTO v_slot_id;\n    END IF;\n\n    -- 3. Create booking\n    INSERT INTO bookings (slot_id, status, is_casual, created_by)\n    VALUES (v_slot_id, 'CONFIRMED', true, p_actor_id)\n    RETURNING id INTO v_booking_id;\n\n    -- 4. Create participant\n    INSERT INTO booking_participants (\n        booking_id, participant_type, member_id, \n        participant_status, attendance_status\n    ) VALUES (\n        v_booking_id, 'MEMBER', v_member_id,\n        'CONFIRMED', 'NOT_CHECKED_IN'\n    );\n\n    -- 5. Update request status\n    -- FIXED: Use CONFIRMED instead of APPROVED because of riding_request_status enum\n    UPDATE riding_requests\n    SET status = 'CONFIRMED', updated_at = now()\n    WHERE id = p_request_id;\n\n    RETURN v_booking_id;\nEND;\n$function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_participant_id uuid, p_horse_id uuid, p_actor_id uuid",
+          "function_name": "assign_horse",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.assign_horse(p_participant_id uuid, p_horse_id uuid, p_actor_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_participant booking_participants%rowtype;\n  v_booking bookings%rowtype;\n  v_horse horses%rowtype;\n  v_conflict boolean;\n  v_slot_id uuid;\n  v_booking_id uuid;\nbegin\n  -- Authorize (Must be ADMIN or GROOMER)\n  if not exists (\n    select 1 from users where id = p_actor_id and role in ('ADMIN', 'GROOMER')\n  ) then\n    perform raise_domain_error('FORBIDDEN');\n  end if;\n\n  -- Read IDs without locking to establish the correct lock order\n  select b.slot_id, b.id into v_slot_id, v_booking_id\n  from booking_participants bp\n  join bookings b on b.id = bp.booking_id\n  where bp.id = p_participant_id;\n\n  if not found then perform raise_domain_error('PARTICIPANT_NOT_FOUND'); end if;\n\n  -- LOCK ORDER 1: session_slots\n  -- This entirely serializes assignments for the same slot, preventing horse collision races\n  perform 1 from session_slots where id = v_slot_id for update;\n\n  -- LOCK ORDER 2: bookings\n  select * into v_booking from bookings where id = v_booking_id for update;\n  if not found then perform raise_domain_error('BOOKING_NOT_FOUND'); end if;\n  \n  -- Prevent race if the booking was rescheduled (slot changed) while waiting for lock\n  if v_booking.status = 'RESCHEDULE_REQUESTED' then \n    -- Disallow assignment if they requested a reschedule that hasn't been approved yet\n    perform raise_domain_error('INVALID_BOOKING_STATUS'); \n  end if;\n\n  if v_booking.slot_id != v_slot_id then \n    perform raise_domain_error('INVALID_BOOKING_STATUS'); \n  end if;\n\n  -- LOCK ORDER 3: booking_participants\n  select * into v_participant from booking_participants where id = p_participant_id for update;\n  if not found then perform raise_domain_error('PARTICIPANT_NOT_FOUND'); end if;\n\n  -- Verify operationally valid booking for grooming/assignment\n  if v_booking.status not in ('PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW') then\n    perform raise_domain_error('INVALID_BOOKING_STATUS');\n  end if;\n\n  -- Verify horse if one is provided (allow un-assign by sending null)\n  if p_horse_id is not null then\n    -- 'for share' is safe here since horses is independent of the slot->booking lock order\n    select * into v_horse from horses where id = p_horse_id for share;\n    if not found then perform raise_domain_error('HORSE_NOT_FOUND'); end if;\n    if v_horse.status != 'ACTIVE' then perform raise_domain_error('HORSE_INACTIVE'); end if;\n\n    -- Enforce collision rule: no other participant in the same slot_id can have this horse\n    -- Because we hold the session_slots lock, this read is absolutely serialized and race-free.\n    select exists (\n      select 1\n      from booking_participants bp\n      join bookings b on b.id = bp.booking_id\n      where b.slot_id = v_booking.slot_id\n        and b.status in ('PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW', 'RESCHEDULE_REQUESTED')\n        and bp.horse_id = p_horse_id\n        and bp.id != p_participant_id\n    ) into v_conflict;\n\n    if v_conflict then\n      perform raise_domain_error('HORSE_ALREADY_ASSIGNED_IN_SLOT');\n    end if;\n  end if;\n\n  -- Apply\n  update booking_participants\n  set horse_id = p_horse_id\n  where id = p_participant_id;\n\nend;\n$function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_booking_id uuid, p_actor_id uuid, p_source text, p_reason text",
+          "function_name": "cancel_booking",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.cancel_booking(p_booking_id uuid, p_actor_id uuid, p_source text, p_reason text)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_booking bookings%rowtype;\n  v_slot    session_slots%rowtype;\n  v_deadline_hours int := setting_int('cancellation_deadline_hours', 6);\n  v_starts_at timestamptz;\n  v_late boolean;\n  v_new_status booking_status;\n  p record;\n  v_is_participant boolean;\nbegin\n  select * into v_booking from bookings where id = p_booking_id for update;\n  if not found then perform raise_domain_error('BOOKING_NOT_FOUND'); end if;\n  \n  -- AUTHORIZATION: Member can cancel if they created it OR if they are a participant (for basic members approved by admin)\n  if p_source = 'MEMBER' then\n    select exists (\n      select 1 from booking_participants bp \n      join members m on m.id = bp.member_id\n      where bp.booking_id = p_booking_id and m.user_id = p_actor_id\n    ) into v_is_participant;\n    \n    if v_booking.created_by != p_actor_id and not v_is_participant then\n      perform raise_domain_error('FORBIDDEN');\n    end if;\n  end if;\n\n  if v_booking.status not in ('PENDING','CONFIRMED','RESCHEDULE_REQUESTED') then\n    perform raise_domain_error('INVALID_BOOKING_STATUS');\n  end if;\n\n  select * into v_slot from session_slots where id = v_booking.slot_id;\n  v_starts_at := (v_slot.slot_date + v_slot.start_time) at time zone 'Asia/Jakarta';\n  v_late := (p_source = 'MEMBER')\n            and now() > v_starts_at - (v_deadline_hours || ' hours')::interval;\n  v_new_status := case when p_source = 'BBS' then 'BBS_CANCELLED' else 'MEMBER_CANCELLED' end;\n\n  for p in\n    select bp.* from booking_participants bp\n    where bp.booking_id = p_booking_id and bp.participant_type = 'MEMBER'\n    order by bp.membership_id\n  loop\n    -- Only settle participants that actually hold a reservation.\n    if exists (select 1 from membership_credit_ledger\n               where participant_id = p.id and txn_type = 'SESSION_RESERVED') then\n      if v_late then\n        insert into membership_credit_ledger\n          (membership_id, member_id, booking_id, participant_id, txn_type,\n           delta_reserved, delta_consumed, reason, actor_id)\n        values (p.membership_id, p.member_id, p_booking_id, p.id, 'LATE_CANCELLATION',\n                -1, 1, p_reason, p_actor_id);\n      else\n        insert into membership_credit_ledger\n          (membership_id, member_id, booking_id, participant_id, txn_type,\n           delta_reserved, reason, actor_id)\n        values (p.membership_id, p.member_id, p_booking_id, p.id,\n                case when p_source = 'BBS' then 'BBS_CANCELLATION_RETURN'\n                     else 'EARLY_CANCELLATION_RETURN' end,\n                -1, p_reason, p_actor_id);\n      end if;\n    end if;\n  end loop;\n\n  update bookings\n     set status = v_new_status, cancellation_reason = p_reason,\n         cancelled_by = p_actor_id, cancelled_at = now(), updated_at = now()\n   where id = p_booking_id;\n  insert into booking_status_history (booking_id, from_status, to_status, actor_id, reason)\n  values (p_booking_id, v_booking.status, v_new_status, p_actor_id, p_reason);\n\n  return case when v_late then 'LATE' else 'EARLY' end;\nend $function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_booking_owner_id uuid, p_slot_id uuid, p_participants jsonb, p_actor_id uuid",
+          "function_name": "create_member_booking",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.create_member_booking(p_booking_owner_id uuid, p_slot_id uuid, p_participants jsonb, p_actor_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_slot session_slots%rowtype;\n  v_available int;\n  v_booking_id uuid;\n  v_window_days int := setting_int('booking_window_days', 7);\n  v_max_active int := setting_int('max_active_future_bookings', 2);\n  v_timeout_min int := setting_int('pending_timeout_minutes', 1440);\n  v_max_weekly_sessions int := 2; -- Domain Rule: max 2 sessions per calendar week\n  v_active_count int;\n  v_weekly_count int;\n  v_num_participants int;\n  v_participant jsonb;\n  v_member_id uuid;\n  v_membership memberships%rowtype;\n  v_casual_id uuid;\n  v_slot_week_start date;\n  v_slot_week_end date;\n  v_admin_user_id uuid;\n  v_has_premium boolean;\nbegin\n  v_num_participants := jsonb_array_length(p_participants);\n  if v_num_participants = 0 then\n    perform raise_domain_error('NO_PARTICIPANTS');\n  end if;\n\n  -- 0. Concurrency Lock\n  perform 1 from users where id = p_actor_id for update;\n\n  -- 1. Lock the slot: capacity decisions serialise here.\n  select * into v_slot from session_slots where id = p_slot_id for update;\n  if not found then perform raise_domain_error('SLOT_NOT_FOUND'); end if;\n  if not v_slot.is_open then perform raise_domain_error('SLOT_CLOSED'); end if;\n\n  -- 2. Booking window\n  if v_slot.slot_date < current_date then perform raise_domain_error('SLOT_IN_PAST'); end if;\n  if v_slot.slot_date > current_date + (v_window_days || ' days')::interval then\n    perform raise_domain_error('BOOKING_WINDOW_EXCEEDED');\n  end if;\n\n  -- 3A. Constraint A: Active future booking limit (Applies only to the booking owner)\n  select count(*) into v_active_count\n  from bookings b\n  where b.created_by = p_actor_id\n    and b.status in ('PENDING','CONFIRMED','RESCHEDULE_REQUESTED')\n    and exists (\n      select 1 from session_slots s where s.id = b.slot_id and (s.slot_date + s.start_time) > now()\n    );\n\n  -- Premium members have no limits\n  select exists (\n    select 1 from memberships ms\n    join membership_plans mp on mp.id = ms.plan_id\n    join members m on m.id = ms.member_id\n    where m.user_id = p_actor_id\n      and ms.status = 'ACTIVE'\n      and mp.name ilike any (array['%SILVER%', '%GOLD%'])\n  ) into v_has_premium;\n\n  if v_has_premium then\n    v_max_active := 999;\n    v_max_weekly_sessions := 999;\n  end if;\n\n  if v_active_count >= v_max_active then\n    perform raise_domain_error('ACTIVE_BOOKING_LIMIT_REACHED');\n  end if;\n\n  -- 3B. Constraint B: Weekly frequency limit (Applies only to the booking owner)\n  v_slot_week_start := date_trunc('week', v_slot.slot_date::timestamp)::date;\n  v_slot_week_end := v_slot_week_start + interval '6 days';\n\n  select count(distinct b.id) into v_weekly_count\n  from bookings b\n  join session_slots s on s.id = b.slot_id\n  where b.created_by = p_actor_id\n    and b.status in ('PENDING','CONFIRMED','RESCHEDULE_REQUESTED','COMPLETED')\n    and s.slot_date between v_slot_week_start and v_slot_week_end;\n\n  if v_weekly_count >= v_max_weekly_sessions then\n    perform raise_domain_error('WEEKLY_BOOKING_LIMIT_REACHED');\n  end if;\n\n  -- 4. Capacity (occupancy includes PENDING and CONFIRMED)\n  if slot_occupancy(p_slot_id) + v_num_participants > v_slot.capacity then\n    perform raise_domain_error('SLOT_FULL');\n  end if;\n\n  -- 5. Insert Booking (PENDING)\n  insert into bookings (slot_id, status, created_by, is_casual, pending_expires_at)\n  values (p_slot_id, 'PENDING', p_actor_id, false, now() + (v_timeout_min || ' minutes')::interval)\n  returning id into v_booking_id;\n\n  -- 6. Process Participants\n  for v_participant in select * from jsonb_array_elements(p_participants)\n  loop\n    if v_participant->>'type' = 'MEMBER' then\n      v_member_id := (v_participant->>'member_id')::uuid;\n\n      -- Check for DOUBLE BOOKING for the same slot\n      if exists (\n        select 1 \n        from booking_participants bp\n        join bookings b on b.id = bp.booking_id\n        where bp.member_id = v_member_id \n          and b.slot_id = p_slot_id \n          and b.status in ('PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED')\n      ) then\n        perform raise_domain_error('ALREADY_BOOKED_FOR_SLOT');\n      end if;\n\n      -- Validate member exists and has an ACTIVE membership covering the date\n      select * into v_membership from memberships\n      where member_id = v_member_id and status = 'ACTIVE' for update;\n      \n      if not found or v_slot.slot_date > v_membership.end_date then\n        perform raise_domain_error('MEMBERSHIP_EXPIRED');\n      end if;\n\n      -- Validate credit availability (does NOT reserve yet)\n      select available into v_available from membership_credit_state(v_membership.id);\n      if v_available <= 0 then \n        perform raise_domain_error('INSUFFICIENT_CREDITS'); \n      end if;\n\n      insert into booking_participants (booking_id, participant_type, member_id, membership_id)\n      values (v_booking_id, 'MEMBER', v_member_id, v_membership.id);\n\n    elsif v_participant->>'type' = 'CASUAL' then\n      insert into casual_customers (full_name, phone)\n      values (v_participant->>'full_name', v_participant->>'phone')\n      returning id into v_casual_id;\n\n      insert into booking_participants (booking_id, participant_type, casual_customer_id)\n      values (v_booking_id, 'CASUAL', v_casual_id);\n    else\n      perform raise_domain_error('INVALID_PARTICIPANT_TYPE');\n    end if;\n  end loop;\n\n  insert into booking_status_history (booking_id, from_status, to_status, actor_id, reason)\n  values (v_booking_id, null, 'PENDING', p_actor_id, 'member submission');\n\n  -- 7. NOTIFY ADMINS\n  for v_admin_user_id in select id from users where role = 'ADMIN' loop\n    insert into notification_outbox (event_type, aggregate_type, aggregate_id, recipient_user_id, channel, payload)\n    values (\n      'NEW_BOOKING_REQUEST',\n      'BOOKING',\n      v_booking_id,\n      v_admin_user_id,\n      'PWA_PUSH',\n      jsonb_build_object(\n        'booking_id', v_booking_id,\n        'slot_date', v_slot.slot_date,\n        'start_time', v_slot.start_time\n      )\n    ) on conflict do nothing;\n  end loop;\n\n  return v_booking_id;\nend $function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_membership_id uuid",
+          "function_name": "membership_credit_state",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.membership_credit_state(p_membership_id uuid)\n RETURNS TABLE(allocated integer, reserved integer, consumed integer, available integer)\n LANGUAGE sql\n STABLE\nAS $function$\n  select\n    coalesce(sum(delta_allocated),0)::int,\n    coalesce(sum(delta_reserved),0)::int,\n    coalesce(sum(delta_consumed),0)::int,\n    (coalesce(sum(delta_allocated),0) - coalesce(sum(delta_reserved),0)\n     - coalesce(sum(delta_consumed),0))::int\n  from membership_credit_ledger where membership_id = p_membership_id\n$function$\n",
+          "is_security_definer": false
+        },
+        {
+          "arguments": "p_booking_id uuid, p_actor_id uuid, p_reason text",
+          "function_name": "reject_booking",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.reject_booking(p_booking_id uuid, p_actor_id uuid, p_reason text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_booking bookings%rowtype;\n  v_slot    session_slots%rowtype;\n  v_history_id uuid;\nbegin\n  select * into v_booking from bookings where id = p_booking_id for update;\n  if not found then perform raise_domain_error('BOOKING_NOT_FOUND'); end if;\n  if v_booking.status <> 'PENDING' then perform raise_domain_error('INVALID_BOOKING_STATUS'); end if;\n\n  select * into v_slot from session_slots where id = v_booking.slot_id;\n\n  update bookings \n  set status = 'REJECTED', \n      pending_expires_at = null,\n      cancellation_reason = p_reason,\n      cancelled_by = p_actor_id,\n      cancelled_at = now(),\n      updated_at = now()\n  where id = p_booking_id;\n\n  insert into booking_status_history (booking_id, from_status, to_status, actor_id, reason)\n  values (p_booking_id, 'PENDING', 'REJECTED', p_actor_id, coalesce(p_reason, 'admin rejection'))\n  returning id into v_history_id;\n\n  -- NOTIFICATION INSTRUMENTATION (Owner ONLY)\n  insert into notification_outbox (event_type, aggregate_type, aggregate_id, recipient_user_id, channel, payload)\n  values ('BOOKING_REJECTED', 'booking', p_booking_id, v_booking.created_by, 'FCM', jsonb_build_object(\n    'booking_id', p_booking_id,\n    'slot_date', v_slot.slot_date,\n    'start_time', v_slot.start_time,\n    'reason', p_reason\n  )) on conflict do nothing;\n\nend $function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_booking_id uuid, p_actor_id uuid, p_reason text",
+          "function_name": "reject_reschedule",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.reject_reschedule(p_booking_id uuid, p_actor_id uuid, p_reason text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_booking bookings%rowtype;\n  v_requested_slot session_slots%rowtype;\n  v_history_id uuid;\nbegin\n  select * into v_booking from bookings where id = p_booking_id for update;\n  if not found then perform raise_domain_error('BOOKING_NOT_FOUND'); end if;\n  if v_booking.status <> 'RESCHEDULE_REQUESTED' then perform raise_domain_error('INVALID_BOOKING_STATUS'); end if;\n\n  select * into v_requested_slot from session_slots where id = v_booking.requested_slot_id;\n\n  update bookings \n  set status = 'CONFIRMED', \n      requested_slot_id = null,\n      updated_at = now()\n  where id = p_booking_id;\n\n  insert into booking_status_history (booking_id, from_status, to_status, actor_id, reason)\n  values (p_booking_id, 'RESCHEDULE_REQUESTED', 'CONFIRMED', p_actor_id, coalesce(p_reason, 'reschedule rejected'))\n  returning id into v_history_id;\n\n  -- NOTIFICATION INSTRUMENTATION\n  insert into notification_outbox (event_type, aggregate_type, aggregate_id, recipient_user_id, channel, payload)\n  values ('RESCHEDULE_REJECTED', 'booking', p_booking_id, v_booking.created_by, 'FCM', jsonb_build_object(\n    'booking_id', p_booking_id,\n    'requested_slot_date', v_requested_slot.slot_date,\n    'requested_start_time', v_requested_slot.start_time,\n    'reason', p_reason\n  )) on conflict do nothing;\n\nend $function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_booking_id uuid, p_new_slot_id uuid, p_member_id uuid, p_actor_id uuid",
+          "function_name": "request_reschedule",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.request_reschedule(p_booking_id uuid, p_new_slot_id uuid, p_member_id uuid, p_actor_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_booking bookings%rowtype;\n  v_slot    session_slots%rowtype;\n  v_old_slot session_slots%rowtype;\n  v_participants int;\n  v_window_days int := setting_int('booking_window_days', 7);\n  v_deadline_hours int := setting_int('reschedule_hours', 24);\n  v_starts_at timestamptz;\nbegin\n  select * into v_booking from bookings where id = p_booking_id for update;\n  if not found then perform raise_domain_error('BOOKING_NOT_FOUND'); end if;\n  if v_booking.status <> 'CONFIRMED' then perform raise_domain_error('INVALID_BOOKING_STATUS'); end if;\n  \n  -- AUTHORIZATION: Only the booking creator can request a reschedule\n  if v_booking.created_by != p_actor_id then\n    perform raise_domain_error('FORBIDDEN');\n  end if;\n\n  -- ORIGINAL SLOT VALIDATION: Enforce cancellation deadline on the original slot\n  select * into v_old_slot from session_slots where id = v_booking.slot_id;\n  v_starts_at := (v_old_slot.slot_date + v_old_slot.start_time) at time zone 'Asia/Jakarta';\n  if now() > v_starts_at - (v_deadline_hours || ' hours')::interval then\n    perform raise_domain_error('CANCELLATION_DEADLINE_PASSED');\n  end if;\n\n  -- TARGET SLOT VALIDATION\n  select * into v_slot from session_slots where id = p_new_slot_id;\n  if not found or not v_slot.is_open then perform raise_domain_error('SLOT_CLOSED'); end if;\n  if v_slot.slot_date > current_date + (v_window_days || ' days')::interval then\n    perform raise_domain_error('BOOKING_WINDOW_EXCEEDED');\n  end if;\n  \n  select count(*) into v_participants from booking_participants where booking_id = p_booking_id;\n  if slot_occupancy(p_new_slot_id) + v_participants > v_slot.capacity then \n    perform raise_domain_error('SLOT_FULL'); \n  end if;\n\n  update bookings set status = 'RESCHEDULE_REQUESTED', requested_slot_id = p_new_slot_id,\n         updated_at = now() where id = p_booking_id;\n  insert into booking_status_history (booking_id, from_status, to_status, actor_id, reason)\n  values (p_booking_id, 'CONFIRMED', 'RESCHEDULE_REQUESTED', p_actor_id, 'member reschedule request');\nend $function$\n",
+          "is_security_definer": true
+        },
+        {
+          "arguments": "p_participant_id uuid, p_status attendance_status, p_credit_action text, p_reason text, p_actor_id uuid",
+          "function_name": "resolve_attendance",
+          "full_definition": "CREATE OR REPLACE FUNCTION public.resolve_attendance(p_participant_id uuid, p_status attendance_status, p_credit_action text, p_reason text, p_actor_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  p record;\n  v_booking bookings%rowtype;\nbegin\n  select bp.*, b.id as bid into p\n  from booking_participants bp join bookings b on b.id = bp.booking_id\n  where bp.id = p_participant_id for update;\n  if not found then perform raise_domain_error('PARTICIPANT_NOT_FOUND'); end if;\n\n  select * into v_booking from bookings where id = p.bid for update;\n  if v_booking.status <> 'CONFIRMED' then perform raise_domain_error('INVALID_BOOKING_STATUS'); end if;\n\n  if p.participant_type = 'MEMBER' then\n    perform 1 from memberships where id = p.membership_id for update;\n    if p_status = 'ATTENDED' then\n      insert into membership_credit_ledger\n        (membership_id, member_id, booking_id, participant_id, txn_type,\n         delta_reserved, delta_consumed, reason, actor_id)\n      values (p.membership_id, p.member_id, p.bid, p.id, 'SESSION_COMPLETED', -1, 1, p_reason, p_actor_id);\n    elsif p_credit_action = 'CONSUMED' then\n      insert into membership_credit_ledger\n        (membership_id, member_id, booking_id, participant_id, txn_type,\n         delta_reserved, delta_consumed, reason, actor_id)\n      values (p.membership_id, p.member_id, p.bid, p.id, 'NO_SHOW_DEDUCT', -1, 1, p_reason, p_actor_id);\n    else\n      insert into membership_credit_ledger\n        (membership_id, member_id, booking_id, participant_id, txn_type,\n         delta_reserved, reason, actor_id)\n      values (p.membership_id, p.member_id, p.bid, p.id, 'NO_SHOW_RETURN', -1, p_reason, p_actor_id);\n    end if;\n  end if;\n\n  insert into attendance_records\n    (booking_id, participant_id, status, credit_action, reason, resolved_by)\n  values (p.bid, p.id, p_status,\n          case when p.participant_type = 'CASUAL' then 'NOT_APPLICABLE' else p_credit_action end,\n          p_reason, p_actor_id);\n\n  -- The booking closes once every participant has been resolved.\n  if not exists (\n    select 1 from booking_participants bp\n    left join attendance_records ar on ar.participant_id = bp.id\n    where bp.booking_id = p.bid and ar.id is null\n  ) then\n    update bookings set status =\n      (case when exists (select 1 from attendance_records\n                        where booking_id = p.bid and status = 'ATTENDED')\n           then 'COMPLETED' else 'NO_SHOW' end)::booking_status,\n      updated_at = now()\n    where id = p.bid;\n    insert into booking_status_history (booking_id, from_status, to_status, actor_id, reason)\n    select p.bid, 'CONFIRMED', status, p_actor_id, 'attendance resolved'\n    from bookings where id = p.bid;\n  end if;\nend $function$\n",
+          "is_security_definer": true
+        }
+      ],
+      "CONSTRAINTS": [
+        {
+          "definition": "CHECK ((((participant_type = 'MEMBER'::participant_type) AND (member_id IS NOT NULL) AND (casual_customer_id IS NULL)) OR ((participant_type = 'CASUAL'::participant_type) AND (casual_customer_id IS NOT NULL) AND (member_id IS NULL) AND (membership_id IS NULL))))",
+          "table_name": "booking_participants",
+          "constraint_name": "participant_identity_valid"
+        },
+        {
+          "definition": "CHECK (((member_id IS NOT NULL) OR (casual_customer_id IS NOT NULL)))",
+          "table_name": "riding_requests",
+          "constraint_name": "has_owner"
+        }
+      ]
+    }
+  }
+]

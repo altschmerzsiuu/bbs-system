@@ -52,11 +52,12 @@ export async function getAdminHomeData(db: any) {
     { data: slots },
     { count: membershipReqCount },
     { count: ridingReqCount },
+    expiringRes
   ] = await Promise.all([
     db.from('session_slots')
       .select(`
         id, slot_date, start_time, end_time, capacity,
-        bookings!bookings_slot_id_fkey(id, status, booking_participants(id, participant_status, attendance_status, member_id, members(user_id, users(full_name))))
+        bookings!bookings_slot_id_fkey(id, status, booking_participants(id, participant_status, attendance_records(status), member_id, members(user_id, users(full_name))))
       `)
       .gte('slot_date', today)
       .order('slot_date', { ascending: true })
@@ -64,7 +65,14 @@ export async function getAdminHomeData(db: any) {
       
     db.from('membership_applications').select('*', { count: 'exact', head: true }).eq('status', 'PENDING_REVIEW'),
     
-    db.from('riding_requests').select('*', { count: 'exact', head: true }).eq('status', 'UNDER_REVIEW')
+    db.from('riding_requests').select('*', { count: 'exact', head: true }).eq('status', 'UNDER_REVIEW'),
+    
+    // 4. Fetch expiring memberships for alerts
+    db.from('memberships')
+      .select('id, end_date, members(user_id, users(full_name)), packages(name)')
+      .eq('status', 'ACTIVE')
+      .lte('end_date', (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0]; })())
+      .gte('end_date', today)
   ]);
 
   // Compute stats
@@ -99,7 +107,7 @@ export async function getAdminHomeData(db: any) {
             init: name.substring(0, 2).toUpperCase(), 
             name, 
             id: p.id,
-            attendanceStatus: p.attendance_status || 'NOT_CHECKED_IN'
+            attendanceStatus: p.attendance_records?.[0]?.status || 'NOT_CHECKED_IN'
           });
         }
       }
@@ -211,15 +219,11 @@ export async function getAdminHomeData(db: any) {
     total: (ridingReqCount || 0) + (membershipReqCount || 0)
   };
   
-  // Operational Alerts: Let's fetch memberships expiring this week
   const nextWeek = new Date();
   nextWeek.setDate(now.getDate() + 7);
-  const { data: expiringMemberships } = await db
-    .from('memberships')
-    .select('id, end_date, members(user_id, users(full_name)), packages(name)')
-    .eq('status', 'ACTIVE')
-    .lte('end_date', nextWeek.toISOString().split('T')[0])
-    .gte('end_date', today);
+  // The query for expiringMemberships was moved to the initial Promise.all
+  // and we access it via the destructured expiringRes object
+  const expiringMemberships = expiringRes.data;
     
   const followUps = [];
   

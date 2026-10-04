@@ -1,0 +1,82 @@
+[
+  {
+    "area": "RPC",
+    "name": "activate_membership creates ACTIVE membership and credits",
+    "expected": "ACTIVE, 4",
+    "actual": "ACTIVE, 4",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "Ledger",
+    "name": "activate_membership creates ledger row",
+    "expected": "1 row",
+    "actual": "1 row",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "Negative State",
+    "name": "Cannot approve already confirmed booking",
+    "expected": "Error",
+    "actual": "Error",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "Negative State",
+    "name": "Cannot reject confirmed booking",
+    "expected": "Error",
+    "actual": "Error",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "Negative State",
+    "name": "Cannot approve cancelled booking",
+    "expected": "Error",
+    "actual": "Error",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "Negative State",
+    "name": "Cannot cancel already cancelled booking",
+    "expected": "Error",
+    "actual": "Error",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "RPC",
+    "name": "reject_reschedule reverts to CONFIRMED",
+    "expected": "CONFIRMED, null",
+    "actual": "CONFIRMED, null",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "Negative State",
+    "name": "Cannot approve unrequested reschedule",
+    "expected": "Error",
+    "actual": "Error",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "Outbox",
+    "name": "Outbox has events",
+    "expected": "Events exist",
+    "actual": "MEMBERSHIP_ACTIVATED, BOOKING_CONFIRMED, BOOKING_CONFIRMED, RESCHEDULE_REJECTED",
+    "passed": true,
+    "details": ""
+  },
+  {
+    "area": "Ledger",
+    "name": "Credit state matches",
+    "expected": "4",
+    "actual": 4,
+    "passed": true,
+    "details": ""
+  }
+]

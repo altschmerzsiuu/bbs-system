@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bell, ArrowRight, Calendar, Ticket, CreditCard, ChevronLeft, MoreHorizontal, MapPin, User as UserIcon, Award, HelpCircle, X } from 'lucide-react';
+import { Bell, ArrowRight, Calendar, Ticket, CreditCard, ChevronLeft, MapPin, User as UserIcon, Award, HelpCircle, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { AlertToast } from '@/components/ui/alert-toast';
 import Image from 'next/image';
 import { TearableTicket } from '@/components/ui/tearable-ticket';
 import { useRouter } from 'next/navigation';
@@ -22,7 +24,7 @@ function fmtDate(iso: string) {
   };
 }
 
-export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string }) {
+export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { data: any, avatarUrl?: string, adminWa?: string }) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -130,14 +132,20 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
                     </div>
                   </div>
                   <div style={{ background: '#7c9a75', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
-                    {nextBooking.status}
+                    {nextBooking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : nextBooking.status}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
                   <div style={{ font: '52px/0.95 var(--font-display)', display: 'flex', flexDirection: 'column' }}>
                     <span>{nextBooking.startTime.slice(0, 5)} —</span>
-                    <span>{nextBooking.endTime.slice(0, 5)}</span>
+                    <span>{(() => {
+                      const [sh, sm] = nextBooking.startTime.split(':').map(Number);
+                      const endMins = sh * 60 + sm + 45;
+                      const eh = Math.floor(endMins / 60).toString().padStart(2, '0');
+                      const em = (endMins % 60).toString().padStart(2, '0');
+                      return `${eh}:${em}`;
+                    })()}</span>
                   </div>
 
                   {/* Arrow Button */}
@@ -156,32 +164,52 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
             </div>
           </div>
         ) : data.pendingRideRequest ? (
-          <div style={{ background: cardGradient, borderRadius: '24px', padding: '24px', color: 'var(--ink)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-              <div>
-                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8, marginBottom: '8px' }}>
-                  YOUR REQUEST
-                </div>
-                <div style={{ fontSize: '18px', fontWeight: 700 }}>
-                  {data.pendingRideRequest.type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'}
-                </div>
+          <div>
+            <div
+              style={{
+                background: cardGradient,
+                borderRadius: '24px',
+                padding: '24px',
+                position: 'relative',
+                overflow: 'hidden',
+                color: 'var(--ink)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.06)'
+              }}
+            >
+              {/* Overlay horse image (subtle) */}
+              <div style={{ position: 'absolute', right: '-20%', bottom: 0, height: '120%', width: '70%', opacity: 0.15, mixBlendMode: 'multiply', pointerEvents: 'none' }}>
+                <Image src="/images/horse-8.jpg" width={300} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'left' }} alt="" priority />
               </div>
-              <div style={{ background: data.pendingRideRequest.status === 'APPROVED' ? '#7c9a75' : data.pendingRideRequest.status === 'FAILED' || data.pendingRideRequest.status === 'REJECTED' ? 'var(--red)' : '#f0cf65', color: data.pendingRideRequest.status === 'APPROVED' || data.pendingRideRequest.status === 'FAILED' || data.pendingRideRequest.status === 'REJECTED' ? '#fff' : '#5a4214', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
-                {data.pendingRideRequest.status}
-              </div>
-            </div>
 
-            <div style={{ fontSize: '13px', opacity: 0.8, fontWeight: 500, lineHeight: 1.5, marginBottom: '16px' }}>
-              {data.pendingRideRequest.status === 'PENDING' ? 'Tim admin sedang mengalokasikan jadwal dan kuda untuk sesi Anda. Anda akan menerima notifikasi setelah disetujui.' :
-               data.pendingRideRequest.status === 'APPROVED' ? 'Request Anda telah disetujui. Sesi Anda akan segera masuk ke jadwal utama.' :
-               'Request ini tidak dapat diproses. Silakan hubungi admin untuk informasi lebih lanjut.'}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink)', opacity: 0.8, marginBottom: '8px' }}>
+                      YOUR REQUEST
+                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: 600, opacity: 0.9 }}>
+                      {data.pendingRideRequest.preferredDate ? fmtDate(data.pendingRideRequest.preferredDate).shortLabel : 'Flexible Date'}
+                    </div>
+                  </div>
+                  <div style={{ background: data.pendingRideRequest.status === 'CONFIRMED' ? '#7c9a75' : data.pendingRideRequest.status === 'FAILED' || data.pendingRideRequest.status === 'REJECTED' ? 'var(--red)' : '#f0cf65', color: data.pendingRideRequest.status === 'CONFIRMED' || data.pendingRideRequest.status === 'FAILED' || data.pendingRideRequest.status === 'REJECTED' ? '#fff' : '#5a4214', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+                    {data.pendingRideRequest.status}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
+                  <div style={{ font: '32px/1 var(--font-display)', display: 'flex', flexDirection: 'column' }}>
+                    <span>{data.pendingRideRequest.preferredTime ? data.pendingRideRequest.preferredTime.slice(0, 5) : 'Time TBA'}</span>
+                    <span style={{ fontSize: '14px', fontFamily: 'var(--font-sans)', fontWeight: 600, opacity: 0.7, marginTop: '8px' }}>Waiting for Admin Approval</span>
+                  </div>
+                </div>
+
+                {data.pendingRideRequest.status !== 'UNDER_REVIEW' && data.pendingRideRequest.status !== 'CONFIRMED' && (
+                  <Link href="/request?type=ride" style={{ display: 'inline-block', fontSize: '12px', fontWeight: 700, padding: '8px 16px', background: 'var(--ink)', color: 'var(--white)', borderRadius: '100px', textDecoration: 'none' }}>
+                    Book New Session
+                  </Link>
+                )}
+              </div>
             </div>
-            
-            {data.pendingRideRequest.status !== 'PENDING' && data.pendingRideRequest.status !== 'APPROVED' && (
-              <Link href="/request?type=ride" style={{ display: 'inline-block', fontSize: '13px', fontWeight: 700, padding: '8px 16px', background: 'var(--ink)', color: 'var(--white)', borderRadius: '100px', textDecoration: 'none' }}>
-                Book New Session
-              </Link>
-            )}
           </div>
         ) : (
           <Link href={tier !== 'Basic' ? "/schedule" : "/request?type=ride"} style={{ textDecoration: 'none', display: 'block' }}>
@@ -229,7 +257,7 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
           flexDirection: 'column',
           justifyContent: 'center'
         }}>
-          <Image src="/images/horse-riding-showcase.jpg" fill style={{ objectFit: 'cover', opacity: 0.4 }} alt="Background" />
+          <Image src="/images/horse-riding-showcase.jpg" fill style={{ objectFit: 'cover', opacity: 0.4 }} alt="Background" priority />
           <div style={{ position: 'relative', zIndex: 1 }}>
             <h2 style={{ font: '32px/1.1 var(--font-display)', margin: '0 0 16px 0', color: 'var(--white)' }}>
               "A better you<br />rides here."
@@ -250,9 +278,6 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
             <button onClick={() => setIsModalOpen(false)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--paper)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}>
               <ChevronLeft size={20} strokeWidth={2} />
             </button>
-            <button style={{ background: 'none', border: 'none', color: 'var(--ink)', cursor: 'pointer' }}>
-              <MoreHorizontal size={24} />
-            </button>
           </div>
 
           <div style={{ padding: '0 24px 16px' }}>
@@ -271,7 +296,7 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
                         <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '1px' }}>Borneo Berkuda Stable</div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '7px' }}>
-                        <span style={{ background: 'var(--green)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '5px 11px', borderRadius: '12px', letterSpacing: '0.4px' }}>{nextBooking.status}</span>
+                        <span style={{ background: 'var(--green)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '5px 11px', borderRadius: '12px', letterSpacing: '0.4px' }}>{nextBooking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : nextBooking.status}</span>
                         <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase' }}>PASS #{nextBooking.id.substring(0, 8).toUpperCase()}</span>
                       </div>
                     </div>
@@ -283,7 +308,13 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
                         {new Date(`${nextBooking.date}T00:00:00`).getDate()} {MONTHS_FULL[new Date(`${nextBooking.date}T00:00:00`).getMonth()].toUpperCase()} {new Date(`${nextBooking.date}T00:00:00`).getFullYear()}
                       </div>
                       <div style={{ font: '44px/1 var(--font-display)', marginBottom: '22px' }}>
-                        {nextBooking.startTime.slice(0, 5)} — {nextBooking.endTime.slice(0, 5)}
+                        {nextBooking.startTime.slice(0, 5)} — {(() => {
+                          const [sh, sm] = nextBooking.startTime.split(':').map(Number);
+                          const endMins = sh * 60 + sm + 45;
+                          const eh = Math.floor(endMins / 60).toString().padStart(2, '0');
+                          const em = (endMins % 60).toString().padStart(2, '0');
+                          return `${eh}:${em}`;
+                        })()}
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '8px' }}>
@@ -308,28 +339,58 @@ export function HomeClient({ data, avatarUrl }: { data: any, avatarUrl?: string 
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button
                 className="primary"
-                style={{ width: '100%', height: '56px', fontSize: '15px' }}
-                onClick={() => router.push(`/bookings/${nextBooking.id}/reschedule`)}
+                style={{ flex: 1, height: '52px', fontSize: '14px', fontWeight: 700 }}
+                onClick={() => {
+                  const dateObj = new Date(`${nextBooking.date}T00:00:00`);
+                  const dateStr = `${dateObj.getDate()} ${MONTHS_FULL[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+                  const timeStr = nextBooking.startTime.slice(0, 5);
+                  const msg = encodeURIComponent(`Halo admin, saya ingin reschedule jadwal saya pada ${dateStr}, jam ${timeStr}.`);
+                  window.open(`https://wa.me/${adminWa.replace(/^0/, '62').replace(/\D/g, '')}?text=${msg}`, '_blank');
+                }}
               >
-                Reschedule
+                Reschedule via WA
               </button>
               <button
                 className="primary"
-                style={{ width: '100%', height: '56px', fontSize: '15px', background: '#faeae9', color: '#c06c64' }}
-                onClick={async () => {
-                  if (confirm('Are you sure you want to cancel this session? This action cannot be undone.')) {
-                    const res = await cancelBookingAction(nextBooking.id, true);
-                    if (res.ok) {
-                      alert('Session cancelled successfully.');
-                      setIsModalOpen(false);
-                      router.refresh();
-                    } else {
-                      alert(`Failed to cancel: ${res.message}`);
-                    }
-                  }
+                style={{ flex: 1, height: '52px', fontSize: '14px', fontWeight: 700, background: '#faeae9', color: '#c06c64' }}
+                onClick={() => {
+                  toast.custom((t) => (
+                    <div style={{
+                      background: '#fff',
+                      borderRadius: '16px',
+                      padding: '16px 20px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      maxWidth: '380px',
+                      width: '100%'
+                    }}>
+                      <div style={{ fontWeight: 700, fontSize: '15px', color: '#111827', marginBottom: '6px' }}>Batalkan sesi?</div>
+                      <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '14px', lineHeight: 1.4 }}>Kredit tidak akan dikembalikan jika dibatalkan kurang dari batas waktu.</div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => toast.dismiss(t)}
+                          style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#f5f7f5', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: 'var(--ink)' }}
+                        >Batal</button>
+                        <button
+                          onClick={async () => {
+                            toast.dismiss(t);
+                            const res = await cancelBookingAction(nextBooking.id, true);
+                            if (res.ok) {
+                              toast.custom((t2) => <AlertToast title="Berhasil" description="Sesi berhasil dibatalkan." onDismiss={() => toast.dismiss(t2)} />);
+                              setIsModalOpen(false);
+                              router.refresh();
+                            } else {
+                              toast.custom((t2) => <AlertToast title="Gagal" description={res.message || 'Terjadi kesalahan.'} variant="destructive" onDismiss={() => toast.dismiss(t2)} />);
+                            }
+                          }}
+                          style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#c06c64', border: 'none', fontSize: '13px', fontWeight: 700, cursor: 'pointer', color: '#fff' }}
+                        >Ya, Batalkan</button>
+                      </div>
+                    </div>
+                  ), { duration: Infinity });
                 }}
               >
                 Cancel Session

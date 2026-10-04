@@ -82,7 +82,7 @@ function TimelineSlot({
     );
 }
 
-export default function AdminScheduleClient3({ initialSlots, initialDate }: { initialSlots: AdminScheduleSlot[]; initialDate: string; }) {
+export default function AdminScheduleClient3({ initialSlots, initialDate, monthSummary = {} }: { initialSlots: AdminScheduleSlot[]; initialDate: string; monthSummary?: Record<string, number> }) {
     const router = useRouter();
     const [slots, setSlots] = useState(initialSlots);
     const [selectedDate, setSelectedDate] = useState(new Date(initialDate));
@@ -149,30 +149,109 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
         const dateLabel = new Intl.DateTimeFormat('id-ID', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
         }).format(selectedDate);
+        
+        const activeSlotsForRecap = slots.filter(s => s.slotExists).sort((a, b) => a.startTime.localeCompare(b.startTime));
+        
+        // Generate Text for WhatsApp (Shortened)
+        const text = `Berikut adalah rangkuman jadwal sesi BBS untuk *${dateLabel}*. Detailnya bisa dilihat pada gambar terlampir.`;
+
+        // Generate Canvas Image
+        const headerHeight = 240;
+        const slotRowHeight = 35;
+        const participantRowHeight = 32;
+        const footerHeight = 120;
+        
+        let totalHeight = headerHeight + footerHeight;
+        if (activeSlotsForRecap.length === 0) {
+            totalHeight += slotRowHeight;
+        } else {
+            activeSlotsForRecap.forEach(slot => {
+                totalHeight += slotRowHeight;
+                if (!slot.isOpen || !slot.booking || slot.booking.participants.length === 0) {
+                    totalHeight += participantRowHeight;
+                } else {
+                    totalHeight += participantRowHeight * slot.booking.participants.length;
+                }
+                totalHeight += 20;
+            });
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = totalHeight;
+        const context = canvas.getContext('2d');
+        if (!context) return;
+
+        context.fillStyle = '#1C1C1E'; 
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        context.fillStyle = '#FFFFFF'; 
+        context.font = '700 36px sans-serif'; 
+        context.fillText('BBS · Rangkuman Jadwal', 60, 80);
+        
+        context.fillStyle = '#BDBDBD'; 
+        context.font = '400 22px sans-serif'; 
+        context.fillText(dateLabel, 60, 120);
+        
+        context.fillStyle = '#333333'; 
+        context.fillRect(60, 150, 680, 2);
+        
         const activeCount = slots.filter(slot => (slot.booking?.participants.length ?? 0) > 0).length;
         const emptyCount = slots.filter(slot => slot.isOpen && (slot.booking?.participants.length ?? 0) === 0).length;
         const closedCount = slots.filter(slot => !slot.isOpen).length;
-        const text = [
-            `Jadwal Sesi BBS — ${dateLabel}`,
-            `${activeCount} sesi terisi · ${emptyCount} slot tersedia · ${closedCount} slot ditutup`,
-            `Kapasitas terisi: ${usedCapacity}/${totalCapacity} Slot`,
-        ].join('\n');
+        
+        context.fillStyle = '#FFFFFF'; context.font = '600 20px sans-serif';
+        context.fillText(`${activeCount} Sesi Terisi   ·   ${emptyCount} Slot Kosong   ·   ${closedCount} Ditutup`, 60, 195);
+        
+        let currentY = headerHeight;
+        
+        if (activeSlotsForRecap.length === 0) {
+            context.fillStyle = '#888888';
+            context.font = 'italic 20px sans-serif';
+            context.fillText('Tidak ada sesi yang dijadwalkan', 60, currentY);
+            currentY += slotRowHeight;
+        } else {
+            activeSlotsForRecap.forEach(slot => {
+                context.fillStyle = '#F5EEDD';
+                context.font = '700 22px monospace';
+                context.fillText(`${slot.startTime} - ${slot.endTime}`, 60, currentY);
+                currentY += slotRowHeight;
+                
+                if (!slot.isOpen) {
+                    context.fillStyle = '#E57373';
+                    context.font = '600 20px sans-serif';
+                    context.fillText('❌ Ditutup', 60, currentY);
+                    currentY += participantRowHeight;
+                } else if (!slot.booking || slot.booking.participants.length === 0) {
+                    context.fillStyle = '#81C784';
+                    context.font = '600 20px sans-serif';
+                    context.fillText('✅ Kosong', 60, currentY);
+                    currentY += participantRowHeight;
+                } else {
+                    slot.booking.participants.forEach((p, idx) => {
+                        context.fillStyle = '#FFFFFF';
+                        context.font = '400 20px sans-serif';
+                        const horseText = p.horseName ? `(🐴 ${p.horseName})` : '';
+                        context.fillText(`${idx + 1}. ${p.name} ${horseText}`, 60, currentY);
+                        currentY += participantRowHeight;
+                    });
+                }
+                currentY += 20;
+            });
+        }
+        
+        context.fillStyle = '#333333'; 
+        context.fillRect(60, currentY, 680, 2);
+        currentY += 40;
+        
+        context.fillStyle = '#FFFFFF'; context.font = '700 22px sans-serif';
+        context.fillText(`Kapasitas terisi: ${usedCapacity}/${totalCapacity} Slot`, 60, currentY);
+        currentY += 30;
+        
+        context.fillStyle = '#888888'; 
+        context.font = '400 18px sans-serif'; 
+        context.fillText('BBS Riding Club', 60, currentY);
 
-        const canvas = document.createElement('canvas');
-        canvas.width = 1080;
-        canvas.height = 720;
-        const context = canvas.getContext('2d');
-        if (!context) return;
-        context.fillStyle = '#1C1C1E'; context.fillRect(0, 0, 1080, 720);
-        context.fillStyle = '#FFFFFF'; context.font = '700 42px sans-serif'; context.fillText('BBS · Rangkuman Jadwal', 76, 105);
-        context.fillStyle = '#BDBDBD'; context.font = '400 30px sans-serif'; context.fillText(dateLabel, 76, 156);
-        context.fillStyle = '#F5EEDD'; context.fillRect(76, 216, 928, 1);
-        context.fillStyle = '#FFFFFF'; context.font = '700 80px sans-serif'; context.fillText(`${activeCount}`, 76, 338);
-        context.fillText(`${emptyCount}`, 410, 338); context.fillText(`${closedCount}`, 740, 338);
-        context.fillStyle = '#BDBDBD'; context.font = '400 27px sans-serif';
-        context.fillText('Sesi terisi', 76, 383); context.fillText('Slot tersedia', 410, 383); context.fillText('Ditutup', 740, 383);
-        context.fillStyle = '#FFFFFF'; context.font = '700 34px sans-serif'; context.fillText(`Kapasitas terisi: ${usedCapacity}/${totalCapacity} Slot`, 76, 535);
-        context.fillStyle = '#BDBDBD'; context.font = '400 24px sans-serif'; context.fillText('BBS Riding Club', 76, 646);
         const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
         if (!blob) return;
         const file = new File([blob], `rekap-jadwal-${initialDate}.png`, { type: 'image/png' });
@@ -198,9 +277,9 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
         else { start.setDate(1); end.setMonth(end.getMonth() + 1, 0); }
         const format = (value: Date) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
         const result = await getScheduleRecapAction(format(start), format(end));
-        if (!result.ok) { 
+        if (!result.ok) {
             toast.custom((t) => <AlertToast title="Gagal" description={result.message || 'Terjadi kesalahan'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
-            return; 
+            return;
         }
         const rows = result.rows ?? [];
         const csv = ['Tanggal,Jam,Rider,Kapasitas,Status,Alasan', ...rows.map(row => [row.date, `${row.startTime}-${row.endTime}`, row.riderCount, row.capacity, row.isOpen ? (row.riderCount >= row.capacity ? 'Penuh' : 'Terbuka') : 'Ditutup', `"${row.closedReason.replaceAll('"', '""')}"`].join(','))].join('\n');
@@ -346,6 +425,7 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
                     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                     const pillKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                     const isPast = pillKey < todayKey;
+                    const bookingCount = monthSummary[pillKey] || 0;
 
                     return (
                         <div
@@ -355,9 +435,10 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
                             style={{
                                 scrollSnapAlign: 'center', flexShrink: 0, width: '58px', height: '78px', borderRadius: '23px',
                                 border: '1px solid', borderColor: isSelected ? (isPast ? '#4B5563' : 'var(--ink)') : '#FFF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '0.2s',
-                                background: isSelected ? (isPast ? '#4B5563' : 'var(--ink)') : (isPast ? '#F3F4F6' : '#fff'), 
+                                background: isSelected ? (isPast ? '#4B5563' : 'var(--ink)') : (isPast ? '#F3F4F6' : '#fff'),
                                 color: isSelected ? '#fff' : (isPast ? '#9CA3AF' : 'var(--ink)'),
-                                boxShadow: isSelected ? '0 8px 16px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.03)'
+                                boxShadow: isSelected ? '0 8px 16px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.03)',
+                                position: 'relative'
                             }}
                         >
                             <span style={{ fontSize: '11px', fontWeight: 700, opacity: isSelected ? 0.75 : 0.4, marginBottom: '5px' }}>
@@ -366,11 +447,23 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
                             <span style={{ fontSize: '21px', lineHeight: 1, fontWeight: 700 }}>
                                 {date.getDate()}
                             </span>
-                            <i style={{
-                                width: '4px', height: '4px', borderRadius: '50%', marginTop: '4px',
-                                background: (isWeekend && !isSelected) ? (isPast ? '#D1D5DB' : '#C99A4B') : 'currentColor',
-                                opacity: (!isSelected && !isWeekend) ? 0 : 1
-                            }} />
+                            {bookingCount > 0 && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '6px',
+                                    display: 'flex',
+                                    gap: '3px'
+                                }}>
+                                    {Array.from({ length: Math.min(3, bookingCount) }).map((_, idx) => (
+                                        <div key={idx} style={{
+                                            width: '4px',
+                                            height: '4px',
+                                            borderRadius: '50%',
+                                            background: isSelected ? '#fff' : 'var(--ink)'
+                                        }} />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -526,10 +619,10 @@ export default function AdminScheduleClient3({ initialSlots, initialDate }: { in
                     <div onClick={event => event.stopPropagation()} style={{ width: '100%', background: '#FFF', borderRadius: '24px 24px 0 0', padding: '18px 20px 32px' }}>
                         <div style={{ width: '36px', height: '4px', borderRadius: 99, background: '#DDD', margin: '0 auto 18px' }} />
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}><b style={{ fontSize: '18px' }}>Opsi jadwal</b><button onClick={() => setIsMenuOpen(false)} aria-label="Tutup menu" style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F4F4F2', display: 'grid', placeItems: 'center' }}><X size={16} /></button></div>
-                        <button onClick={() => { setIsMenuOpen(false); handleShareSchedule(); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '15px', borderRadius: '15px', background: '#181817', color: '#FFF', textAlign: 'left', fontSize: '14px', fontWeight: 700 }}><Share2 size={18} /> Bagikan rekap sebagai gambar PNG</button>
+                        <button onClick={() => { setIsMenuOpen(false); handleShareSchedule(); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '15px', borderRadius: '15px', background: '#181817', color: '#FFF', textAlign: 'left', fontSize: '14px', fontWeight: 700 }}><Share2 size={18} /> Bagikan Rekap Hari Ini</button>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                            <button onClick={() => { setIsMenuOpen(false); handleDownloadRecap('week'); }} style={{ flex: 1, padding: '13px 10px', borderRadius: '15px', background: '#F4F4F2', fontSize: '12px', fontWeight: 700 }}><Download size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Rekap minggu</button>
-                            <button onClick={() => { setIsMenuOpen(false); handleDownloadRecap('month'); }} style={{ flex: 1, padding: '13px 10px', borderRadius: '15px', background: '#F4F4F2', fontSize: '12px', fontWeight: 700 }}><Download size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Rekap bulan</button>
+                            <button onClick={() => { setIsMenuOpen(false); handleDownloadRecap('week'); }} style={{ flex: 1, padding: '13px 10px', borderRadius: '15px', background: '#F4F4F2', fontSize: '12px', fontWeight: 700 }}><Download size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Rekap Minggu Ini</button>
+                            <button onClick={() => { setIsMenuOpen(false); handleDownloadRecap('month'); }} style={{ flex: 1, padding: '13px 10px', borderRadius: '15px', background: '#F4F4F2', fontSize: '12px', fontWeight: 700 }}><Download size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Rekap Bulan Ini</button>
                         </div>
                     </div>
                 </div>

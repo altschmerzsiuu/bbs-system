@@ -1,0 +1,67 @@
+[
+  {
+    "name": "activate_membership",
+    "args": "p_application_id uuid, p_admin_id uuid",
+    "return_type": "void"
+  },
+  {
+    "name": "activate_pending_memberships",
+    "args": "",
+    "return_type": "jsonb"
+  },
+  {
+    "name": "approve_booking",
+    "args": "p_booking_id uuid, p_actor_id uuid",
+    "return_type": "void"
+  },
+  {
+    "name": "approve_reschedule",
+    "args": "p_booking_id uuid, p_actor_id uuid",
+    "return_type": "void"
+  },
+  {
+    "name": "approve_riding_request",
+    "args": "p_request_id uuid, p_date date, p_time time without time zone, p_capacity integer, p_actor_id uuid",
+    "return_type": "uuid"
+  },
+  {
+    "name": "assign_horse",
+    "args": "p_participant_id uuid, p_horse_id uuid, p_actor_id uuid",
+    "return_type": "void"
+  },
+  {
+    "name": "cancel_booking",
+    "args": "p_booking_id uuid, p_actor_id uuid, p_source text, p_reason text",
+    "return_type": "text"
+  },
+  {
+    "name": "create_member_booking",
+    "args": "p_booking_owner_id uuid, p_slot_id uuid, p_participants jsonb, p_actor_id uuid",
+    "return_type": "uuid"
+  },
+  {
+    "name": "membership_credit_state",
+    "args": "p_membership_id uuid",
+    "return_type": "TABLE(allocated integer, reserved integer, consumed integer, available integer)"
+  },
+  {
+    "name": "reject_booking",
+    "args": "p_booking_id uuid, p_actor_id uuid, p_reason text",
+    "return_type": "void"
+  },
+  {
+    "name": "reject_reschedule",
+    "args": "p_booking_id uuid, p_actor_id uuid, p_reason text",
+    "return_type": "void"
+  },
+  {
+    "name": "request_reschedule",
+    "args": "p_booking_id uuid, p_new_slot_id uuid, p_member_id uuid, p_actor_id uuid",
+    "return_type": "void"
+  },
+  {
+    "name": "resolve_attendance",
+    "args": "p_participant_id uuid, p_status attendance_status, p_credit_action text, p_reason text, p_actor_id uuid",
+    "return_type": "void"
+  }
+]

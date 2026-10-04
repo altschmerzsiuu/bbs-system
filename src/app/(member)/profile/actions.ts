@@ -5,7 +5,7 @@ import { requireActor } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
 export async function updateProfile(formData: FormData) {
-  const actor = await requireActor(['MEMBER']);
+  const actor = await requireActor(['MEMBER'], true);
   // Use service role client to bypass RLS since members table doesn't have an UPDATE policy for members_self
   const db = createServiceRoleClient();
 
@@ -49,7 +49,7 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function uploadAvatar(formData: FormData) {
-  const actor = await requireActor(['MEMBER']);
+  const actor = await requireActor(['MEMBER'], true);
   // Use service role client for uploading to ensure it goes through regardless of RLS
   const db = createServiceRoleClient();
   const file = formData.get('avatar') as File;

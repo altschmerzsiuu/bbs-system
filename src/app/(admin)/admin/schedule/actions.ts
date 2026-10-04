@@ -14,7 +14,7 @@ export async function resolveAttendanceAction(
   reason?: string
 ) {
   try {
-    const actor = await requireActor(['ADMIN']);
+    const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.resolveAttendance(actor, { participantId, status, creditAction, reason });
@@ -29,7 +29,7 @@ export async function resolveAttendanceAction(
 
 export async function assignHorseAction(participantId: string, horseId: string | null) {
   try {
-    const actor = await requireActor(['ADMIN']);
+    const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     const { error } = await db.rpc('assign_horse', {
       p_participant_id: participantId,
@@ -51,7 +51,7 @@ export async function assignHorseAction(participantId: string, horseId: string |
 
 export async function approveBookingAction(bookingId: string) {
   try {
-    const actor = await requireActor(['ADMIN']);
+    const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.approveBooking(actor, bookingId);
@@ -66,7 +66,7 @@ export async function approveBookingAction(bookingId: string) {
 
 export async function approveRidingRequestAction(requestId: string, date: string, time: string, capacity: number) {
   try {
-    const actor = await requireActor(['ADMIN']);
+    const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     
     const { error } = await db.rpc('approve_riding_request', {
@@ -92,7 +92,7 @@ export async function approveRidingRequestAction(requestId: string, date: string
 
 export async function rejectRidingRequestAction(requestId: string) {
   try {
-    const actor = await requireActor(['ADMIN']);
+    const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     
     const { error } = await db.from('riding_requests').update({ status: 'REJECTED' }).eq('id', requestId);
@@ -112,7 +112,7 @@ export async function rejectRidingRequestAction(requestId: string) {
 
 export async function rejectBookingAction(bookingId: string, reason: string) {
   try {
-    const actor = await requireActor(['ADMIN']);
+    const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     const service = new BookingService(db as never);
     await service.rejectBooking(actor, { bookingId, reason });
@@ -134,7 +134,7 @@ export async function toggleSlotAction(
   closedReason: string | null = null,
 ) {
   try {
-    const actor = await requireActor(['ADMIN']);
+    const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     
     // Determine block based on start time
@@ -176,7 +176,7 @@ export async function multiToggleSlotAction(
   isOpen: boolean,
 ) {
   try {
-    const actor = await requireActor(['ADMIN']);
+    const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     
     const rows = slots.map(s => {
@@ -211,7 +211,7 @@ export async function multiToggleSlotAction(
 
 export async function getScheduleRecapAction(from: string, to: string) {
   try {
-    await requireActor(['ADMIN']);
+    await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     const { data, error } = await db
       .from('session_slots')

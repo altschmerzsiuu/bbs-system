@@ -1,0 +1,62 @@
+[
+  {
+    "category": "5.2.3 Booking Lifecycle",
+    "name": "Create booking and check credit state",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.3 Booking Lifecycle",
+    "name": "Approve booking and check credit reservation",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.5 Negative Tests",
+    "name": "Cannot double book same member same slot",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.3 Booking Lifecycle",
+    "name": "Resolve attendance and consume credit",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.5 Negative Tests",
+    "name": "Cannot book without available credits",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.5 Negative Tests",
+    "name": "Cannot book when slot is full",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.7 Cancellation",
+    "name": "Cancel booking releases reservation",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.8 Reschedule",
+    "name": "Request and approve reschedule",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.9 Horse Assignment",
+    "name": "Assign horse successfully",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  },
+  {
+    "category": "5.2.10 Concurrency",
+    "name": "Prevent exceeding capacity under concurrent load",
+    "status": "PASS_LOCAL",
+    "evidence": "Test executed successfully and invariants held."
+  }
+]

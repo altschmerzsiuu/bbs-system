@@ -9,7 +9,7 @@ import { toClientError } from '@/domain/shared/errors';
 export type ActionResult = { ok: true; id?: string } | { ok: false; code: string; message: string };
 
 export async function submitMembershipApplication(planId: string, formData?: FormData): Promise<void> {
-  const actor = await requireActor(['MEMBER']);
+  const actor = await requireActor(['MEMBER'], true);
   const db = await createServerClient();
   const service = new MembershipService(db as never);
   await service.submitApplication(actor, { planId });
