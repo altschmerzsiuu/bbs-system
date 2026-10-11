@@ -149,6 +149,8 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
     }
 
     // Booked Slot
+    const hasPhotographer = slot.booking?.notes?.includes('Fotografer');
+
     return (
         <div onClick={handleClick} style={{ background: isFull ? '#F0F7F1' : '#F4F7FB', border: `1px solid ${isFull ? '#CBE1D0' : '#D6E2F0'}`, borderRadius: '18px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '11px', cursor: readOnly ? 'default' : 'pointer', boxShadow: '0 6px 20px rgba(24,24,23,0.045)', opacity: readOnly ? 0.58 : 1, filter: readOnly ? 'grayscale(0.85)' : 'none' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -156,7 +158,14 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
                     <b style={{ fontSize: '14px', color: 'var(--ink)' }}>{isFull ? 'Sesi penuh' : 'Sesi terisi'}</b>
                     <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{participants.length}/{slot.capacity} rider terdaftar</div>
                 </div>
-                <span style={{ background: isFull ? '#D9EDDC' : '#E2ECF8', color: isFull ? '#24723C' : '#426987', padding: '4px 8px', borderRadius: '100px', fontSize: '11px', fontWeight: 700 }}>{isFull ? 'Penuh' : `${slot.capacity - participants.length} Slot Lagi`}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {hasPhotographer && (
+                        <span style={{ background: '#FEF3C7', color: '#92400E', padding: '3px 8px', borderRadius: '100px', fontSize: '10.5px', fontWeight: 800, border: '1px solid #FDE68A' }}>
+                            📸 +Foto
+                        </span>
+                    )}
+                    <span style={{ background: isFull ? '#D9EDDC' : '#E2ECF8', color: isFull ? '#24723C' : '#426987', padding: '4px 8px', borderRadius: '100px', fontSize: '11px', fontWeight: 700 }}>{isFull ? 'Penuh' : `${slot.capacity - participants.length} Slot Lagi`}</span>
+                </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {participants.map((participant) => (

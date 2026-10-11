@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHorizontal, X, Bell, Calendar } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHorizontal, X, Bell, Calendar, Camera, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
 import { submitBooking } from './actions';
@@ -142,6 +142,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
   const [filter, setFilter] = useState<'All' | 'Morning' | 'Afternoon' | 'Evening' | 'Available'>('All');
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [withPhotographer, setWithPhotographer] = useState(false);
   const [isPassModalOpen, setIsPassModalOpen] = useState(false);
   const [bookedPassData, setBookedPassData] = useState<any>(null);
   const router = useRouter();
@@ -192,7 +193,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
       await new Promise(resolve => setTimeout(resolve, 1500));
       res = { ok: true, bookingId: 'bbs-mock-new' };
     } else {
-      res = await submitBooking(selectedSlot.id);
+      res = await submitBooking(selectedSlot.id, undefined, withPhotographer);
     }
 
     setLoading(false);
@@ -202,7 +203,8 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
         date: selectedSlot.slot_date,
         startTime: selectedSlot.start_time,
         endTime: selectedSlot.end_time,
-        status: 'PENDING'
+        status: 'PENDING',
+        hasPhotographer: withPhotographer
       });
       setIsConfirmModalOpen(false);
       setIsPassModalOpen(true);
@@ -319,6 +321,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                   onClick={() => {
                     if (!isFull) {
                       setSelectedSlot(slot);
+                      setWithPhotographer(false);
                       setIsConfirmModalOpen(true);
                     }
                   }}
@@ -370,6 +373,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                   onClick={() => {
                     if (!isFull) {
                       setSelectedSlot(slot);
+                      setWithPhotographer(false);
                       setIsConfirmModalOpen(true);
                     }
                   }}
@@ -421,6 +425,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                   onClick={() => {
                     if (!isFull) {
                       setSelectedSlot(slot);
+                      setWithPhotographer(false);
                       setIsConfirmModalOpen(true);
                     }
                   }}
@@ -505,6 +510,76 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Time</span>
                   <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{selectedSlot.start_time.slice(0, 5)} — {selectedSlot.end_time.slice(0, 5)} WITA</span>
                 </div>
+
+                {withPhotographer && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                    <span style={{ fontSize: '13px', color: '#8C6E2D', fontWeight: 600 }}>Biaya Fotografer</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#8C6E2D' }}>+Rp 200.000</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Layanan Tambahan: Fotografer (+200k) */}
+              <div 
+                onClick={() => setWithPhotographer(!withPhotographer)}
+                style={{
+                  background: withPhotographer ? '#FDF8EC' : '#FAFAF8',
+                  border: `1.5px solid ${withPhotographer ? '#C4A35D' : '#EAE6DC'}`,
+                  borderRadius: '16px',
+                  padding: '14px 16px',
+                  marginBottom: '24px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '12px',
+                    background: withPhotographer ? 'rgba(196,163,93,0.2)' : '#F0ECE1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Camera size={20} color={withPhotographer ? '#7D5F1A' : 'var(--ink)'} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--ink)' }}>
+                        Dokumentasi Fotografer
+                      </span>
+                      <span style={{ fontSize: '10px', fontWeight: 800, background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: '4px' }}>
+                        +200k
+                      </span>
+                    </div>
+                    <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--muted)', lineHeight: 1.35 }}>
+                      Dokumentasi berkuda profesional selama sesi (exclude membership).
+                    </p>
+                  </div>
+                </div>
+
+                {/* Checkbox circle/pill */}
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  border: `2px solid ${withPhotographer ? '#7D5F1A' : '#D0CBC0'}`,
+                  background: withPhotographer ? '#7D5F1A' : 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FFF',
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease'
+                }}>
+                  {withPhotographer && <Check size={14} strokeWidth={3} />}
+                </div>
               </div>
 
               <SlideToConfirm loading={loading} onConfirm={handleBook} />
@@ -568,6 +643,15 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                     {memberName.split(' ')[0]}
                   </div>
                 </div>
+
+                {bookedPassData.hasPhotographer && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(216, 188, 128, 0.25)', border: '1px solid #D8BC80', padding: '8px 12px', borderRadius: '10px', marginBottom: '16px' }}>
+                    <Camera size={15} color="#7D5F1A" />
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#7D5F1A' }}>
+                      Include Dokumentasi Fotografer (+Rp 200.000)
+                    </span>
+                  </div>
+                )}
 
                 <div style={{ font: '48px/1 var(--font-display)', color: 'var(--ink)', marginBottom: '40px' }}>
                   {bookedPassData.startTime.slice(0, 5)} — {bookedPassData.endTime.slice(0, 5)}

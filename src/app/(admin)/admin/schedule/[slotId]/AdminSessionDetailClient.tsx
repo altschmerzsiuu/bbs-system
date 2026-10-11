@@ -568,6 +568,26 @@ export default function AdminSessionDetailClient({
                                             </span>
                                         </div>
 
+                                        {booking.notes && (
+                                            <div
+                                                style={{
+                                                    background: booking.notes.includes('Fotografer') ? '#FEF3C7' : '#F4F4F5',
+                                                    border: `1px solid ${booking.notes.includes('Fotografer') ? '#FDE68A' : '#E4E4E7'}`,
+                                                    borderRadius: '10px',
+                                                    padding: '8px 12px',
+                                                    marginBottom: '12px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    fontSize: '12px',
+                                                    color: booking.notes.includes('Fotografer') ? '#92400E' : 'var(--ink)',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                <span>{booking.notes}</span>
+                                            </div>
+                                        )}
+
                                         <div
                                             style={{
                                                 display: 'flex',

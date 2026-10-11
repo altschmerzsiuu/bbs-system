@@ -85,7 +85,11 @@ export class BookingService {
       p_actor_id: actor.userId,
     });
     rethrow(error);
-    return data as string;
+    const bookingId = data as string;
+    if (parsed.notes) {
+      await this.db.from('bookings').update({ notes: parsed.notes }).eq('id', bookingId);
+    }
+    return bookingId;
   }
 
   async approveBooking(actor: ActorContext, bookingId: string): Promise<void> {

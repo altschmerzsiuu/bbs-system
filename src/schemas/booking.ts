@@ -17,6 +17,7 @@ export const participantSchema = z.discriminatedUnion('type', [
 export const createMemberBookingSchema = z.object({
   slotId: uuid,
   participants: z.array(participantSchema).min(1),
+  notes: z.string().trim().max(500).optional(),
 });
 
 export const cancelBookingSchema = z.object({

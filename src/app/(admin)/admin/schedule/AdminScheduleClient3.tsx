@@ -242,7 +242,8 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
                         context.fillStyle = '#FFFFFF';
                         context.font = '400 20px sans-serif';
                         const horseText = p.horseName ? `(🐴 ${p.horseName})` : '';
-                        context.fillText(`${idx + 1}. ${p.name} ${horseText}`, 60, currentY);
+                        const photoText = slot.booking?.notes?.includes('Fotografer') ? '📸 +Foto' : '';
+                        context.fillText(`${idx + 1}. ${p.name} ${horseText} ${photoText}`.trim(), 60, currentY);
                         currentY += participantRowHeight;
                     });
                 }

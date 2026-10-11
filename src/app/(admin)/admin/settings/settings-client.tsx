@@ -25,6 +25,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
 
   // Local settings state
   const [rescheduleHours, setRescheduleHours] = useState(initialSettings?.reschedule_hours?.toString() || '24');
+  const [maxWeeklyBookings, setMaxWeeklyBookings] = useState(initialSettings?.max_weekly_bookings?.toString() || '2');
   
   const formatPrice = (val: string) => {
     const num = val.replace(/[^0-9]/g, '');
@@ -114,7 +115,8 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
     setSavingSettings(true);
     const payload = {
       reschedule_hours: parseInt(rescheduleHours, 10),
-      admin_whatsapp: waNumber.trim()
+      admin_whatsapp: waNumber.trim(),
+      max_weekly_bookings: parseInt(maxWeeklyBookings, 10)
     };
     const res = await updateSiteSettings(payload);
     if (res.ok) {
@@ -407,6 +409,46 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
               </div>
             </div>
 
+            {/* Maksimal Booking Sesi per Minggu (per Member) */}
+            <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px' }}>
+              <div style={{ width: '44px', height: '44px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px', flexShrink: 0 }}>
+                <Calendar size={20} />
+              </div>
+              <div style={{ flex: 1, paddingRight: '16px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Maksimal Booking per Minggu</div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Batas sesi per minggu untuk member reguler (Silver & Gold bebas tanpa batas).</div>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <button 
+                  type="button"
+                  onClick={() => setOpenDropdown(openDropdown === 'maxWeekly' ? null : 'maxWeekly')}
+                  style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '100px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
+                >
+                  {maxWeeklyBookings === '999' ? 'Bebas' : `${maxWeeklyBookings} Sesi`}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'maxWeekly' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                {openDropdown === 'maxWeekly' && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '140px' }}>
+                    {[
+                      { label: '1 Sesi / Minggu', val: '1' },
+                      { label: '2 Sesi (Standar)', val: '2' },
+                      { label: '3 Sesi / Minggu', val: '3' },
+                      { label: '4 Sesi / Minggu', val: '4' },
+                      { label: '5 Sesi / Minggu', val: '5' },
+                      { label: 'Bebas (Tanpa Batas)', val: '999' }
+                    ].map(item => (
+                      <div 
+                        key={item.val} 
+                        onClick={() => { setMaxWeeklyBookings(item.val); setOpenDropdown(null); }}
+                        style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: maxWeeklyBookings === item.val ? '#f4f4f5' : '#fff', color: maxWeeklyBookings === item.val ? 'var(--ink)' : 'var(--muted)' }}
+                      >
+                        {item.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
 
           </div>
 

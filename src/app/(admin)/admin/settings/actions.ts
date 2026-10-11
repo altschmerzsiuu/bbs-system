@@ -55,6 +55,7 @@ export async function toggleHorseStatus(id: string, currentStatus: string) {
 export async function updateSiteSettings(settings: {
   reschedule_hours: number;
   admin_whatsapp: string;
+  max_weekly_bookings?: number;
 }) {
   const actor = await requireActor(['ADMIN'], true);
   const db = await createServerClient();

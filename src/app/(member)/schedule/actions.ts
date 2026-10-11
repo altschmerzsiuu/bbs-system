@@ -13,7 +13,11 @@ export type ActionResult = { ok: true; bookingId: string } | { ok: false; code: 
  * Tidak ada aturan bisnis di komponen: eligibility, window, kapasitas dan
  * kredit semuanya divalidasi di dalam transaksi database (Section 64.22).
  */
-export async function submitBooking(slotId: string, participants?: string): Promise<ActionResult> {
+export async function submitBooking(
+  slotId: string, 
+  participants?: string, 
+  withPhotographer?: boolean
+): Promise<ActionResult> {
   const actor = await requireActor(['MEMBER'], true);
   const db = await createServerClient();
   const service = new BookingService(db as never);
@@ -22,9 +26,12 @@ export async function submitBooking(slotId: string, participants?: string): Prom
       ? JSON.parse(participants) 
       : [{ type: 'MEMBER', memberId: actor.memberId! }];
 
+    const notes = withPhotographer ? '📸 Include Fotografer (+Rp 200.000)' : undefined;
+
     const bookingId = await service.createMemberBooking(actor, { 
       slotId, 
-      participants: parsedParticipants 
+      participants: parsedParticipants,
+      notes
     });
     revalidateBookingPaths();
     return { ok: true, bookingId };
