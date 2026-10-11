@@ -7,7 +7,6 @@ import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHo
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
 import { submitBooking } from './actions';
-import { cancelBookingAction } from '../bookings/actions';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createClient } from '@/infrastructure/supabase-browser';
 
@@ -593,66 +592,25 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+            <div style={{ marginTop: '24px' }}>
               <button
-                className="primary"
-                style={{ flex: 1, height: '52px', fontSize: '14px', fontWeight: 700 }}
-                onClick={() => {
-                  const dateObj = new Date(`${bookedPassData.date}T00:00:00`);
-                  const dateStr = `${dateObj.getDate()} ${MONTHS_FULL[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
-                  const timeStr = bookedPassData.startTime.slice(0, 5);
-                  const msg = encodeURIComponent(`Halo admin, saya ingin reschedule jadwal saya pada ${dateStr}, jam ${timeStr}.`);
-                  window.open(`https://wa.me/${adminWa.replace(/^0/, '62').replace(/\D/g, '')}?text=${msg}`, '_blank');
+                onClick={() => router.push('/home')}
+                style={{
+                  width: '100%',
+                  height: '56px',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  borderRadius: '100px',
+                  background: 'var(--ink)',
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
                 }}
               >
-                Reschedule via WA
-              </button>
-              <button
-                className="primary"
-                style={{ flex: 1, height: '52px', fontSize: '14px', fontWeight: 700, background: '#faeae9', color: '#c06c64' }}
-                onClick={() => {
-                  toast.custom((t) => (
-                    <div style={{
-                      background: '#fff',
-                      borderRadius: '16px',
-                      padding: '16px 20px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
-                      border: '1px solid rgba(0,0,0,0.06)',
-                      maxWidth: '380px',
-                      width: '100%'
-                    }}>
-                      <div style={{ fontWeight: 700, fontSize: '15px', color: '#111827', marginBottom: '6px' }}>Batalkan sesi?</div>
-                      <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '14px', lineHeight: 1.4 }}>Kredit tidak akan dikembalikan jika dibatalkan kurang dari batas waktu.</div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                          onClick={() => toast.dismiss(t)}
-                          style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#f5f7f5', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: 'var(--ink)' }}
-                        >Batal</button>
-                        <button
-                          onClick={async () => {
-                            toast.dismiss(t);
-                            const res = await cancelBookingAction(bookedPassData.id, true);
-                            if (res.ok) {
-                              toast.custom((t2) => <AlertToast title="Berhasil" description="Sesi berhasil dibatalkan." onDismiss={() => toast.dismiss(t2)} />);
-                              setIsPassModalOpen(false);
-                              router.refresh();
-                            } else {
-                              toast.custom((t2) => <AlertToast title="Gagal" description={res.message || 'Terjadi kesalahan.'} variant="destructive" onDismiss={() => toast.dismiss(t2)} />);
-                            }
-                          }}
-                          style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#c06c64', border: 'none', fontSize: '13px', fontWeight: 700, cursor: 'pointer', color: '#fff' }}
-                        >Ya, Batalkan</button>
-                      </div>
-                    </div>
-                  ), { duration: Infinity });
-                }}
-              >
-                Cancel Session
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-              <button onClick={() => router.push('/home')} className="primary" style={{ width: '100%', height: '56px', fontSize: '15px', background: 'var(--paper)', color: 'var(--ink)' }}>
                 Back to Home
               </button>
             </div>
