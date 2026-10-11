@@ -231,84 +231,90 @@ export default function MembershipWizard({
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingBottom: '48px' }}>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingBottom: '36px' }}>
       
       {/* ── Top Bar ── */}
       <div style={{
-        padding: '16px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        padding: '12px 16px',
         position: 'sticky',
         top: 0,
-        background: 'rgba(251, 249, 245, 0.95)',
+        background: 'rgba(251, 249, 245, 0.96)',
         backdropFilter: 'blur(10px)',
         zIndex: 20,
-        borderBottom: '1px solid rgba(0,0,0,0.06)'
+        borderBottom: '1px solid rgba(0,0,0,0.05)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button
-            onClick={() => {
-              if (step > 1 && step < 4) setStep(step - 1);
-              else router.back();
-            }}
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: '#FFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid #E5E0D5',
-              cursor: 'pointer',
-              color: 'var(--ink)',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
-            }}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div>
-            <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: 'var(--ink)' }}>
-              {step === 4 ? 'Status Pengajuan' : isRenewal ? 'Perpanjangan Membership' : 'Pendaftaran Membership'}
-            </h1>
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>
-              {step === 1 && 'Langkah 1 dari 3: Data Diri & Profil'}
-              {step === 2 && 'Langkah 2 dari 3: Pilih Paket'}
-              {step === 3 && 'Langkah 3 dari 3: Pembayaran & Bukti Transfer'}
-              {step === 4 && 'Tahap Verifikasi Admin'}
-            </p>
+        <div style={{
+          maxWidth: '440px',
+          width: '100%',
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={() => {
+                if (step > 1 && step < 4) setStep(step - 1);
+                else router.back();
+              }}
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                background: '#FFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid #E5E0D5',
+                cursor: 'pointer',
+                color: 'var(--ink)',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.03)'
+              }}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <div>
+              <h1 style={{ fontSize: '15px', fontWeight: 700, margin: 0, color: 'var(--ink)', lineHeight: 1.2 }}>
+                {step === 4 ? 'Status Pengajuan' : isRenewal ? 'Perpanjangan Membership' : 'Pendaftaran Membership'}
+              </h1>
+              <p style={{ margin: 0, fontSize: '10px', color: 'var(--muted)', fontWeight: 500 }}>
+                {step === 1 && 'Langkah 1 dari 3: Data Diri & Profil'}
+                {step === 2 && 'Langkah 2 dari 3: Pilih Paket'}
+                {step === 3 && 'Langkah 3 dari 3: Pembayaran & Bukti Transfer'}
+                {step === 4 && 'Tahap Verifikasi Admin'}
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Badge isRenewal */}
-        {isRenewal && step < 4 && (
-          <span style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            padding: '6px 12px',
-            borderRadius: '100px',
-            background: 'rgba(216, 188, 128, 0.2)',
-            color: '#8C6E2D',
-            letterSpacing: '0.5px'
-          }}>
-            RENEWAL
-          </span>
-        )}
+          {/* Badge isRenewal */}
+          {isRenewal && step < 4 && (
+            <span style={{
+              fontSize: '9px',
+              fontWeight: 700,
+              padding: '3px 8px',
+              borderRadius: '100px',
+              background: 'rgba(216, 188, 128, 0.2)',
+              color: '#8C6E2D',
+              letterSpacing: '0.5px'
+            }}>
+              RENEWAL
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── Progress Stepper Bar (Only for steps 1-3) ── */}
       {step < 4 && (
-        <div style={{ padding: '20px 24px 8px', maxWidth: '640px', margin: '0 auto', width: '100%' }}>
+        <div style={{ padding: '12px 16px 4px', maxWidth: '440px', margin: '0 auto', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
             
             {/* Connecting Progress Line */}
             <div style={{
               position: 'absolute',
-              top: '18px',
-              left: '32px',
-              right: '32px',
-              height: '3px',
+              top: '14px',
+              left: '28px',
+              right: '28px',
+              height: '2px',
               background: '#EAE5D8',
               zIndex: 1
             }}>
@@ -321,10 +327,10 @@ export default function MembershipWizard({
             </div>
 
             {/* Step 1 Node */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', zIndex: 2 }}>
               <div style={{
-                width: '36px',
-                height: '36px',
+                width: '28px',
+                height: '28px',
                 borderRadius: '50%',
                 background: step >= 1 ? 'var(--ink)' : '#FFF',
                 color: step >= 1 ? '#FFF' : 'var(--muted)',
@@ -332,22 +338,22 @@ export default function MembershipWizard({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '13px',
+                fontSize: '11px',
                 fontWeight: 700,
                 transition: 'all 0.2s ease'
               }}>
-                {step > 1 ? <Check size={16} strokeWidth={3} /> : '1'}
+                {step > 1 ? <Check size={14} strokeWidth={3} /> : '1'}
               </div>
-              <span style={{ fontSize: '11px', fontWeight: step === 1 ? 700 : 500, color: step === 1 ? 'var(--ink)' : 'var(--muted)' }}>
+              <span style={{ fontSize: '10px', fontWeight: step === 1 ? 700 : 500, color: step === 1 ? 'var(--ink)' : 'var(--muted)' }}>
                 Data Diri
               </span>
             </div>
 
             {/* Step 2 Node */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', zIndex: 2 }}>
               <div style={{
-                width: '36px',
-                height: '36px',
+                width: '28px',
+                height: '28px',
                 borderRadius: '50%',
                 background: step >= 2 ? 'var(--ink)' : '#FFF',
                 color: step >= 2 ? '#FFF' : 'var(--muted)',
@@ -355,22 +361,22 @@ export default function MembershipWizard({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '13px',
+                fontSize: '11px',
                 fontWeight: 700,
                 transition: 'all 0.2s ease'
               }}>
-                {step > 2 ? <Check size={16} strokeWidth={3} /> : '2'}
+                {step > 2 ? <Check size={14} strokeWidth={3} /> : '2'}
               </div>
-              <span style={{ fontSize: '11px', fontWeight: step === 2 ? 700 : 500, color: step === 2 ? 'var(--ink)' : 'var(--muted)' }}>
+              <span style={{ fontSize: '10px', fontWeight: step === 2 ? 700 : 500, color: step === 2 ? 'var(--ink)' : 'var(--muted)' }}>
                 Pilih Paket
               </span>
             </div>
 
             {/* Step 3 Node */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', zIndex: 2 }}>
               <div style={{
-                width: '36px',
-                height: '36px',
+                width: '28px',
+                height: '28px',
                 borderRadius: '50%',
                 background: step === 3 ? 'var(--ink)' : '#FFF',
                 color: step === 3 ? '#FFF' : 'var(--muted)',
@@ -378,13 +384,13 @@ export default function MembershipWizard({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '13px',
+                fontSize: '11px',
                 fontWeight: 700,
                 transition: 'all 0.2s ease'
               }}>
                 3
               </div>
-              <span style={{ fontSize: '11px', fontWeight: step === 3 ? 700 : 500, color: step === 3 ? 'var(--ink)' : 'var(--muted)' }}>
+              <span style={{ fontSize: '10px', fontWeight: step === 3 ? 700 : 500, color: step === 3 ? 'var(--ink)' : 'var(--muted)' }}>
                 Pembayaran
               </span>
             </div>
@@ -394,7 +400,7 @@ export default function MembershipWizard({
       )}
 
       {/* ── Main Form Content Container ── */}
-      <div style={{ maxWidth: '640px', width: '100%', margin: '0 auto', padding: '16px 24px', flex: 1 }}>
+      <div style={{ maxWidth: '440px', width: '100%', margin: '0 auto', padding: '12px 16px', flex: 1 }}>
 
         <AnimatePresence mode="wait">
           
@@ -408,14 +414,14 @@ export default function MembershipWizard({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.25 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
             >
               <div>
-                <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 4px 0' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 2px 0' }}>
                   Lengkapi Data Diri
                 </h2>
-                <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0 }}>
-                  Data ini digunakan untuk administrasi keanggotaan dan profil berkuda Anda di stable.
+                <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
+                  Data profil berkuda untuk administrasi keanggotaan stable Anda.
                 </p>
               </div>
 
@@ -423,22 +429,22 @@ export default function MembershipWizard({
               <div style={{
                 background: '#FFF',
                 border: '1px solid #ECE7DC',
-                borderRadius: '20px',
-                padding: '24px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.02)',
+                borderRadius: '16px',
+                padding: '16px 18px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '16px'
+                gap: '12px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <User size={18} color="var(--ink)" />
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <User size={15} color="var(--ink)" />
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     Informasi Kontak
                   </span>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
                     Nama Lengkap *
                   </label>
                   <input
@@ -449,11 +455,11 @@ export default function MembershipWizard({
                     placeholder="Contoh: Budi Santoso"
                     style={{
                       width: '100%',
-                      padding: '14px 16px',
-                      borderRadius: '12px',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
                       border: '1px solid #E5E0D5',
                       background: '#FAF8F5',
-                      fontSize: '15px',
+                      fontSize: '13px',
                       color: 'var(--ink)',
                       outline: 'none'
                     }}
@@ -461,7 +467,7 @@ export default function MembershipWizard({
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
                     Nomor WhatsApp *
                   </label>
                   <input
@@ -472,20 +478,20 @@ export default function MembershipWizard({
                     placeholder="081234567890"
                     style={{
                       width: '100%',
-                      padding: '14px 16px',
-                      borderRadius: '12px',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
                       border: '1px solid #E5E0D5',
                       background: '#FAF8F5',
-                      fontSize: '15px',
+                      fontSize: '13px',
                       color: 'var(--ink)',
                       outline: 'none'
                     }}
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
                       Tanggal Lahir *
                     </label>
                     <input
@@ -495,11 +501,11 @@ export default function MembershipWizard({
                       onChange={(e) => setDateOfBirth(e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '14px 16px',
-                        borderRadius: '12px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
                         border: '1px solid #E5E0D5',
                         background: '#FAF8F5',
-                        fontSize: '14px',
+                        fontSize: '13px',
                         color: 'var(--ink)',
                         outline: 'none'
                       }}
@@ -507,7 +513,7 @@ export default function MembershipWizard({
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
                       Kota Domisili *
                     </label>
                     <input
@@ -518,11 +524,11 @@ export default function MembershipWizard({
                       placeholder="Balikpapan"
                       style={{
                         width: '100%',
-                        padding: '14px 16px',
-                        borderRadius: '12px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
                         border: '1px solid #E5E0D5',
                         background: '#FAF8F5',
-                        fontSize: '15px',
+                        fontSize: '13px',
                         color: 'var(--ink)',
                         outline: 'none'
                       }}
@@ -535,23 +541,23 @@ export default function MembershipWizard({
               <div style={{
                 background: '#FFF',
                 border: '1px solid #ECE7DC',
-                borderRadius: '20px',
-                padding: '24px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.02)',
+                borderRadius: '16px',
+                padding: '16px 18px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '16px'
+                gap: '12px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <ShieldCheck size={18} color="var(--ink)" />
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Profil Berkuda (Kesesuaian Pelana & Kuda)
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ShieldCheck size={15} color="var(--ink)" />
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Profil Fisik Berkuda
                   </span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
                       Tinggi (cm) *
                     </label>
                     <input
@@ -562,11 +568,11 @@ export default function MembershipWizard({
                       placeholder="170"
                       style={{
                         width: '100%',
-                        padding: '14px 16px',
-                        borderRadius: '12px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
                         border: '1px solid #E5E0D5',
                         background: '#FAF8F5',
-                        fontSize: '15px',
+                        fontSize: '13px',
                         color: 'var(--ink)',
                         outline: 'none'
                       }}
@@ -574,7 +580,7 @@ export default function MembershipWizard({
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
                       Berat (kg) *
                     </label>
                     <input
@@ -585,11 +591,11 @@ export default function MembershipWizard({
                       placeholder="65"
                       style={{
                         width: '100%',
-                        padding: '14px 16px',
-                        borderRadius: '12px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
                         border: '1px solid #E5E0D5',
                         background: '#FAF8F5',
-                        fontSize: '15px',
+                        fontSize: '13px',
                         color: 'var(--ink)',
                         outline: 'none'
                       }}
@@ -597,7 +603,7 @@ export default function MembershipWizard({
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
                       Sepatu (EUR)
                     </label>
                     <input
@@ -607,11 +613,11 @@ export default function MembershipWizard({
                       placeholder="42"
                       style={{
                         width: '100%',
-                        padding: '14px 16px',
-                        borderRadius: '12px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
                         border: '1px solid #E5E0D5',
                         background: '#FAF8F5',
-                        fontSize: '15px',
+                        fontSize: '13px',
                         color: 'var(--ink)',
                         outline: 'none'
                       }}
@@ -621,8 +627,8 @@ export default function MembershipWizard({
               </div>
 
               {errorMessage && (
-                <div style={{ padding: '14px 16px', borderRadius: '12px', background: '#FEE2E2', border: '1px solid #FCA5A5', color: '#B91C1C', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <AlertCircle size={18} />
+                <div style={{ padding: '10px 14px', borderRadius: '10px', background: '#FEE2E2', border: '1px solid #FCA5A5', color: '#B91C1C', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <AlertCircle size={15} />
                   <span>{errorMessage}</span>
                 </div>
               )}
@@ -633,24 +639,24 @@ export default function MembershipWizard({
                 onClick={handleNextFromStep1}
                 style={{
                   width: '100%',
-                  padding: '18px 24px',
+                  height: '46px',
                   borderRadius: '100px',
                   background: 'var(--ink)',
                   color: '#FFF',
-                  fontSize: '15px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   border: 'none',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                  marginTop: '8px'
+                  gap: '6px',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
+                  marginTop: '4px'
                 }}
               >
-                <span>Lanjut: Pilih Paket Membership</span>
-                <ArrowRight size={18} />
+                <span>Lanjut: Pilih Paket</span>
+                <ArrowRight size={16} />
               </button>
             </motion.div>
           )}
@@ -665,19 +671,19 @@ export default function MembershipWizard({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.25 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
             >
               <div>
-                <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 4px 0' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 2px 0' }}>
                   Pilih Paket Keanggotaan
                 </h2>
-                <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0 }}>
-                  Pilih paket yang sesuai dengan frekuensi dan target berkuda Anda.
+                <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
+                  Pilih paket yang sesuai dengan kebutuhan riding Anda.
                 </p>
               </div>
 
               {/* List of Plan Cards */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {plans.map((plan) => {
                   const isSelected = selectedPlanId === plan.id;
                   const isGold = plan.name.toLowerCase().includes('gold');
@@ -690,8 +696,8 @@ export default function MembershipWizard({
                     : 'linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 50%, #EBEBEB 100%)';
                   
                   const border = isSelected 
-                    ? `2.5px solid ${isGold ? '#C4A35D' : 'var(--ink)'}` 
-                    : '1.5px solid rgba(0,0,0,0.08)';
+                    ? `2px solid ${isGold ? '#C4A35D' : 'var(--ink)'}` 
+                    : '1px solid rgba(0,0,0,0.08)';
 
                   return (
                     <div
@@ -700,30 +706,30 @@ export default function MembershipWizard({
                       style={{
                         background: cardBg,
                         border,
-                        borderRadius: '24px',
-                        padding: '24px',
+                        borderRadius: '18px',
+                        padding: '16px 18px',
                         cursor: 'pointer',
                         position: 'relative',
-                        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                        boxShadow: isSelected ? '0 12px 28px rgba(0,0,0,0.1)' : '0 4px 16px rgba(0,0,0,0.03)'
+                        transition: 'all 0.15s ease',
+                        boxShadow: isSelected ? '0 6px 16px rgba(0,0,0,0.06)' : '0 1px 4px rgba(0,0,0,0.02)'
                       }}
                     >
                       {/* Badge Top */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <span style={{
-                          fontSize: '11px',
+                          fontSize: '10px',
                           fontWeight: 800,
-                          letterSpacing: '1px',
+                          letterSpacing: '0.5px',
                           color: isGold ? '#7D5F1A' : '#4A4A4A',
                           textTransform: 'uppercase'
                         }}>
-                          {isGold ? '★ PALING POPULER · GOLD' : '★ SILVER PACKAGE'}
+                          {isGold ? '★ GOLD PACKAGE' : '★ SILVER PACKAGE'}
                         </span>
 
                         {/* Radio Check Circle */}
                         <div style={{
-                          width: '26px',
-                          height: '26px',
+                          width: '22px',
+                          height: '22px',
                           borderRadius: '50%',
                           border: `2px solid ${isSelected ? (isGold ? '#7D5F1A' : 'var(--ink)') : '#D0CBC0'}`,
                           background: isSelected ? (isGold ? '#7D5F1A' : 'var(--ink)') : 'transparent',
@@ -732,46 +738,46 @@ export default function MembershipWizard({
                           justifyContent: 'center',
                           color: '#FFF'
                         }}>
-                          {isSelected && <Check size={14} strokeWidth={3} />}
+                          {isSelected && <Check size={12} strokeWidth={3} />}
                         </div>
                       </div>
 
-                      <div style={{ font: '28px/1.1 var(--font-display)', color: 'var(--ink)', marginBottom: '6px' }}>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px' }}>
                         {plan.name}
                       </div>
 
                       {/* Sessions & Validity Pill */}
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', background: 'rgba(255,255,255,0.7)', padding: '4px 10px', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink)', background: 'rgba(255,255,255,0.7)', padding: '2px 8px', borderRadius: '6px' }}>
                           {plan.credits} Sesi Berkuda
                         </span>
-                        <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--muted)', background: 'rgba(255,255,255,0.7)', padding: '4px 10px', borderRadius: '8px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--muted)', background: 'rgba(255,255,255,0.7)', padding: '2px 8px', borderRadius: '6px' }}>
                           Masa aktif {plan.duration_months} Bulan
                         </span>
                       </div>
 
                       {/* Price Section */}
-                      <div style={{ marginBottom: '18px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                      <div style={{ marginBottom: '12px', paddingTop: '8px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
                         {isRenewal && planDiscount > 0 && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                            <span style={{ fontSize: '13px', textDecoration: 'line-through', color: 'var(--muted)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                            <span style={{ fontSize: '11px', textDecoration: 'line-through', color: 'var(--muted)' }}>
                               Rp {plan.price_idr.toLocaleString('id-ID')}
                             </span>
-                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#15803D', background: '#DCFCE7', padding: '2px 8px', borderRadius: '6px' }}>
-                              Hemat Rp {planDiscount.toLocaleString('id-ID')} (Renewal)
+                            <span style={{ fontSize: '10px', fontWeight: 700, color: '#15803D', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px' }}>
+                              Hemat Rp {planDiscount.toLocaleString('id-ID')}
                             </span>
                           </div>
                         )}
-                        <div style={{ font: '32px/1 var(--font-display)', color: 'var(--ink)', fontWeight: 700 }}>
+                        <div style={{ fontSize: '20px', color: 'var(--ink)', fontWeight: 800 }}>
                           Rp {effectivePrice.toLocaleString('id-ID')}
                         </div>
                       </div>
 
                       {/* Benefits Checklist */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {benefits.map((b, i) => (
-                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--ink)' }}>
-                            <CheckCircle2 size={16} color={isGold ? '#A67C26' : 'var(--ink)'} style={{ flexShrink: 0 }} />
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--ink)' }}>
+                            <CheckCircle2 size={14} color={isGold ? '#A67C26' : 'var(--ink)'} style={{ flexShrink: 0 }} />
                             <span>{b}</span>
                           </div>
                         ))}
@@ -782,18 +788,18 @@ export default function MembershipWizard({
               </div>
 
               {/* Navigation Buttons */}
-              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
                 <button
                   type="button"
                   onClick={() => setStep(1)}
                   style={{
-                    flex: '0 0 100px',
-                    padding: '18px',
+                    height: '46px',
+                    padding: '0 20px',
                     borderRadius: '100px',
                     background: '#FFF',
                     border: '1px solid #E5E0D5',
                     color: 'var(--ink)',
-                    fontSize: '15px',
+                    fontSize: '13px',
                     fontWeight: 600,
                     cursor: 'pointer'
                   }}
@@ -805,23 +811,23 @@ export default function MembershipWizard({
                   onClick={() => setStep(3)}
                   style={{
                     flex: 1,
-                    padding: '18px 24px',
+                    height: '46px',
                     borderRadius: '100px',
                     background: 'var(--ink)',
                     color: '#FFF',
-                    fontSize: '15px',
+                    fontSize: '13px',
                     fontWeight: 600,
                     border: 'none',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                    gap: '6px',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
                   }}
                 >
                   <span>Lanjut: Pembayaran</span>
-                  <ArrowRight size={18} />
+                  <ArrowRight size={16} />
                 </button>
               </div>
             </motion.div>
@@ -837,203 +843,217 @@ export default function MembershipWizard({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.25 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
             >
               <div>
-                <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 4px 0' }}>
+                <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 2px 0' }}>
                   Pembayaran & Bukti Transfer
                 </h2>
-                <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0 }}>
-                  Silakan transfer ke rekening resmi BBS lalu lampirkan bukti pembayaran.
+                <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>
+                  Transfer sesuai nominal berikut lalu unggah bukti transfer.
                 </p>
               </div>
 
-              {/* Order Summary Box */}
+              {/* Combined Payment & Bank Card - Ultra Slim & Elegant */}
               <div style={{
                 background: '#FFF',
                 border: '1px solid #ECE7DC',
-                borderRadius: '20px',
-                padding: '20px 24px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.02)'
+                borderRadius: '16px',
+                padding: '14px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.02)'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--muted)', fontWeight: 500 }}>Paket Dipilih</span>
-                  <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>{selectedPlan.name} ({selectedPlan.credits} Sesi)</span>
-                </div>
-                {isRenewal && discount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '13px', color: '#15803D' }}>Diskon Perpanjangan</span>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#15803D' }}>-Rp {discount.toLocaleString('id-ID')}</span>
-                  </div>
-                )}
-                <div style={{ height: '1px', background: '#F0ECE1', margin: '12px 0' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>Total Pembayaran</span>
-                  <span style={{ font: '26px var(--font-display)', fontWeight: 700, color: 'var(--ink)' }}>
-                    Rp {finalPrice.toLocaleString('id-ID')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Bank Account Transfer Card */}
-              <div style={{
-                background: 'linear-gradient(135deg, #1C1B1A 0%, #2B2926 100%)',
-                color: '#FFF',
-                borderRadius: '20px',
-                padding: '24px',
-                boxShadow: '0 10px 24px rgba(0,0,0,0.12)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <CreditCard size={18} color="#D8BC80" />
+                {/* Order Summary Row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Paket Dipilih
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '1px' }}>TRANSFER BANK {bankName || 'BCA'}</span>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
+                      {selectedPlan.name} · {selectedPlan.credits} Sesi
+                      {isRenewal && discount > 0 && (
+                        <span style={{ fontSize: '10px', color: '#15803D', marginLeft: '6px', fontWeight: 600 }}>
+                          (Hemat Rp {discount.toLocaleString('id-ID')})
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span style={{ fontSize: '11px', background: '#D8BC80', color: '#1C1B1A', padding: '3px 8px', borderRadius: '6px', fontWeight: 800 }}>
-                    OFFICIAL BBS
-                  </span>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Total Pembayaran
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--ink)', marginTop: '2px' }}>
+                      Rp {finalPrice.toLocaleString('id-ID')}
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ fontSize: '12px', color: '#A6A095', marginBottom: '4px' }}>Nomor Rekening:</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', padding: '12px 16px', borderRadius: '12px', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '1.5px', fontFamily: 'monospace' }}>
-                    {accountNumber || '1490011867027'}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleCopyAccount}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      background: copied ? '#15803D' : '#D8BC80',
-                      color: copied ? '#FFF' : '#1C1B1A',
-                      border: 'none',
-                      padding: '8px 14px',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {copied ? <Check size={14} /> : <Copy size={14} />}
-                    <span>{copied ? 'Tersalin!' : 'Salin'}</span>
-                  </button>
-                </div>
+                <div style={{ height: '1px', background: '#F0ECE1' }} />
 
-                <div style={{ fontSize: '12px', color: '#A6A095' }}>
-                  Atas Nama: <b style={{ color: '#FFF' }}>{accountName || 'Borneo Berkuda Stable'}</b>
+                {/* Bank BCA Section */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CreditCard size={14} color="#8C6E2D" />
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)' }}>
+                        TRANSFER BANK {bankName || 'BCA'}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '9px', background: 'rgba(216, 188, 128, 0.25)', color: '#8C6E2D', padding: '2px 8px', borderRadius: '100px', fontWeight: 700, letterSpacing: '0.5px' }}>
+                      OFFICIAL BBS
+                    </span>
+                  </div>
+
+                  {/* Account Number Box */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: '#FAF8F5',
+                    border: '1px solid #ECE7DC',
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    marginBottom: '6px'
+                  }}>
+                    <span style={{ fontSize: '15px', fontWeight: 700, letterSpacing: '0.5px', fontFamily: 'monospace', color: 'var(--ink)' }}>
+                      {accountNumber || '1490011867027'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyAccount}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: copied ? '#15803D' : 'var(--ink)',
+                        color: '#FFF',
+                        border: 'none',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {copied ? <Check size={11} /> : <Copy size={11} />}
+                      <span>{copied ? 'Tersalin' : 'Salin'}</span>
+                    </button>
+                  </div>
+
+                  <div style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                    Atas Nama: <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{accountName || 'PT BERKAH BERKUDA SEJAHTERA'}</b>
+                  </div>
                 </div>
               </div>
 
-              {/* Upload Receipt Dropzone */}
-              <div style={{
-                background: '#FFF',
+              {/* Upload Dropzone - Slim, Native & Elegant */}
+              <label style={{
+                display: 'block',
+                background: '#FAF8F5',
                 border: '1.5px dashed #D5CEBE',
-                borderRadius: '20px',
-                padding: '24px',
+                borderRadius: '14px',
+                padding: '12px 16px',
                 textAlign: 'center',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.02)',
+                cursor: 'pointer',
+                transition: 'border-color 0.2s ease, background 0.2s ease',
                 position: 'relative'
               }}>
-                {!file ? (
-                  <div>
-                    <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: '#F8F5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                      <Upload size={24} color="#7D5F1A" />
-                    </div>
-                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px' }}>
-                      Upload Bukti Pembayaran
-                    </div>
-                    <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 16px', lineHeight: 1.4 }}>
-                      Format: JPG, PNG, WEBP, atau PDF (Ukuran Maksimal 5MB)
-                    </p>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
 
-                    <label style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px 24px',
-                      borderRadius: '100px',
-                      background: 'var(--ink)',
-                      color: '#FFF',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                    }}>
-                      <span>Pilih File dari Perangkat</span>
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,application/pdf"
-                        onChange={handleFileChange}
-                        style={{ display: 'none' }}
-                      />
-                    </label>
+                {!file ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F0EBE1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Upload size={14} color="var(--ink)" />
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink)' }}>
+                        Unggah Bukti Pembayaran
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--muted)' }}>
+                        Ketuk untuk pilih foto atau PDF (Maks. 5MB)
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                    {previewUrl ? (
-                      <div style={{ width: '100%', maxHeight: '200px', overflow: 'hidden', borderRadius: '12px', border: '1px solid #ECE7DC' }}>
-                        <img src={previewUrl} alt="Preview Bukti" style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#F9F9F9' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                      {previewUrl ? (
+                        <div style={{ width: '36px', height: '36px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #ECE7DC', flexShrink: 0 }}>
+                          <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ) : (
+                        <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: '#F0EBE1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <FileText size={16} color="var(--ink)" />
+                        </div>
+                      )}
+                      <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink)', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '180px' }}>
+                          {file.name}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#15803D', fontWeight: 600 }}>
+                          {(file.size / 1024).toFixed(0)} KB · Siap dikirim
+                        </div>
                       </div>
-                    ) : (
-                      <div style={{ width: '64px', height: '64px', borderRadius: '12px', background: '#F0ECE1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <FileText size={32} color="var(--ink)" />
-                      </div>
-                    )}
-
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>{file.name}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{(file.size / 1024).toFixed(1)} KB</div>
                     </div>
 
                     <button
                       type="button"
-                      onClick={removeFile}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        removeFile();
+                      }}
                       style={{
-                        padding: '8px 16px',
+                        padding: '4px 10px',
                         borderRadius: '100px',
                         background: '#FEE2E2',
-                        border: '1px solid #FCA5A5',
+                        border: 'none',
                         color: '#B91C1C',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: 600,
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px'
+                        gap: '3px',
+                        flexShrink: 0
                       }}
                     >
-                      <X size={14} />
-                      <span>Hapus / Ganti File</span>
+                      <X size={11} />
+                      <span>Ganti</span>
                     </button>
                   </div>
                 )}
-              </div>
+              </label>
 
               {errorMessage && (
-                <div style={{ padding: '14px 16px', borderRadius: '12px', background: '#FEE2E2', border: '1px solid #FCA5A5', color: '#B91C1C', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <AlertCircle size={18} />
+                <div style={{ padding: '8px 12px', borderRadius: '10px', background: '#FEE2E2', border: '1px solid #FCA5A5', color: '#B91C1C', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <AlertCircle size={14} />
                   <span>{errorMessage}</span>
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+              {/* Action Buttons - Slim & Balanced */}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                 <button
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => setStep(2)}
                   style={{
-                    flex: '0 0 100px',
-                    padding: '18px',
+                    height: '44px',
+                    padding: '0 18px',
                     borderRadius: '100px',
                     background: '#FFF',
                     border: '1px solid #E5E0D5',
                     color: 'var(--ink)',
-                    fontSize: '15px',
+                    fontSize: '13px',
                     fontWeight: 600,
                     cursor: isSubmitting ? 'not-allowed' : 'pointer'
                   }}
@@ -1046,29 +1066,29 @@ export default function MembershipWizard({
                   onClick={handleSubmitAll}
                   style={{
                     flex: 1,
-                    padding: '18px 24px',
+                    height: '44px',
                     borderRadius: '100px',
-                    background: isSubmitting || !file ? '#A39F97' : 'var(--ink)',
+                    background: isSubmitting || !file ? '#C2BEB6' : 'var(--ink)',
                     color: '#FFF',
-                    fontSize: '15px',
+                    fontSize: '13px',
                     fontWeight: 600,
                     border: 'none',
                     cursor: isSubmitting || !file ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                    gap: '6px',
+                    boxShadow: isSubmitting || !file ? 'none' : '0 4px 12px rgba(0,0,0,0.1)'
                   }}
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 size={18} className="animate-spin" />
-                      <span>Mengirim Pengajuan...</span>
+                      <Loader2 size={15} className="animate-spin" />
+                      <span>Mengirim...</span>
                     </>
                   ) : (
                     <>
-                      <Check size={18} strokeWidth={2.5} />
+                      <Check size={15} strokeWidth={2.5} />
                       <span>Kirim Pengajuan & Bukti</span>
                     </>
                   )}
@@ -1086,131 +1106,131 @@ export default function MembershipWizard({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '24px', textAlign: 'center', paddingTop: '16px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center', paddingTop: '8px' }}
             >
               {/* Animated Glowing Badge / Icon */}
-              <div style={{ position: 'relative', width: '96px', height: '96px', margin: '0 auto' }}>
+              <div style={{ position: 'relative', width: '64px', height: '64px', margin: '0 auto' }}>
                 <div style={{
                   position: 'absolute',
                   inset: 0,
                   borderRadius: '50%',
-                  background: 'rgba(216, 188, 128, 0.3)',
-                  filter: 'blur(12px)',
+                  background: 'rgba(216, 188, 128, 0.25)',
+                  filter: 'blur(8px)',
                 }} />
                 <div style={{
                   position: 'relative',
-                  width: '96px',
-                  height: '96px',
+                  width: '64px',
+                  height: '64px',
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, #FFF9ED 0%, #F5E8CC 100%)',
-                  border: '2px solid #D8BC80',
+                  border: '1.5px solid #D8BC80',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#7D5F1A',
-                  boxShadow: '0 8px 24px rgba(216, 188, 128, 0.25)'
+                  boxShadow: '0 4px 16px rgba(216, 188, 128, 0.2)'
                 }}>
-                  <Clock size={44} strokeWidth={2} />
+                  <Clock size={28} strokeWidth={2} />
                 </div>
               </div>
 
               <div>
                 <span style={{
-                  fontSize: '11px',
+                  fontSize: '10px',
                   fontWeight: 800,
-                  letterSpacing: '1.5px',
-                  padding: '6px 14px',
+                  letterSpacing: '1px',
+                  padding: '4px 10px',
                   borderRadius: '100px',
                   background: '#FEF3C7',
                   color: '#92400E',
                   display: 'inline-block',
-                  marginBottom: '12px'
+                  marginBottom: '8px'
                 }}>
                   SEDANG DALAM TAHAP REVIEW ADMIN
                 </span>
-                <h2 style={{ font: '32px/1.1 var(--font-display)', color: 'var(--ink)', margin: '0 0 8px 0' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 6px 0' }}>
                   Pengajuan Berhasil Dikirim!
                 </h2>
-                <p style={{ fontSize: '14px', color: 'var(--muted)', maxWidth: '440px', margin: '0 auto', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '12px', color: 'var(--muted)', maxWidth: '360px', margin: '0 auto', lineHeight: 1.5 }}>
                   Bukti pembayaran dan data diri Anda telah kami terima. Admin BBS akan memverifikasi pembayaran Anda segera.
                 </p>
               </div>
 
-              {/* Summary Card */}
+              {/* Summary Card - Slim & Minimalist */}
               <div style={{
                 background: '#FFF',
                 border: '1px solid #ECE7DC',
-                borderRadius: '24px',
-                padding: '24px',
+                borderRadius: '16px',
+                padding: '16px 18px',
                 textAlign: 'left',
-                boxShadow: '0 6px 20px rgba(0,0,0,0.03)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '14px'
+                gap: '10px'
               }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                   Rincian Pengajuan
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--muted)' }}>Kode Pengajuan</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', fontFamily: 'monospace' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Kode Pengajuan</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)', fontFamily: 'monospace' }}>
                     {submittedData?.humanId || 'BBS-MEM-PENDING'}
                   </span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--muted)' }}>Paket Keanggotaan</span>
-                  <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Paket Keanggotaan</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
                     {submittedData?.planName || 'Membership BBS'}
                   </span>
                 </div>
 
                 {submittedData?.finalPriceIdr ? (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', color: 'var(--muted)' }}>Total Pembayaran</span>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Total Pembayaran</span>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>
                       Rp {submittedData.finalPriceIdr.toLocaleString('id-ID')}
                     </span>
                   </div>
                 ) : null}
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--muted)' }}>Status Verifikasi</span>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#92400E', background: '#FEF3C7', padding: '4px 10px', borderRadius: '8px' }}>
-                    Menunggu Konfirmasi Admin
+                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Status Verifikasi</span>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#92400E', background: '#FEF3C7', padding: '3px 8px', borderRadius: '6px' }}>
+                    Menunggu Konfirmasi
                   </span>
                 </div>
 
-                <div style={{ height: '1px', background: '#F5F2EB', margin: '6px 0' }} />
+                <div style={{ height: '1px', background: '#F5F2EB', margin: '4px 0' }} />
 
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                  <Sparkles size={18} color="#7D5F1A" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <span style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>
-                    Setelah admin mengonfirmasi, sesi dan hak istimewa membership akan aktif secara otomatis di aplikasi Anda.
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                  <Sparkles size={15} color="#7D5F1A" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <span style={{ fontSize: '11px', color: 'var(--muted)', lineHeight: 1.4 }}>
+                    Setelah dikonfirmasi, sesi dan hak istimewa membership akan aktif otomatis di akun Anda.
                   </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
                 <button
                   type="button"
                   onClick={() => router.push('/membership')}
                   style={{
                     width: '100%',
-                    padding: '18px 24px',
+                    height: '44px',
                     borderRadius: '100px',
                     background: 'var(--ink)',
                     color: '#FFF',
-                    fontSize: '15px',
+                    fontSize: '13px',
                     fontWeight: 600,
                     border: 'none',
                     cursor: 'pointer',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
                   }}
                 >
-                  Lihat Status di Halaman Membership
+                  Lihat Status di Membership
                 </button>
 
                 <button
@@ -1218,22 +1238,22 @@ export default function MembershipWizard({
                   onClick={handleContactAdmin}
                   style={{
                     width: '100%',
-                    padding: '16px 24px',
+                    height: '42px',
                     borderRadius: '100px',
                     background: '#FFF',
-                    color: '#25D366',
-                    fontSize: '14px',
+                    color: '#15803D',
+                    fontSize: '12px',
                     fontWeight: 600,
                     border: '1px solid #D5EAD8',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px'
+                    gap: '6px'
                   }}
                 >
-                  <MessageCircle size={18} />
-                  <span>Konfirmasi via WhatsApp Admin BBS</span>
+                  <MessageCircle size={15} />
+                  <span>Konfirmasi via WhatsApp Admin</span>
                 </button>
 
                 <button
@@ -1243,10 +1263,10 @@ export default function MembershipWizard({
                     background: 'transparent',
                     border: 'none',
                     color: 'var(--muted)',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: 500,
                     cursor: 'pointer',
-                    padding: '8px'
+                    padding: '6px'
                   }}
                 >
                   Kembali ke Beranda
