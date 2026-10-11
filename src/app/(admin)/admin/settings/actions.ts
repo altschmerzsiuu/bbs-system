@@ -13,15 +13,27 @@ export async function addHorse(name: string) {
   return { ok: true };
 }
 
+export async function updateHorse(id: string, name: string) {
+  const actor = await requireActor(['ADMIN'], true);
+  const db = await createServerClient();
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, message: 'Nama kuda tidak boleh kosong.' };
+  const { error } = await db.from('horses').update({ name: trimmed }).eq('id', id);
+  if (error) return { ok: false, message: error.message };
+  revalidatePath('/admin/settings');
+  revalidatePath('/admin/schedule');
+  return { ok: true };
+}
+
 export async function deleteHorse(id: string) {
   const actor = await requireActor(['ADMIN'], true);
   const db = await createServerClient();
+
+  // Lepaskan relasi pada sesi booking lampau agar tidak terhambat foreign key constraint
+  await db.from('booking_participants').update({ horse_id: null }).eq('horse_id', id);
+
   const { error } = await db.from('horses').delete().eq('id', id);
   if (error) {
-    // Usually foreign key constraint violation if horse is used in booking_participants
-    if (error.code === '23503') {
-      return { ok: false, message: 'Kuda ini sudah pernah digunakan dalam sesi dan tidak bisa dihapus secara permanen.' };
-    }
     return { ok: false, message: error.message };
   }
   revalidatePath('/admin/settings');

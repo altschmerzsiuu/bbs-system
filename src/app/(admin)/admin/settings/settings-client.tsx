@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save, Trash2 } from 'lucide-react';
+import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save, Trash2, Pencil, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { addHorse, toggleHorseStatus, updateSiteSettings, updateAfternoonEndTime, deleteHorse } from './actions';
+import { addHorse, toggleHorseStatus, updateSiteSettings, updateAfternoonEndTime, deleteHorse, updateHorse } from './actions';
 import { AlertToast } from '@/components/ui/alert-toast';
 import { useRouter } from 'next/navigation';
 
@@ -18,6 +18,9 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
   const [savingSettings, setSavingSettings] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [confirmDeleteHorse, setConfirmDeleteHorse] = useState<{ id: string; name: string } | null>(null);
+  const [editingHorseId, setEditingHorseId] = useState<string | null>(null);
+  const [editingHorseName, setEditingHorseName] = useState('');
+  const [savingHorseId, setSavingHorseId] = useState<string | null>(null);
   const router = useRouter();
 
   // Local settings state
@@ -65,6 +68,29 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
     }
   };
 
+  const handleStartEditHorse = (horse: { id: string; name: string }) => {
+    setEditingHorseId(horse.id);
+    setEditingHorseName(horse.name);
+  };
+
+  const handleSaveEditHorse = async (id: string) => {
+    if (!editingHorseName.trim()) {
+      toast.custom((t) => <AlertToast title="Nama kosong" description="Nama kuda tidak boleh kosong." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+      return;
+    }
+    setSavingHorseId(id);
+    const res = await updateHorse(id, editingHorseName.trim());
+    if (res.ok) {
+      setHorses(horses.map(h => h.id === id ? { ...h, name: editingHorseName.trim() } : h));
+      setEditingHorseId(null);
+      toast.custom((t) => <AlertToast title="Berhasil" description="Nama kuda berhasil diperbarui." onDismiss={() => toast.dismiss(t)} />);
+      router.refresh();
+    } else {
+      toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Gagal mengubah nama'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    }
+    setSavingHorseId(null);
+  };
+
   const handleDeleteHorse = async (id: string, name: string) => {
     setConfirmDeleteHorse({ id, name });
   };
@@ -76,6 +102,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
 
     const res = await deleteHorse(id);
     if (res.ok) {
+      setHorses(horses.filter(h => h.id !== id));
       toast.custom((t) => <AlertToast title="Berhasil" description="Kuda berhasil dihapus." onDismiss={() => toast.dismiss(t)} />);
       router.refresh();
     } else {
@@ -128,27 +155,164 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
         </form>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {horses.map(horse => (
-            <div key={horse.id} style={{ background: '#fff', padding: '16px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(0,0,0,0.04)' }}>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', background: '#fff5e6', color: '#b45309', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
+          {horses.map(horse => {
+            const isEditing = editingHorseId === horse.id;
+            return (
+              <div key={horse.id} style={{ background: '#fff', padding: '14px 16px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                <div style={{ flex: 1, minWidth: 0, marginRight: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '36px', height: '36px', background: '#fff5e6', color: '#b45309', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
+                    </div>
+
+                    {isEditing ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+                        <input
+                          type="text"
+                          value={editingHorseName}
+                          onChange={(e) => setEditingHorseName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveEditHorse(horse.id);
+                            if (e.key === 'Escape') setEditingHorseId(null);
+                          }}
+                          autoFocus
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '8px',
+                            border: '1.5px solid var(--ink)',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            outline: 'none',
+                            color: 'var(--ink)',
+                            background: '#FAF8F5',
+                            width: '100%',
+                            maxWidth: '180px'
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEditHorse(horse.id)}
+                          disabled={savingHorseId === horse.id}
+                          title="Simpan Nama"
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '8px',
+                            background: '#4a5d23',
+                            color: '#FFF',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingHorseId(null)}
+                          title="Batal"
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '8px',
+                            background: '#F4F4F5',
+                            color: 'var(--muted)',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                        <span style={{ fontWeight: 600, fontSize: '15px', color: 'var(--ink)', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                          {horse.name}
+                        </span>
+                        {horse.status === 'INACTIVE' && (
+                          <span style={{ fontSize: '10px', padding: '2px 7px', background: '#fee2e2', color: '#b91c1c', borderRadius: '100px', fontWeight: 700, flexShrink: 0 }}>
+                            Istirahat
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  {horse.name}
-                  {horse.status === 'INACTIVE' && <span style={{ fontSize: '11px', padding: '2px 8px', background: '#fee2e2', color: '#b91c1c', borderRadius: '100px', fontWeight: 700 }}>Istirahat</span>}
                 </div>
+
+                {!isEditing && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                    {/* Tombol Edit Nama */}
+                    <button
+                      type="button"
+                      title="Edit Nama Kuda"
+                      onClick={() => handleStartEditHorse(horse)}
+                      style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(0,0,0,0.08)',
+                        background: '#FAF8F5',
+                        color: 'var(--ink)',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <Pencil size={13} />
+                      <span>Edit</span>
+                    </button>
+
+                    {/* Tombol Istirahatkan / Aktifkan */}
+                    <button 
+                      type="button"
+                      onClick={() => handleToggleStatus(horse.id, horse.status)}
+                      style={{
+                        padding: '7px 12px',
+                        borderRadius: '8px',
+                        border: horse.status === 'ACTIVE' ? '1px solid rgba(0,0,0,0.1)' : 'none',
+                        background: horse.status === 'ACTIVE' ? '#fff' : '#4a5d23',
+                        color: horse.status === 'ACTIVE' ? 'var(--ink)' : '#fff',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {horse.status === 'ACTIVE' ? 'Istirahatkan' : 'Aktifkan'}
+                    </button>
+
+                    {/* Tombol Hapus */}
+                    <button
+                      type="button"
+                      title="Hapus Kuda"
+                      onClick={() => handleDeleteHorse(horse.id, horse.name)}
+                      style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #fee2e2',
+                        background: '#fff',
+                        color: '#b91c1c',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button 
-                  onClick={() => handleToggleStatus(horse.id, horse.status)}
-                  style={{ padding: '8px 16px', borderRadius: '8px', border: horse.status === 'ACTIVE' ? '1px solid rgba(0,0,0,0.1)' : 'none', background: horse.status === 'ACTIVE' ? '#fff' : '#4a5d23', color: horse.status === 'ACTIVE' ? 'var(--ink)' : '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  {horse.status === 'ACTIVE' ? 'Istirahatkan' : 'Aktifkan'}
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {horses.length === 0 && (
             <div style={{ textAlign: 'center', padding: '32px', color: 'var(--muted)', fontSize: '14px', background: '#fff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
               Belum ada kuda yang terdaftar.<br/>Tambahkan kuda di atas.
@@ -295,7 +459,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
             </div>
             <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>Hapus Kuda?</h3>
             <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '24px', lineHeight: '1.5' }}>
-              Yakin ingin menghapus kuda <b>{confirmDeleteHorse.name}</b>? Kalau kuda ini sudah pernah dipakai di sesi, penghapusan tidak bisa dilakukan.
+              Yakin ingin menghapus kuda <b>{confirmDeleteHorse.name}</b> secara permanen dari stable?
             </p>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
