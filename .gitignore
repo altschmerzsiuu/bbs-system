@@ -19,3 +19,4 @@ bbs-system-sheet.json
 .vscode/
 .idea/
 .gemini/
+*.tsbuildinfo

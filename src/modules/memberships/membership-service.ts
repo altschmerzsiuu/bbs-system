@@ -40,7 +40,7 @@ export class MembershipService {
       .from('membership_applications')
       .select('id')
       .eq('member_id', actor.memberId)
-      .in('status', ['PENDING_REVIEW', 'APPROVED', 'PAYMENT_CONFIRMED'])
+      .in('status', ['PENDING_REVIEW', 'APPROVED', 'PAYMENT_SUBMITTED', 'PAYMENT_CONFIRMED'])
       .maybeSingle();
 
     if (existingApp) {
@@ -153,7 +153,7 @@ export class MembershipService {
       })
       .eq('id', applicationId)
       .eq('member_id', actor.memberId)
-      .eq('status', 'APPROVED');
+      .in('status', ['APPROVED', 'PENDING_REVIEW']);
 
     this.rethrow(error);
   }

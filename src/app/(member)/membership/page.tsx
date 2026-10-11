@@ -1,6 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Check, Ticket, Calendar, Bell, Sparkles } from 'lucide-react';
+import { 
+  ChevronLeft, Check, Ticket, Calendar, Bell, Sparkles,
+  Clock, MessageCircle, AlertCircle, CheckCircle2, ArrowRight 
+} from 'lucide-react';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 import { RenewModal } from './renew-modal';
@@ -40,6 +43,7 @@ export default async function MembershipPage() {
   const bankName = getSetting('payment_bank_name');
   const accountNumber = getSetting('payment_account_number');
   const accountName = getSetting('payment_account_name');
+  const whatsappAdminNumber = process.env.NEXT_PUBLIC_WHATSAPP_ADMIN_NUMBER || '6281255558888';
 
   const initials = user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U';
 
@@ -174,8 +178,48 @@ export default async function MembershipPage() {
                     {activeApp.rejection_reason || 'Bukti transfer tidak valid. Silakan ajukan ulang.'}
                   </div>
                 ) : (
-                  <div style={{ fontSize: '13px', fontWeight: 500, color: cardColor }}>
-                    Sedang diproses oleh Admin...
+                  <div style={{
+                    padding: '16px',
+                    borderRadius: '16px',
+                    background: isSilver ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.45)',
+                    border: `1px solid ${iconBg}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Clock size={16} color={eyebrowColor} />
+                      <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1px', color: eyebrowColor }}>
+                        SEDANG DALAM TAHAP REVIEW ADMIN
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 500, color: cardColor, lineHeight: 1.4 }}>
+                      Bukti transfer perpanjangan (<b>{activeApp.human_id}</b>) telah diterima dan sedang diverifikasi oleh admin BBS.
+                    </div>
+                    <a
+                      href={`https://wa.me/${whatsappAdminNumber}?text=${encodeURIComponent(`Halo Admin BBS, saya ingin konfirmasi perpanjangan membership dengan ID ${activeApp.human_id}. Terima kasih!`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '100px',
+                        background: '#FFF',
+                        color: '#25D366',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        border: '1px solid #D5EAD8',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        textDecoration: 'none',
+                        alignSelf: 'flex-start',
+                        marginTop: '4px'
+                      }}
+                    >
+                      <MessageCircle size={14} />
+                      <span>Chat WhatsApp Admin</span>
+                    </a>
                   </div>
                 )}
               </div>
@@ -191,17 +235,176 @@ export default async function MembershipPage() {
             border: '1px solid #eaddbd'
           }}>
             {activeApp && ['PENDING_REVIEW', 'APPROVED', 'PAYMENT_SUBMITTED', 'REJECTED'].includes(activeApp.status) ? (
-              <>
-                <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '1.5px', color: '#b08d4b' }}>
-                  PENGAJUAN {activeApp.membership_plans?.name?.toUpperCase()}
-                </span>
-                <div style={{ font: '32px/1.2 var(--font-display)', margin: '16px 0 12px', color: 'var(--ink)' }}>
-                  Sedang Diproses
+              activeApp.status === 'PAYMENT_SUBMITTED' || activeApp.status === 'PENDING_REVIEW' ? (
+                <div>
+                  {/* Glowing Status Icon */}
+                  <div style={{ position: 'relative', width: '72px', height: '72px', margin: '0 auto 16px' }}>
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: '50%',
+                      background: 'rgba(216, 188, 128, 0.35)',
+                      filter: 'blur(10px)',
+                    }} />
+                    <div style={{
+                      position: 'relative',
+                      width: '72px',
+                      height: '72px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #FFF9ED 0%, #F5E8CC 100%)',
+                      border: '2px solid #D8BC80',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#7D5F1A',
+                      boxShadow: '0 6px 16px rgba(216, 188, 128, 0.25)'
+                    }}>
+                      <Clock size={32} strokeWidth={2.2} />
+                    </div>
+                  </div>
+
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    letterSpacing: '1.5px',
+                    padding: '6px 14px',
+                    borderRadius: '100px',
+                    background: '#FEF3C7',
+                    color: '#92400E',
+                    display: 'inline-block',
+                    marginBottom: '12px'
+                  }}>
+                    SEDANG DALAM TAHAP REVIEW ADMIN
+                  </span>
+
+                  <div style={{ font: '26px/1.2 var(--font-display)', margin: '0 0 10px', color: 'var(--ink)' }}>
+                    Pengajuan Sedang Diverifikasi
+                  </div>
+
+                  <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 24px', lineHeight: 1.5 }}>
+                    Bukti pembayaran dan data diri kamu sudah kami terima. Admin BBS sedang memverifikasi pembayaran membership kamu.
+                  </p>
+
+                  {/* 4-Layer Stepper Tracker */}
+                  <div style={{
+                    background: '#FFF',
+                    borderRadius: '18px',
+                    padding: '16px',
+                    marginBottom: '20px',
+                    border: '1px solid #ECE7DC',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                    textAlign: 'left'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#15803D', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Check size={12} strokeWidth={3} />
+                      </div>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>1. Data Diri & Profil Pengajuan</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#15803D', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Check size={12} strokeWidth={3} />
+                      </div>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>2. Pilih Paket ({activeApp.membership_plans?.name || 'Membership'})</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#15803D', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Check size={12} strokeWidth={3} />
+                      </div>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>3. Bukti Transfer Diunggah</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#FEF3C7', color: '#92400E', border: '1.5px solid #F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Clock size={12} strokeWidth={2.5} />
+                      </div>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#92400E' }}>4. Verifikasi & Aktivasi Admin (Sedang Berjalan)</span>
+                    </div>
+                  </div>
+
+                  {/* Summary Box */}
+                  <div style={{
+                    background: '#FFF',
+                    borderRadius: '18px',
+                    padding: '16px',
+                    marginBottom: '20px',
+                    border: '1px solid #ECE7DC',
+                    textAlign: 'left',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--muted)' }}>Kode Pengajuan</span>
+                      <b style={{ fontFamily: 'monospace', color: 'var(--ink)' }}>{activeApp.human_id}</b>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--muted)' }}>Paket Keanggotaan</span>
+                      <b style={{ color: 'var(--ink)' }}>{activeApp.membership_plans?.name}</b>
+                    </div>
+                    {activeApp.final_price_idr ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                        <span style={{ color: 'var(--muted)' }}>Total Pembayaran</span>
+                        <b style={{ color: 'var(--ink)' }}>Rp {activeApp.final_price_idr.toLocaleString('id-ID')}</b>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* WhatsApp Contact Button */}
+                  <a
+                    href={`https://wa.me/${whatsappAdminNumber}?text=${encodeURIComponent(`Halo Admin BBS, saya ingin konfirmasi status pengajuan membership ${activeApp.membership_plans?.name || ''} dengan ID ${activeApp.human_id}. Mohon bantuannya ya!`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      width: '100%',
+                      padding: '16px',
+                      borderRadius: '100px',
+                      background: '#FFF',
+                      color: '#25D366',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      border: '1.5px solid #D5EAD8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      textDecoration: 'none',
+                      boxShadow: '0 4px 12px rgba(37,211,102,0.1)',
+                      marginBottom: '10px'
+                    }}
+                  >
+                    <MessageCircle size={18} />
+                    <span>Konfirmasi via WhatsApp Admin</span>
+                  </a>
+
+                  <Link href="/request?type=membership" style={{ textDecoration: 'none' }}>
+                    <button style={{
+                      width: '100%',
+                      padding: '14px',
+                      borderRadius: '100px',
+                      background: 'var(--ink)',
+                      color: '#FFF',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}>
+                      Buka Rincian Pengajuan
+                    </button>
+                  </Link>
                 </div>
-                <div style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.5 }}>
-                  Membership kamu sedang dalam proses. {activeApp.status === 'APPROVED' ? 'Silakan selesaikan pembayaran di bawah ini.' : 'Mohon tunggu konfirmasi admin.'}
-                </div>
-                {activeApp.status === 'APPROVED' && (
+              ) : activeApp.status === 'APPROVED' ? (
+                <>
+                  <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '1.5px', color: '#b08d4b' }}>
+                    PENGAJUAN {activeApp.membership_plans?.name?.toUpperCase()}
+                  </span>
+                  <div style={{ font: '32px/1.2 var(--font-display)', margin: '16px 0 12px', color: 'var(--ink)' }}>
+                    Pengajuan Disetujui
+                  </div>
+                  <div style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.5 }}>
+                    Silakan selesaikan pembayaran dan unggah bukti transfer di bawah ini.
+                  </div>
                   <div style={{ textAlign: 'left' }}>
                     <UploadReceiptModal 
                       applicationId={activeApp.id}
@@ -212,14 +415,23 @@ export default async function MembershipPage() {
                       rejectionReason={activeApp.rejection_reason}
                     />
                   </div>
-                )}
-                {activeApp.status === 'REJECTED' && (
-                  <div style={{ marginTop: '16px', padding: '16px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '16px', color: '#b91c1c', fontSize: '14px', lineHeight: 1.5, textAlign: 'left' }}>
-                    <b style={{ display: 'block', marginBottom: '4px' }}>Pembayaran Ditolak</b>
-                    {activeApp.rejection_reason || 'Bukti transfer tidak valid. Silakan ajukan ulang perpanjangan.'}
+                </>
+              ) : (
+                <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '20px', color: '#b91c1c', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <AlertCircle size={20} />
+                    <b style={{ fontSize: '16px' }}>Pembayaran Ditolak</b>
                   </div>
-                )}
-              </>
+                  <p style={{ fontSize: '14px', lineHeight: 1.5, margin: '0 0 16px', color: '#991b1b' }}>
+                    {activeApp.rejection_reason || 'Bukti transfer tidak dapat diverifikasi oleh admin. Silakan ajukan ulang.'}
+                  </p>
+                  <Link href="/request?type=membership" style={{ textDecoration: 'none' }}>
+                    <button style={{ width: '100%', padding: '14px', borderRadius: '100px', background: '#b91c1c', color: '#FFF', fontSize: '14px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+                      Ajukan Ulang Membership
+                    </button>
+                  </Link>
+                </div>
+              )
             ) : (
               <>
                 <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '1.5px', color: '#b08d4b' }}>NO ACTIVE MEMBERSHIP</span>

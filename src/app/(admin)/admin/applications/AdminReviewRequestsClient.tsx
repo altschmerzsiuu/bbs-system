@@ -62,7 +62,7 @@ function ReceiptViewer({ path, filename }: { path: string, filename: string }) {
 
   return (
     <>
-      <div 
+      <div
         onClick={handleOpen}
         style={{ marginTop: '16px', padding: '16px', background: '#FDFBF7', border: '1px solid #EBE4D5', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'background 0.2s' }}
       >
@@ -80,7 +80,7 @@ function ReceiptViewer({ path, filename }: { path: string, filename: string }) {
 
       {showModal && url && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 99999, display: 'flex', flexDirection: 'column' }}>
-          
+
           <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(0,0,0,0.5), transparent)' }}>
             <div style={{ color: '#FFF', fontSize: '14px', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: '16px' }}>
               {filename || 'Bukti Pembayaran'}
@@ -100,14 +100,14 @@ function ReceiptViewer({ path, filename }: { path: string, filename: string }) {
 
           <div style={{ flex: 1, padding: '0 24px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             {isPdf ? (
-              <iframe 
-                src={url} 
+              <iframe
+                src={url}
                 style={{ width: '100%', height: '100%', maxWidth: '600px', border: 'none', borderRadius: '12px', background: '#FFF' }}
                 title="Bukti Pembayaran"
               />
             ) : (
-              <img 
-                src={url} 
+              <img
+                src={url}
                 alt="Bukti Pembayaran"
                 style={{ width: '100%', height: '100%', maxWidth: '600px', objectFit: 'contain', borderRadius: '12px', background: '#FFF' }}
               />
@@ -179,7 +179,7 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
       return;
     }
     const formattedPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
-    const message = encodeURIComponent(`Halo ${name}, dari Admin BBS. Terkait permohonan jadwal ${type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'} Anda...`);
+    const message = encodeURIComponent(`Halo Kak ${name}, kami dari Admin BBS. Terkait permohonan jadwal ${type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'} Anda ...`);
     window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
   };
 
