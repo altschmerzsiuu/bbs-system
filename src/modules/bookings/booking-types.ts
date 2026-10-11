@@ -108,6 +108,7 @@ export interface AdminScheduleParticipant {
     membershipId: string | null;
     casualCustomerId: string | null;
     horseName?: string | null;
+    hasPhotographer?: boolean;
 }
 
 export interface AdminScheduleBooking {

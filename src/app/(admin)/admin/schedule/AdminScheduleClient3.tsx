@@ -10,6 +10,7 @@ import SessionSlot from '@/components/admin/SessionSlot';
 import { getScheduleRecapAction, multiToggleSlotAction } from './actions';
 import type { AdminScheduleSlot } from '@/modules/bookings/booking-types';
 import { createClient } from '@/infrastructure/supabase-browser';
+import { renderDailySchedule, type DailySlot } from '@/lib/export/renderDailySchedule';
 
 const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
@@ -159,109 +160,33 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
         const dateLabel = new Intl.DateTimeFormat('id-ID', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
         }).format(selectedDate);
-        
-        const activeSlotsForRecap = slots.filter(s => s.slotExists).sort((a, b) => a.startTime.localeCompare(b.startTime));
-        
-        // Generate Text for WhatsApp (Shortened)
+
+        const recapSlots = slots
+            .filter(s => s.slotExists)
+            .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
         const text = `Berikut adalah rangkuman jadwal sesi BBS untuk *${dateLabel}*. Detailnya bisa dilihat pada gambar terlampir.`;
 
-        // Generate Canvas Image
-        const headerHeight = 240;
-        const slotRowHeight = 35;
-        const participantRowHeight = 32;
-        const footerHeight = 120;
-        
-        let totalHeight = headerHeight + footerHeight;
-        if (activeSlotsForRecap.length === 0) {
-            totalHeight += slotRowHeight;
-        } else {
-            activeSlotsForRecap.forEach(slot => {
-                totalHeight += slotRowHeight;
-                if (!slot.isOpen || !slot.booking || slot.booking.participants.length === 0) {
-                    totalHeight += participantRowHeight;
-                } else {
-                    totalHeight += participantRowHeight * slot.booking.participants.length;
-                }
-                totalHeight += 20;
-            });
-        }
+        const dailySlots: DailySlot[] = recapSlots.map(s => ({
+            startTime: s.startTime,
+            endTime: s.endTime,
+            capacity: s.capacity ?? 2,
+            isOpen: s.isOpen,
+            closedReason: s.closedReason ?? null,
+            participants: (s.booking?.participants ?? []).map(p => ({
+                name: p.name,
+                horseName: p.horseName ?? null,
+                hasPhotographer: Boolean(p.hasPhotographer ?? s.booking?.notes?.includes('Fotografer')),
+            })),
+        }));
 
-        const canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = totalHeight;
-        const context = canvas.getContext('2d');
-        if (!context) return;
+        if (typeof document !== 'undefined' && document.fonts?.ready) await document.fonts.ready;
 
-        context.fillStyle = '#1C1C1E'; 
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        
-        context.fillStyle = '#FFFFFF'; 
-        context.font = '700 36px sans-serif'; 
-        context.fillText('BBS · Rangkuman Jadwal', 60, 80);
-        
-        context.fillStyle = '#BDBDBD'; 
-        context.font = '400 22px sans-serif'; 
-        context.fillText(dateLabel, 60, 120);
-        
-        context.fillStyle = '#333333'; 
-        context.fillRect(60, 150, 680, 2);
-        
-        const activeCount = slots.filter(slot => (slot.booking?.participants.length ?? 0) > 0).length;
-        const emptyCount = slots.filter(slot => slot.isOpen && (slot.booking?.participants.length ?? 0) === 0).length;
-        const closedCount = slots.filter(slot => !slot.isOpen).length;
-        
-        context.fillStyle = '#FFFFFF'; context.font = '600 20px sans-serif';
-        context.fillText(`${activeCount} Sesi Terisi   ·   ${emptyCount} Slot Kosong   ·   ${closedCount} Ditutup`, 60, 195);
-        
-        let currentY = headerHeight;
-        
-        if (activeSlotsForRecap.length === 0) {
-            context.fillStyle = '#888888';
-            context.font = 'italic 20px sans-serif';
-            context.fillText('Tidak ada sesi yang dijadwalkan', 60, currentY);
-            currentY += slotRowHeight;
-        } else {
-            activeSlotsForRecap.forEach(slot => {
-                context.fillStyle = '#F5EEDD';
-                context.font = '700 22px monospace';
-                context.fillText(`${slot.startTime} - ${slot.endTime}`, 60, currentY);
-                currentY += slotRowHeight;
-                
-                if (!slot.isOpen) {
-                    context.fillStyle = '#E57373';
-                    context.font = '600 20px sans-serif';
-                    context.fillText('❌ Ditutup', 60, currentY);
-                    currentY += participantRowHeight;
-                } else if (!slot.booking || slot.booking.participants.length === 0) {
-                    context.fillStyle = '#81C784';
-                    context.font = '600 20px sans-serif';
-                    context.fillText('✅ Kosong', 60, currentY);
-                    currentY += participantRowHeight;
-                } else {
-                    slot.booking.participants.forEach((p, idx) => {
-                        context.fillStyle = '#FFFFFF';
-                        context.font = '400 20px sans-serif';
-                        const horseText = p.horseName ? `(🐴 ${p.horseName})` : '';
-                        const photoText = slot.booking?.notes?.includes('Fotografer') ? '📸 +Foto' : '';
-                        context.fillText(`${idx + 1}. ${p.name} ${horseText} ${photoText}`.trim(), 60, currentY);
-                        currentY += participantRowHeight;
-                    });
-                }
-                currentY += 20;
-            });
-        }
-        
-        context.fillStyle = '#333333'; 
-        context.fillRect(60, currentY, 680, 2);
-        currentY += 40;
-        
-        context.fillStyle = '#FFFFFF'; context.font = '700 22px sans-serif';
-        context.fillText(`Kapasitas terisi: ${usedCapacity}/${totalCapacity} Slot`, 60, currentY);
-        currentY += 30;
-        
-        context.fillStyle = '#888888'; 
-        context.font = '400 18px sans-serif'; 
-        context.fillText('BBS Riding Club', 60, currentY);
+        const generatedAt = new Intl.DateTimeFormat('id-ID', {
+            hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Makassar',
+        }).format(new Date()).replace('.', ':');
+
+        const canvas = renderDailySchedule({ dateLabel, slots: dailySlots, generatedAt });
 
         const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
         if (!blob) return;

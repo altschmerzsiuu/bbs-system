@@ -295,6 +295,10 @@ export async function getAdminSchedule(
             member_id,
             membership_id,
             casual_customer_id,
+            horses (
+              id,
+              name
+            ),
             members (
               full_name,
               user_id,
@@ -455,6 +459,8 @@ export async function getAdminSchedule(
             membershipId: participant.membership_id ?? null,
             casualCustomerId:
               participant.casual_customer_id ?? null,
+            horseName: participant.horses?.name ?? null,
+            hasPhotographer: Boolean(booking.notes?.includes('Fotografer')),
           })
         )
       );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, Loader2, Camera } from 'lucide-react';
 import type { AdminScheduleSlot } from '@/modules/bookings/booking-types';
 import { approveRidingRequestAction } from '@/app/(admin)/admin/schedule/actions';
 import { toast } from 'sonner';
@@ -160,8 +160,8 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {hasPhotographer && (
-                        <span style={{ background: '#FEF3C7', color: '#92400E', padding: '3px 8px', borderRadius: '100px', fontSize: '10.5px', fontWeight: 800, border: '1px solid #FDE68A' }}>
-                            📸 +Foto
+                        <span style={{ background: '#FEF3C7', color: '#92400E', padding: '3px 8px', borderRadius: '100px', fontSize: '10.5px', fontWeight: 800, border: '1px solid #FDE68A', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Camera size={12} strokeWidth={2.5} /> +Foto
                         </span>
                     )}
                     <span style={{ background: isFull ? '#D9EDDC' : '#E2ECF8', color: isFull ? '#24723C' : '#426987', padding: '4px 8px', borderRadius: '100px', fontSize: '11px', fontWeight: 700 }}>{isFull ? 'Penuh' : `${slot.capacity - participants.length} Slot Lagi`}</span>
@@ -173,7 +173,12 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
                         <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', border: '1px solid rgba(24,24,23,0.06)' }}>
                             {participant.avatarUrl ? <img src={participant.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(participant.name)}
                         </div>
-                        <span style={{ fontSize: '14px', color: 'var(--ink)', fontWeight: 600 }}>{participant.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '14px', color: 'var(--ink)', fontWeight: 600 }}>{participant.name}</span>
+                            {participant.horseName && (
+                                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>· {participant.horseName}</span>
+                            )}
+                        </div>
                     </div>
                 ))}
             </div>

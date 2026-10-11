@@ -15,18 +15,36 @@ export type ActionResult = { ok: true; bookingId: string } | { ok: false; code: 
  */
 export async function submitBooking(
   slotId: string, 
-  participants?: string, 
+  participantsOrOptions?: string | { hasPhotographer?: boolean; participants?: string }, 
   withPhotographer?: boolean
 ): Promise<ActionResult> {
   const actor = await requireActor(['MEMBER'], true);
   const db = await createServerClient();
   const service = new BookingService(db as never);
   try {
-    const parsedParticipants = typeof participants === 'string' 
-      ? JSON.parse(participants) 
-      : [{ type: 'MEMBER', memberId: actor.memberId! }];
+    let parsedParticipants: ({ type: 'MEMBER'; memberId: string } | { type: 'CASUAL'; fullName: string; phone: string })[] = [{ type: 'MEMBER', memberId: actor.memberId! }];
+    let hasPhoto = Boolean(withPhotographer);
 
-    const notes = withPhotographer ? '📸 Include Fotografer (+Rp 200.000)' : undefined;
+    if (typeof participantsOrOptions === 'string') {
+      try {
+        parsedParticipants = JSON.parse(participantsOrOptions);
+      } catch {
+        // default to current actor
+      }
+    } else if (participantsOrOptions && typeof participantsOrOptions === 'object') {
+      if (typeof participantsOrOptions.hasPhotographer === 'boolean') {
+        hasPhoto = participantsOrOptions.hasPhotographer;
+      }
+      if (participantsOrOptions.participants) {
+        try {
+          parsedParticipants = JSON.parse(participantsOrOptions.participants);
+        } catch {
+          // default to current actor
+        }
+      }
+    }
+
+    const notes = hasPhoto ? '📸 Include Fotografer (+Rp 200.000)' : undefined;
 
     const bookingId = await service.createMemberBooking(actor, { 
       slotId, 
