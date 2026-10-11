@@ -100,6 +100,7 @@ export default function LoginPage() {
             <button
               onClick={handleGoogleLogin}
               disabled={loading}
+              suppressHydrationWarning
               style={{ width: '100%', height: '56px', fontSize: '15px', background: 'var(--ink)', color: 'var(--white)', border: 'none', borderRadius: '16px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -4,11 +4,12 @@ import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { User, Bell, HelpCircle, ChevronDown, ChevronRight, Edit3, Loader2, Award, HeartPulse } from 'lucide-react';
 import { updateProfile, uploadAvatar } from './actions';
+import { toast } from 'sonner';
+import { AlertToast } from '@/components/ui/alert-toast';
 
 export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, tierName }: { initialUser: any, initialMember: any, initialAvatarUrl: string, tierName: string }) {
   const [openSection, setOpenSection] = useState<string | null>('personal');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [uploading, setUploading] = useState(false);
@@ -45,7 +46,6 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
     
     const formData = new FormData(e.currentTarget);
     const res = await updateProfile(formData);
@@ -54,10 +54,22 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
     if (res.ok) {
       setSavedPersonal({ fullName, phone, dob });
       setSavedEmergency({ emergencyName, emergencyPhone });
-      setMessage('Profile updated successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      toast.custom((t) => (
+        <AlertToast
+          title="Berhasil"
+          description="Profil berhasil diperbarui."
+          onDismiss={() => toast.dismiss(t)}
+        />
+      ));
     } else {
-      setMessage('Error updating profile: ' + res.message);
+      toast.custom((t) => (
+        <AlertToast
+          title="Gagal"
+          description={res.message || 'Gagal memperbarui profil.'}
+          variant="destructive"
+          onDismiss={() => toast.dismiss(t)}
+        />
+      ));
     }
   };
 
@@ -72,8 +84,22 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
     const res = await uploadAvatar(formData);
     if (res.ok && res.url) {
       setAvatarUrl(res.url);
+      toast.custom((t) => (
+        <AlertToast
+          title="Berhasil"
+          description="Foto profil berhasil diperbarui."
+          onDismiss={() => toast.dismiss(t)}
+        />
+      ));
     } else {
-      alert('Failed to upload image');
+      toast.custom((t) => (
+        <AlertToast
+          title="Gagal"
+          description="Gagal mengunggah foto profil."
+          variant="destructive"
+          onDismiss={() => toast.dismiss(t)}
+        />
+      ));
     }
     setUploading(false);
   };
@@ -191,12 +217,7 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Date of Birth</label>
                       <input type="date" name="dob" value={dob} onChange={(e) => setDob(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #efeade', fontSize: '14px', background: '#fff' }} />
                     </div>
-                    
-                    {message && (
-                      <div style={{ fontSize: '13px', color: message.includes('Error') ? 'var(--red)' : 'var(--green)', fontWeight: 500, padding: '8px', background: message.includes('Error') ? 'var(--redSoft)' : 'var(--greenSoft)', borderRadius: '8px' }}>
-                        {message}
-                      </div>
-                    )}
+
                     
                     {hasPersonalChanges && (
                       <button type="submit" disabled={loading} style={{ width: '100%', padding: '14px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '14px', fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '8px', opacity: loading ? 0.7 : 1 }}>
@@ -285,7 +306,6 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
                         {loading ? <Loader2 size={18} className="spin" /> : 'Save Contact'}
                       </button>
                     )}
-                    {message && <p style={{ fontSize: '12px', color: 'var(--gold)', textAlign: 'center', margin: 0 }}>{message}</p>}
                   </form>
                 </div>
               )}
