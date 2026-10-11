@@ -4,7 +4,7 @@
 import { ChevronLeft, MoreHorizontal, Check, Loader2, X, Share2, Camera, Eye } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { approveBookingAction, rejectBookingAction, resolveAttendanceAction, multiToggleSlotAction, assignHorseAction } from '../actions';
+import { approveBookingAction, rejectBookingAction, resolveAttendanceAction, multiToggleSlotAction, assignHorseAction, cancelBookingAction } from '../actions';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
 
@@ -102,6 +102,7 @@ function ParticipantRow({
     isSelected,
     onToggleSelection,
     onOpenHorsePicker,
+    onCancelBooking,
 }: {
     participant: AdminSessionDetailParticipant;
     isMenuOpen: boolean;
@@ -109,6 +110,7 @@ function ParticipantRow({
     isSelected: boolean;
     onToggleSelection: () => void;
     onOpenHorsePicker: () => void;
+    onCancelBooking?: () => void;
 }) {
     return (
         <div
@@ -276,20 +278,31 @@ function ParticipantRow({
                         }}
                     >
                         <button
-                            onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onToggleMenu();
+                                if (onCancelBooking) onCancelBooking();
+                            }}
                             style={{
                                 width: '100%',
                                 textAlign: 'left',
                                 padding: '12px 16px',
                                 background: 'transparent',
                                 border: 'none',
-                                borderBottom: '1px solid rgba(0,0,0,0.05)',
-                                fontSize: '14px',
-                                color: 'var(--danger)',
+                                fontSize: '13.5px',
+                                color: '#DC2626',
                                 cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontWeight: 600,
                             }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = '#FEE2E2')}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
-                            Batalkan Booking
+                            <X size={15} color="#DC2626" />
+                            <span>Batalkan Booking</span>
                         </button>
                     </div>
                 </>
@@ -423,6 +436,53 @@ export default function AdminSessionDetailClient({
             toast.custom((t) => <AlertToast title="Error" description="Terjadi kesalahan saat menolak booking." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
         } finally {
             setIsRejecting(false);
+        }
+    };
+
+    const [cancellingBooking, setCancellingBooking] = useState<{ bookingId: string; participantName: string } | null>(null);
+    const [cancellationReason, setCancellationReason] = useState<string>('Dibatalkan oleh admin via WhatsApp');
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    const handleConfirmCancelBooking = async () => {
+        if (!cancellingBooking || isCancelling) return;
+        setIsCancelling(true);
+        try {
+            const res = await cancelBookingAction(
+                cancellingBooking.bookingId,
+                cancellationReason.trim() || 'Dibatalkan oleh admin via WhatsApp'
+            );
+            if (res.ok) {
+                toast.custom((t) => (
+                    <AlertToast
+                        title="Booking Berhasil Dibatalkan"
+                        description={`Booking untuk ${cancellingBooking.participantName} telah dibatalkan. Kuota kredit member dikembalikan dan slot kembali kosong.`}
+                        onDismiss={() => toast.dismiss(t)}
+                    />
+                ));
+                setCancellingBooking(null);
+                setCancellationReason('Dibatalkan oleh admin via WhatsApp');
+                router.refresh();
+            } else {
+                toast.custom((t) => (
+                    <AlertToast
+                        title="Gagal Membatalkan"
+                        description={res.message || 'Terjadi kesalahan saat membatalkan booking.'}
+                        variant="destructive"
+                        onDismiss={() => toast.dismiss(t)}
+                    />
+                ));
+            }
+        } catch (err: any) {
+            toast.custom((t) => (
+                <AlertToast
+                    title="Error"
+                    description="Terjadi kesalahan sistem saat membatalkan booking."
+                    variant="destructive"
+                    onDismiss={() => toast.dismiss(t)}
+                />
+            ));
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -671,6 +731,7 @@ export default function AdminSessionDetailClient({
                                                                 isSelected={selectedUsers.includes(p.id)}
                                                                 onToggleSelection={() => setSelectedUsers(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])}
                                                                 onOpenHorsePicker={() => setHorsePickerParticipantId(p.id)}
+                                                                onCancelBooking={() => setCancellingBooking({ bookingId: booking.id, participantName: p.name })}
                                                             />
                                                         ))}
                                                     </div>
@@ -887,6 +948,113 @@ export default function AdminSessionDetailClient({
                             >
                                 {isRejecting && <Loader2 size={16} className="spin" />}
                                 Tolak booking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {cancellingBooking && (
+                <div
+                    onClick={(e) => { if (e.target === e.currentTarget && !isCancelling) setCancellingBooking(null); }}
+                    style={{
+                        position: 'fixed',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 999,
+                        padding: '16px'
+                    }}
+                >
+                    <div style={{ background: '#FFF', borderRadius: '20px', padding: '24px', width: '100%', maxWidth: '420px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                            <div>
+                                <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: 'var(--ink)' }}>Batalkan Booking</h2>
+                                <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '4px 0 0' }}>
+                                    Rider: <b style={{ color: 'var(--ink)' }}>{cancellingBooking.participantName}</b>
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                disabled={isCancelling}
+                                onClick={() => setCancellingBooking(null)}
+                                style={{ background: '#F5F5F5', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--muted)' }}
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <p style={{ fontSize: '13px', color: '#4B5563', lineHeight: 1.5, margin: '0 0 16px' }}>
+                            Booking akan dibatalkan langsung. Slot sesi akan dikosongkan dan kuota sesi member akan dikembalikan otomatis.
+                        </p>
+
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+                                Alasan Pembatalan
+                            </label>
+                            <input
+                                type="text"
+                                value={cancellationReason}
+                                onChange={(e) => setCancellationReason(e.target.value)}
+                                placeholder="Contoh: Konfirmasi batal via WhatsApp"
+                                disabled={isCancelling}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 14px',
+                                    borderRadius: '12px',
+                                    border: '1px solid #E2DCD0',
+                                    fontSize: '13.5px',
+                                    outline: 'none',
+                                    background: '#FAF8F5',
+                                    color: 'var(--ink)'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                                type="button"
+                                disabled={isCancelling}
+                                onClick={() => setCancellingBooking(null)}
+                                style={{
+                                    flex: 1,
+                                    height: '46px',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(0,0,0,0.1)',
+                                    background: '#FFF',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    color: 'var(--ink)',
+                                }}
+                            >
+                                Kembali
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isCancelling}
+                                onClick={handleConfirmCancelBooking}
+                                style={{
+                                    flex: 1.3,
+                                    height: '46px',
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    background: '#DC2626',
+                                    color: '#FFF',
+                                    fontSize: '14px',
+                                    fontWeight: 700,
+                                    cursor: isCancelling ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.25)',
+                                }}
+                            >
+                                {isCancelling ? <Loader2 size={16} className="spin" /> : <X size={16} strokeWidth={2.5} />}
+                                <span>{isCancelling ? 'Membatalkan...' : 'Ya, Batalkan'}</span>
                             </button>
                         </div>
                     </div>

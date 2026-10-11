@@ -266,3 +266,23 @@ export async function getScheduleRecapAction(from: string, to: string) {
     return { ok: false, message: 'Rekap jadwal tidak dapat dibuat.' };
   }
 }
+
+export async function cancelBookingAction(bookingId: string, reason?: string) {
+  try {
+    const actor = await requireActor(['ADMIN'], true);
+    const db = await createServerClient();
+    const service = new BookingService(db as never);
+    await service.cancelBooking(actor, {
+      bookingId,
+      reason: reason || 'Dibatalkan oleh admin via WhatsApp / konfirmasi langsung',
+      acknowledgeLateForfeit: false
+    });
+    revalidateBookingPaths();
+    return { ok: true };
+  } catch (err: any) {
+    if (err instanceof DomainError) return { ok: false, message: err.message };
+    console.error(err);
+    return { ok: false, message: err?.message || 'Gagal membatalkan booking.' };
+  }
+}
+
