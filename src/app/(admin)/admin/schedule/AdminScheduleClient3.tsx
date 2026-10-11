@@ -165,7 +165,30 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
             .filter(s => s.slotExists)
             .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-        const text = `Berikut adalah rangkuman jadwal sesi BBS untuk *${dateLabel}*. Detailnya bisa dilihat pada gambar terlampir.`;
+        // Build structured text summary
+        const activeSlots = recapSlots.filter(s => s.isOpen && (s.booking?.participants?.length ?? 0) > 0);
+        const totalRiders = activeSlots.reduce((sum, s) => sum + (s.booking?.participants?.length ?? 0), 0);
+
+        const morningSlots = recapSlots.filter(s => parseInt(s.startTime.slice(0, 2), 10) < 12);
+        const afternoonSlots = recapSlots.filter(s => parseInt(s.startTime.slice(0, 2), 10) >= 12);
+
+        const formatSlot = (s: typeof recapSlots[0]) => {
+            const time = `${s.startTime.slice(0, 5)} - ${s.endTime.slice(0, 5)}`;
+            if (!s.isOpen) {
+                return `• ${time}: *Ditutup* (${s.closedReason || 'Maintenance'})`;
+            }
+            const parts = (s.booking?.participants ?? []).map(p => {
+                let name = p.name;
+                if (p.horseName) name += ` (🐴 ${p.horseName})`;
+                return name;
+            });
+            if (parts.length === 0) {
+                return `• ${time}: Kosong (${s.capacity ?? 2} slot)`;
+            }
+            return `• ${time}: ${parts.join(', ')}`;
+        };
+
+        const text = `Sesi Hari Ini - ${dateLabel}`;
 
         const dailySlots: DailySlot[] = recapSlots.map(s => ({
             startTime: s.startTime,
@@ -191,19 +214,57 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
         const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
         if (!blob) return;
         const file = new File([blob], `rekap-jadwal-${initialDate}.png`, { type: 'image/png' });
-        const shareData = { title: `Jadwal Sesi ${dateLabel}`, text, files: [file] };
-        try {
-            if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+        const shareData = { title: `Sesi Hari Ini - ${dateLabel}`, text, files: [file] };
+
+        const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        // Jika di HP (Mobile), gunakan Web Share API bawaan HP yang bersih tanpa path
+        if (isMobile && navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+            try {
                 await navigator.share(shareData);
                 return;
+            } catch (error) {
+                if ((error as DOMException).name === 'AbortError') return;
             }
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a'); link.href = url; link.download = file.name; link.click(); URL.revokeObjectURL(url);
-            toast.custom((t) => <AlertToast title="Berhasil" description="Gambar rekap berhasil diunduh." onDismiss={() => toast.dismiss(t)} />);
-        } catch (error) {
-            if ((error as DOMException).name !== 'AbortError') {
-                toast.custom((t) => <AlertToast title="Gagal" description="Rangkuman jadwal belum dapat dibagikan." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+        }
+
+        // Jika di Desktop (Laptop/Mac), Web Share Chrome memiliki bug yang menempelkan path disk lokal (/Users/...).
+        // Solusinya: Salin gambar ke clipboard & unduh file agar bisa langsung di-Paste (Cmd+V) di WhatsApp Web tanpa path.
+        let copied = false;
+        if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
+            try {
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                copied = true;
+            } catch {
+                copied = false;
             }
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); 
+        link.href = url; 
+        link.download = file.name; 
+        link.click(); 
+        URL.revokeObjectURL(url);
+
+        if (copied) {
+            toast.custom((t) => (
+                <AlertToast 
+                    title="Gambar Disalin ke Clipboard!" 
+                    description="Buka chat WhatsApp dan tekan Cmd+V (Paste) untuk mengirim gambar bersih tanpa path." 
+                    onDismiss={() => toast.dismiss(t)} 
+                />
+            ));
+        } else {
+            toast.custom((t) => (
+                <AlertToast 
+                    title="Gambar Berhasil Diunduh" 
+                    description="Gambar siap dikirim ke WhatsApp." 
+                    onDismiss={() => toast.dismiss(t)} 
+                />
+            ));
         }
     };
 
@@ -305,9 +366,117 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
                     <ChevronLeft size={22} strokeWidth={2.6} />
                 </Link>
                 <h1 style={{ fontSize: '24px', lineHeight: 1, fontFamily: 'var(--font-display)', letterSpacing: '-0.035em', fontWeight: 700 }}>Jadwal Sesi</h1>
-                <button type="button" onClick={() => setIsMenuOpen(true)} aria-label="Opsi jadwal" style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#181817', color: '#fff', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                    <MoreHorizontal size={19} strokeWidth={2.3} />
-                </button>
+                <div style={{ position: 'relative' }}>
+                    <button
+                        type="button"
+                        onClick={() => setIsMenuOpen(prev => !prev)}
+                        aria-label="Opsi jadwal"
+                        style={{
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '50%',
+                            background: '#181817',
+                            color: '#fff',
+                            display: 'grid',
+                            placeItems: 'center',
+                            flexShrink: 0,
+                            cursor: 'pointer',
+                            border: 'none'
+                        }}
+                    >
+                        <MoreHorizontal size={19} strokeWidth={2.3} />
+                    </button>
+
+                    {isMenuOpen && (
+                        <>
+                            <div
+                                style={{ position: 'fixed', inset: 0, zIndex: 90 }}
+                                onClick={() => setIsMenuOpen(false)}
+                            />
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: '46px',
+                                    right: 0,
+                                    width: '230px',
+                                    background: '#FFF',
+                                    borderRadius: '18px',
+                                    border: '1px solid rgba(0, 0, 0, 0.08)',
+                                    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.16)',
+                                    padding: '8px',
+                                    zIndex: 95,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '4px'
+                                }}
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsMenuOpen(false); handleShareSchedule(); }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        padding: '12px 14px',
+                                        borderRadius: '12px',
+                                        background: '#181817',
+                                        color: '#FFF',
+                                        border: 'none',
+                                        fontSize: '13px',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        textAlign: 'left'
+                                    }}
+                                >
+                                    <Share2 size={16} color="#FFF" />
+                                    <span>Bagikan Rekap Hari Ini</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsMenuOpen(false); handleDownloadRecap('month'); }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        padding: '12px 14px',
+                                        borderRadius: '12px',
+                                        background: '#FAF8F5',
+                                        color: 'var(--ink)',
+                                        border: 'none',
+                                        fontSize: '13px',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        textAlign: 'left'
+                                    }}
+                                >
+                                    <Download size={16} color="var(--ink)" />
+                                    <span>Unduh Rekap Bulan Ini</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsMenuOpen(false); handleDownloadRecap('week'); }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        padding: '12px 14px',
+                                        borderRadius: '12px',
+                                        background: 'transparent',
+                                        color: 'var(--muted)',
+                                        border: 'none',
+                                        fontSize: '12px',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        textAlign: 'left'
+                                    }}
+                                >
+                                    <Download size={15} color="var(--muted)" />
+                                    <span>Unduh Rekap Minggu Ini</span>
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* DATE PICKER */}
@@ -548,19 +717,6 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
                         )}
                     </div>
                 </>
-            )}
-
-            {isMenuOpen && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.38)', zIndex: 90, display: 'flex', alignItems: 'flex-end' }} onClick={() => setIsMenuOpen(false)}>
-                    <div onClick={event => event.stopPropagation()} style={{ width: '100%', background: '#FFF', borderRadius: '24px 24px 0 0', padding: '18px 20px 32px' }}>
-                        <div style={{ width: '36px', height: '4px', borderRadius: 99, background: '#DDD', margin: '0 auto 18px' }} />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}><b style={{ fontSize: '18px' }}>Opsi jadwal</b><button onClick={() => setIsMenuOpen(false)} aria-label="Tutup menu" style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F4F4F2', display: 'grid', placeItems: 'center' }}><X size={16} /></button></div>
-                        <button onClick={() => { setIsMenuOpen(false); handleShareSchedule(); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '15px', borderRadius: '15px', background: '#181817', color: '#FFF', textAlign: 'left', fontSize: '14px', fontWeight: 700 }}><Share2 size={18} /> Bagikan Rekap Hari Ini</button>
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                            <button onClick={() => { setIsMenuOpen(false); handleDownloadRecap('month'); }} style={{ flex: 1, padding: '13px 10px', borderRadius: '15px', background: '#F4F4F2', fontSize: '12px', fontWeight: 700 }}><Download size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Rekap Bulan Ini</button>
-                        </div>
-                    </div>
-                </div>
             )}
 
 

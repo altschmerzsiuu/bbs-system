@@ -1,12 +1,14 @@
 
 'use client';
 
-import { ChevronLeft, MoreHorizontal, Check, Loader2, X, Share2, Camera, Eye } from 'lucide-react';
+import { ChevronLeft, MoreHorizontal, Check, Loader2, X, Share2, Camera, Eye, ChevronDown, User, ExternalLink } from 'lucide-react';
+
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { approveBookingAction, rejectBookingAction, resolveAttendanceAction, multiToggleSlotAction, assignHorseAction, cancelBookingAction } from '../actions';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
+import { createClient } from '@/infrastructure/supabase-browser';
 
 import type {
     AdminSessionDetail,
@@ -141,7 +143,7 @@ function ParticipantRow({
                 {isSelected && <Check size={14} strokeWidth={3} />}
             </div>
 
-            <div className="avatar sm">
+            <div className="avatar sm" style={participant.guestName ? { background: '#DBEAFE', color: '#1E40AF', fontWeight: 800 } : undefined}>
                 {participant.avatarUrl ? (
                     <img
                         src={participant.avatarUrl}
@@ -201,17 +203,25 @@ function ParticipantRow({
 
                 <div
                     style={{
-                        marginTop: '6px',
+                        marginTop: '4px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '12px'
+                        gap: '8px',
+                        flexWrap: 'wrap'
                     }}
                 >
-                    <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>
-                        {participant.type === 'MEMBER'
-                            ? 'Member'
-                            : 'Casual'}
+                    <span style={{ fontSize: '12px', color: participant.guestName ? '#1E40AF' : 'var(--muted)', fontWeight: participant.guestName ? 600 : 500 }}>
+                        {participant.guestName
+                            ? `Tamu dari ${participant.realMemberName || 'Member'}`
+                            : participant.type === 'MEMBER'
+                                ? 'Member'
+                                : 'Casual'}
                     </span>
+                    {!participant.guestName && participant.memberDetails?.heightCm && participant.memberDetails?.weightKg && (
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', background: '#F4F4F5', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                            {participant.memberDetails.heightCm}cm · {participant.memberDetails.weightKg}kg
+                        </span>
+                    )}
                     <div
                         onClick={(e) => { e.stopPropagation(); onOpenHorsePicker(); }}
                         style={{
@@ -317,6 +327,26 @@ export default function AdminSessionDetailClient({
 }: AdminSessionDetailClientProps) {
     const router = useRouter();
 
+    // Background real-time listener for session changes
+    useEffect(() => {
+        const supabase = createClient();
+        const channel = supabase.channel(`admin_session_${session.id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings', filter: `slot_id=eq.${session.id}` }, () => {
+                router.refresh();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'booking_participants' }, () => {
+                router.refresh();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'session_slots', filter: `id=eq.${session.id}` }, () => {
+                router.refresh();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [router, session.id]);
+
     const [openMenuParticipantId, setOpenMenuParticipantId] = useState<string | null>(null);
     const [rejectModalBookingId, setRejectModalBookingId] = useState<string | null>(null);
 
@@ -348,6 +378,7 @@ export default function AdminSessionDetailClient({
     const [isSavingAttendance, setIsSavingAttendance] = useState(false);
     const [approvingBookingId, setApprovingBookingId] = useState<string | null>(null);
     const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
+    const [showCancelledSection, setShowCancelledSection] = useState(false);
 
     const participants = session.bookings
         .filter(booking => !['MEMBER_CANCELLED', 'BBS_CANCELLED', 'REJECTED', 'EXPIRED'].includes(booking.status))
@@ -559,8 +590,9 @@ export default function AdminSessionDetailClient({
                         </div>
                     </div>
                     <div style={{ fontSize: '14px', color: 'var(--muted)', fontWeight: 400 }}>
-                        {getDayName(session.date)}, {getDateLabel(session.date)} • 45 menit
+                        {getDayName(session.date)}, {getDateLabel(session.date)} • 60 menit
                     </div>
+
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -665,57 +697,167 @@ export default function AdminSessionDetailClient({
                                                         >
                                                             {statusBadge.label}
                                                         </span>
-                                                    </div>
+                                                    </div>                                                    {booking.notes && (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                                                            {booking.notes.split('•').map((part, pIdx) => {
+                                                                const trimmed = part.trim();
+                                                                if (!trimmed) return null;
+                                                                const isPhoto = trimmed.includes('Fotografer');
+                                                                const isGuest = trimmed.includes('Rider Tamu') || trimmed.includes('Rider Tambahan');
 
-                                                    {booking.notes && (
-                                                        <div
-                                                            style={{
-                                                                background: booking.notes.includes('Fotografer') ? '#FEF3C7' : '#F4F4F5',
-                                                                border: `1px solid ${booking.notes.includes('Fotografer') ? '#FDE68A' : '#E4E4E7'}`,
-                                                                borderRadius: '10px',
-                                                                padding: '10px 12px',
-                                                                marginBottom: '12px',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'space-between',
-                                                                gap: '8px',
-                                                                fontSize: '12px',
-                                                                color: booking.notes.includes('Fotografer') ? '#92400E' : 'var(--ink)',
-                                                                fontWeight: 600,
-                                                                flexWrap: 'wrap',
-                                                            }}
-                                                        >
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                                <Camera size={15} strokeWidth={2} />
-                                                                <span>{booking.notes.split('[Bukti:')[0].trim()}</span>
-                                                            </div>
+                                                                if (isGuest) {
+                                                                    const guestNameMatch = trimmed.match(/(?:👤?\s*)?Rider (?:Tamu|Tambahan):\s*([^(•]+)/i);
+                                                                    const guestName = guestNameMatch?.[1]?.trim() || 'Tamu';
+                                                                    const ageMatch = trimmed.match(/Usia:\s*([0-9-]+(?:th)?)/i)?.[1] || '-';
+                                                                    const bbMatch = trimmed.match(/BB:\s*([0-9-]+(?:kg)?)/i)?.[1] || '-';
+                                                                    const tbMatch = trimmed.match(/TB:\s*([0-9-]+(?:cm)?)/i)?.[1] || '-';
+                                                                    const bookerParticipant = booking.participants.find(p => p.realMemberName && p.realMemberName !== guestName) || booking.participants[0];
+                                                                    const bookerName = bookerParticipant?.realMemberName || 'Member';
 
-                                                            {receiptUrl && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setPreviewReceiptUrl(receiptUrl)}
-                                                                    style={{
-                                                                        background: '#92400E',
-                                                                        color: '#FFF',
-                                                                        border: 'none',
-                                                                        borderRadius: '6px',
-                                                                        padding: '4px 10px',
-                                                                        fontSize: '11px',
-                                                                        fontWeight: 700,
-                                                                        cursor: 'pointer',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        gap: '4px',
-                                                                    }}
-                                                                >
-                                                                    <Eye size={12} />
-                                                                    <span>Lihat Bukti Transfer</span>
-                                                                </button>
-                                                            )}
+                                                                    return (
+                                                                        <div
+                                                                            key={pIdx}
+                                                                            style={{
+                                                                                background: '#F8FAFC',
+                                                                                border: '1px solid #E2E8F0',
+                                                                                borderRadius: '16px',
+                                                                                padding: '16px',
+                                                                                display: 'flex',
+                                                                                flexDirection: 'column',
+                                                                                gap: '12px',
+                                                                                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                                                                            }}
+                                                                        >
+                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+                                                                                <div>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                                                                        <span style={{
+                                                                                            background: '#EEF2FF',
+                                                                                            color: '#4338CA',
+                                                                                            fontSize: '11px',
+                                                                                            fontWeight: 700,
+                                                                                            padding: '3px 8px',
+                                                                                            borderRadius: '6px',
+                                                                                            display: 'inline-flex',
+                                                                                            alignItems: 'center',
+                                                                                            gap: '4px',
+                                                                                            letterSpacing: '0.3px',
+                                                                                            textTransform: 'uppercase'
+                                                                                        }}>
+                                                                                            <User size={12} strokeWidth={2.5} /> Rider Tamu
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>
+                                                                                        {guestName}
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div style={{
+                                                                                    display: 'inline-flex',
+                                                                                    alignItems: 'center',
+                                                                                    gap: '6px',
+                                                                                    background: '#F1F5F9',
+                                                                                    padding: '6px 12px',
+                                                                                    borderRadius: '8px',
+                                                                                    fontSize: '12px',
+                                                                                    color: '#475569'
+                                                                                }}>
+                                                                                    <span>Dibawa oleh:</span>
+                                                                                    <b style={{ color: 'var(--ink)' }}>{bookerName}</b>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* 3 Detail Specs: Usia, Berat Badan, Tinggi Badan */}
+                                                                            <div style={{
+                                                                                display: 'grid',
+                                                                                gridTemplateColumns: 'repeat(3, 1fr)',
+                                                                                gap: '8px',
+                                                                                background: '#FFFFFF',
+                                                                                borderRadius: '12px',
+                                                                                padding: '12px',
+                                                                                border: '1px solid #E2E8F0'
+                                                                            }}>
+                                                                                <div style={{ textAlign: 'center' }}>
+                                                                                    <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                                                                                        Usia
+                                                                                    </div>
+                                                                                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
+                                                                                        {ageMatch !== '-' && !ageMatch.includes('th') ? `${ageMatch} th` : ageMatch}
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div style={{ textAlign: 'center', borderLeft: '1px solid #F1F5F9', borderRight: '1px solid #F1F5F9' }}>
+                                                                                    <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                                                                                        Berat (BB)
+                                                                                    </div>
+                                                                                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
+                                                                                        {bbMatch !== '-' && !bbMatch.includes('kg') ? `${bbMatch} kg` : bbMatch}
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div style={{ textAlign: 'center' }}>
+                                                                                    <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                                                                                        Tinggi (TB)
+                                                                                    </div>
+                                                                                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
+                                                                                        {tbMatch !== '-' && !tbMatch.includes('cm') ? `${tbMatch} cm` : tbMatch}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+
+                                                                return (
+                                                                    <div
+                                                                        key={pIdx}
+                                                                        style={{
+                                                                            background: isPhoto ? '#FEF3C7' : '#F4F4F5',
+                                                                            border: `1px solid ${isPhoto ? '#FDE68A' : '#E4E4E7'}`,
+                                                                            borderRadius: '10px',
+                                                                            padding: '10px 12px',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'space-between',
+                                                                            gap: '8px',
+                                                                            fontSize: '12px',
+                                                                            color: isPhoto ? '#92400E' : 'var(--ink)',
+                                                                            fontWeight: 600,
+                                                                            flexWrap: 'wrap',
+                                                                        }}
+                                                                    >
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                            {isPhoto ? <Camera size={15} strokeWidth={2} /> : null}
+                                                                            <span>{trimmed.replace(/^[📸👤\s]+/, '').split('[Bukti:')[0].trim()}</span>
+                                                                        </div>
+
+                                                                        {isPhoto && receiptUrl && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => setPreviewReceiptUrl(receiptUrl)}
+                                                                                style={{
+                                                                                    background: '#92400E',
+                                                                                    color: '#FFF',
+                                                                                    border: 'none',
+                                                                                    borderRadius: '6px',
+                                                                                    padding: '4px 10px',
+                                                                                    fontSize: '11px',
+                                                                                    fontWeight: 700,
+                                                                                    cursor: 'pointer',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    gap: '4px',
+                                                                                }}
+                                                                            >
+                                                                                <Eye size={12} />
+                                                                                <span>Lihat Bukti Transfer</span>
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
                                                     )}
 
                                                     <div
+
                                                         style={{
                                                             display: 'flex',
                                                             flexDirection: 'column',
@@ -790,48 +932,85 @@ export default function AdminSessionDetailClient({
                                     </div>
                                 )}
 
-                                {/* Riwayat Pembatalan */}
+                                {/* Riwayat Pembatalan (Collapsible Accordion) */}
                                 {cancelledBookings.length > 0 && (
-                                    <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                            Riwayat Pembatalan ({cancelledBookings.length})
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            {cancelledBookings.map((booking, idx) => {
-                                                const statusBadge = getBookingStatusBadge(booking.status);
-                                                return (
-                                                    <div key={booking.id} style={{ background: '#FAF8F5', borderRadius: '12px', padding: '12px 14px', border: '1px solid #ECE7DE' }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                                            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>
-                                                                Booking #{idx + 1}
-                                                            </span>
-                                                            <span style={{ fontSize: '11px', fontWeight: 700, color: statusBadge.text, background: statusBadge.bg, padding: '2px 8px', borderRadius: '100px' }}>
-                                                                {statusBadge.label}
-                                                            </span>
-                                                        </div>
-                                                        {booking.cancellationReason && (
-                                                            <div style={{ fontSize: '11px', color: '#B91C1C', marginBottom: '6px' }}>
-                                                                Alasan: {booking.cancellationReason}
+                                    <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCancelledSection(!showCancelledSection)}
+                                            style={{
+                                                width: '100%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                background: '#FAF8F5',
+                                                border: '1px solid #ECE7DE',
+                                                borderRadius: '12px',
+                                                padding: '12px 14px',
+                                                cursor: 'pointer',
+                                                color: 'var(--muted)',
+                                                fontSize: '12px',
+                                                fontWeight: 700,
+                                                letterSpacing: '0.4px',
+                                                transition: 'all 0.15s ease',
+                                            }}
+                                        >
+                                            <span style={{ textTransform: 'uppercase' }}>
+                                                Riwayat Pembatalan ({cancelledBookings.length})
+                                            </span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)' }}>
+                                                    {showCancelledSection ? 'Sembunyikan' : 'Buka'}
+                                                </span>
+                                                <ChevronDown
+                                                    size={15}
+                                                    style={{
+                                                        transform: showCancelledSection ? 'rotate(180deg)' : 'none',
+                                                        transition: 'transform 0.2s ease',
+                                                    }}
+                                                />
+                                            </div>
+                                        </button>
+
+                                        {showCancelledSection && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+                                                {cancelledBookings.map((booking, idx) => {
+                                                    const statusBadge = getBookingStatusBadge(booking.status);
+                                                    return (
+                                                        <div key={booking.id} style={{ background: '#FAF8F5', borderRadius: '12px', padding: '12px 14px', border: '1px solid #ECE7DE' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                                                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>
+                                                                    Booking #{idx + 1}
+                                                                </span>
+                                                                <span style={{ fontSize: '11px', fontWeight: 700, color: statusBadge.text, background: statusBadge.bg, padding: '2px 8px', borderRadius: '100px' }}>
+                                                                    {statusBadge.label}
+                                                                </span>
                                                             </div>
-                                                        )}
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                            {booking.participants.map(p => (
-                                                                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.65 }}>
-                                                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#EAE6DC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>
-                                                                        {p.name.charAt(0)}
-                                                                    </div>
-                                                                    <span style={{ fontSize: '13px', color: 'var(--muted)', textDecoration: 'line-through' }}>
-                                                                        {p.name}
-                                                                    </span>
+                                                            {booking.cancellationReason && (
+                                                                <div style={{ fontSize: '11px', color: '#B91C1C', marginBottom: '6px' }}>
+                                                                    Alasan: {booking.cancellationReason}
                                                                 </div>
-                                                            ))}
+                                                            )}
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                                {booking.participants.map(p => (
+                                                                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.65 }}>
+                                                                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#EAE6DC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>
+                                                                            {p.name.charAt(0)}
+                                                                        </div>
+                                                                        <span style={{ fontSize: '13px', color: 'var(--muted)', textDecoration: 'line-through' }}>
+                                                                            {p.name}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
+
                             </>
                         );
                     })()}
@@ -886,8 +1065,9 @@ export default function AdminSessionDetailClient({
                     >
                         <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Durasi</span>
                         <span style={{ fontSize: '13px', fontWeight: 600 }}>
-                            45 menit
+                            60 menit
                         </span>
+
                     </div>
 
                     <div

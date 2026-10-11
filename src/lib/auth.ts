@@ -12,22 +12,14 @@ import { cache } from 'react';
 export const getActor = cache(async (strict: boolean = false): Promise<ActorContext | null> => {
   const db = await createServerClient();
   
-  let user = null;
-  if (strict) {
-    const { data, error } = await db.auth.getUser();
-    if (error || !data.user) {
+  const { data, error } = await db.auth.getUser();
+  if (error || !data.user) {
+    if (strict) {
       console.log('[getActor] auth.getUser failed or no user:', error?.message);
-      return null;
     }
-    user = data.user;
-  } else {
-    const { data, error } = await db.auth.getSession();
-    if (error || !data.session?.user) {
-      console.log('[getActor] auth.getSession failed or no user:', error?.message);
-      return null;
-    }
-    user = data.session.user;
+    return null;
   }
+  const user = data.user;
 
   const { createServiceRoleClient } = await import('@/infrastructure/supabase-server');
   const serviceDb = createServiceRoleClient();

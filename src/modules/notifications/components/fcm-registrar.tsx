@@ -6,38 +6,50 @@ import { toast } from 'sonner';
 
 export function FCMRegistrar() {
   const { registerToken, permission } = useFCM();
+  const hasRegistered = useRef(false);
   const hasShownToast = useRef(false);
 
   useEffect(() => {
-    // All localStorage access must be inside useEffect (client-only)
-    if (localStorage.getItem('bbs_fcm_dismissed') === '1') return;
-    if (permission !== 'default') return;
-    if (hasShownToast.current) return;
+    // If permission is already granted, automatically register/refresh token on the server
+    if (permission === 'granted' && !hasRegistered.current) {
+      hasRegistered.current = true;
+      registerToken().catch((e) => console.error('[FCMRegistrar] Auto register failed:', e));
+      return;
+    }
 
-    hasShownToast.current = true;
+    // If permission is default, prompt user
+    if (permission === 'default') {
+      if (localStorage.getItem('bbs_fcm_dismissed') === '1') return;
+      if (hasShownToast.current) return;
 
-    const toastId = toast('Enable notifications', {
-      description: 'Stay updated on BBS',
-      icon: '🔔',
-      duration: 10000,
-      action: {
-        label: 'Enable',
-        onClick: async () => {
-          localStorage.setItem('bbs_fcm_dismissed', '1');
-          toast.dismiss(toastId);
-          await registerToken();
-          toast.success('Notifications enabled');
+      hasShownToast.current = true;
+
+      const toastId = toast('Aktifkan Notifikasi BBS', {
+        description: 'Dapatkan pemberitahuan status booking, reschedule, dan jadwal berkuda.',
+        icon: '🔔',
+        duration: 12000,
+        action: {
+          label: 'Aktifkan',
+          onClick: async () => {
+            localStorage.setItem('bbs_fcm_dismissed', '1');
+            toast.dismiss(toastId);
+            const ok = await registerToken();
+            if (ok) {
+              toast.success('Notifikasi berhasil diaktifkan!');
+            }
+          }
+        },
+        cancel: {
+          label: 'Nanti',
+          onClick: () => {
+            localStorage.setItem('bbs_fcm_dismissed', '1');
+            toast.dismiss(toastId);
+          }
         }
-      },
-      cancel: {
-        label: 'Close',
-        onClick: () => {
-          localStorage.setItem('bbs_fcm_dismissed', '1');
-          toast.dismiss(toastId);
-        }
-      }
-    });
+      });
+    }
   }, [permission, registerToken]);
 
   return null;
 }
+

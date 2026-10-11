@@ -17,10 +17,24 @@ export default async function ProfilePage() {
   ] = await Promise.all([
     db.from('users').select('*').eq('id', actor.userId).single(),
     db.from('members').select('*').eq('id', actor.memberId!).maybeSingle(),
-    db.from('memberships').select('membership_plans(name)').eq('member_id', actor.memberId!).eq('status', 'ACTIVE').maybeSingle()
+    db.from('memberships').select('membership_plans(name)').eq('member_id', actor.memberId!).eq('status', 'ACTIVE').order('created_at', { ascending: false }).limit(1).maybeSingle()
   ]);
 
-  const tierName = (activeMembership as any)?.membership_plans?.name ?? 'Basic';
+  let membershipRow = activeMembership;
+  if (!membershipRow?.membership_plans) {
+    const { data: latestMembership } = await db
+      .from('memberships')
+      .select('membership_plans(name)')
+      .eq('member_id', actor.memberId!)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (latestMembership?.membership_plans) {
+      membershipRow = latestMembership;
+    }
+  }
+
+  const tierName = (membershipRow as any)?.membership_plans?.name ?? 'Basic';
   const initialAvatarUrl = user?.avatar_url || '';
 
   return (

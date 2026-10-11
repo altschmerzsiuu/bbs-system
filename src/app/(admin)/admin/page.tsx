@@ -22,17 +22,28 @@ export default async function AdminDashboardPage() {
     year: 'numeric'
   }).format(now).replace(',', ' ·');
 
+  const [adminUserRes, horsesRes] = await Promise.all([
+    db.from('users').select('avatar_url').eq('id', actor.userId).single(),
+    db.from('horses').select('id, name, status').eq('status', 'ACTIVE').order('name')
+  ]);
+  const adminAvatarUrl = adminUserRes.data?.avatar_url || null;
+  const horses = horsesRes.data || [];
+
   return (
     <div className="screen active">
       <AdminClient 
         stats={data.stats}
         pending={data.pending}
+        pendingBookingsList={data.pendingBookingsList || []}
         upcoming={data.upcoming}
         currentSession={data.currentSession}
         pastSessions={data.pastSessions}
         todayStr={todayStr}
         adminName={adminName}
+        adminAvatarUrl={adminAvatarUrl}
+        horses={horses}
       />
+
     </div>
   );
 }

@@ -300,18 +300,15 @@ function paint(ctx: Ctx, data: DailyScheduleInput): number {
       const pillW = p.hasPhotographer ? 196 : 0;
       const textMax = rRight - rx - (pillW ? pillW + 20 : 0);
 
-      if (p.horseName) {
-        font(ctx, 800, 34);
-        ctx.fillStyle = C.ink;
-        ctx.fillText(fit(ctx, p.horseName, textMax), rx, ry + 34);
-      } else {
-        font(ctx, 700, 30);
-        ctx.fillStyle = C.amber;
-        ctx.fillText('Kuda belum ditentukan', rx, ry + 34);
-      }
-      font(ctx, 500, 24);
+      // Rider name as primary headline
+      font(ctx, 800, 34);
+      ctx.fillStyle = C.ink;
+      ctx.fillText(fit(ctx, p.name, textMax), rx, ry + 34);
+
+      // Subtitle with session duration (60 Menit)
+      font(ctx, 600, 22);
       ctx.fillStyle = C.muted;
-      ctx.fillText(fit(ctx, `Rider: ${p.name}`, textMax), rx, ry + 68);
+      ctx.fillText('Sesi Berkuda · 60 Menit', rx, ry + 68);
 
       if (p.hasPhotographer) {
         const px = rRight - pillW;

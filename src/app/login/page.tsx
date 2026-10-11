@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/infrastructure/supabase-browser';
 import Image from 'next/image';
+import { toast } from 'sonner';
+import { AlertToast } from '@/components/ui/alert-toast';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -12,6 +14,23 @@ export default function LoginPage() {
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 2000);
+
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get('msg') || params.get('error');
+    if (err) {
+      const message = params.get('msg') || (err === 'exchange_failed' ? 'Gagal menukar token sesi login Google. Periksa Authorized Redirect URI di Google Console / Supabase.' : err);
+      toast.custom((t) => (
+        <AlertToast
+          title="Login Gagal"
+          description={message}
+          variant="destructive"
+          onDismiss={() => toast.dismiss(t)}
+        />
+      ));
+      // Bersihkan query string dari URL agar tidak memicu toast berulang kali saat refresh
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
     return () => clearTimeout(timer);
   }, []);
 

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save, Trash2, Pencil, Check, X, MoreVertical } from 'lucide-react';
+import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save, Trash2, Pencil, Check, X, MoreVertical, Camera } from 'lucide-react';
+
 import { toast } from 'sonner';
 import { addHorse, toggleHorseStatus, updateSiteSettings, updateAfternoonEndTime, deleteHorse, updateHorse } from './actions';
 import { AlertToast } from '@/components/ui/alert-toast';
@@ -12,7 +13,8 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
   const [schedules, setSchedules] = useState(initialSchedules);
 
   const afternoonSchedule = initialSchedules.find(s => s.block === 'AFTERNOON');
-  const [afternoonEndTime, setAfternoonEndTime] = useState(afternoonSchedule ? afternoonSchedule.end_time.slice(0, 5) : '18:00');
+  const initialAfternoonEnd = afternoonSchedule ? afternoonSchedule.end_time.slice(0, 5) : '18:00';
+  const [afternoonEndTime, setAfternoonEndTime] = useState(initialAfternoonEnd);
   const [newHorseName, setNewHorseName] = useState('');
   const [loading, setLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
@@ -40,15 +42,25 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
   }, []);
 
   // Local settings state
-  const [rescheduleHours, setRescheduleHours] = useState(initialSettings?.reschedule_hours?.toString() || '24');
-  const [maxWeeklyBookings, setMaxWeeklyBookings] = useState(initialSettings?.max_weekly_bookings?.toString() || '2');
+  const initialReschedule = initialSettings?.reschedule_hours?.toString() || '24';
+  const initialCancellation = initialSettings?.cancellation_hours?.toString() || '8';
+  const initialPhotographer = initialSettings?.photographer_enabled !== false;
+  const initialMaxWeekly = initialSettings?.max_weekly_bookings?.toString() || '2';
+  const initialWa = initialSettings?.admin_whatsapp || '812 3194 014';
 
-  const formatPrice = (val: string) => {
-    const num = val.replace(/[^0-9]/g, '');
-    return num ? parseInt(num, 10).toLocaleString('id-ID') : '';
-  };
+  const [rescheduleHours, setRescheduleHours] = useState(initialReschedule);
+  const [cancellationHours, setCancellationHours] = useState(initialCancellation);
+  const [photographerEnabled, setPhotographerEnabled] = useState(initialPhotographer);
+  const [maxWeeklyBookings, setMaxWeeklyBookings] = useState(initialMaxWeekly);
+  const [waNumber, setWaNumber] = useState(initialWa);
 
-  const [waNumber, setWaNumber] = useState(initialSettings?.admin_whatsapp || '812 3194 014');
+  const hasChanges = 
+    rescheduleHours !== initialReschedule ||
+    cancellationHours !== initialCancellation ||
+    photographerEnabled !== initialPhotographer ||
+    maxWeeklyBookings !== initialMaxWeekly ||
+    waNumber.trim() !== initialWa.trim() ||
+    afternoonEndTime !== initialAfternoonEnd;
 
   const handleAddHorse = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,29 +143,139 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
 
   const handleSaveSettings = async () => {
     setSavingSettings(true);
-    const payload = {
-      reschedule_hours: parseInt(rescheduleHours, 10),
-      admin_whatsapp: waNumber.trim(),
-      max_weekly_bookings: parseInt(maxWeeklyBookings, 10)
-    };
-    const res = await updateSiteSettings(payload);
-    if (res.ok) {
-      toast.custom((t) => <AlertToast title="Berhasil" description="Pengaturan berhasil disimpan." onDismiss={() => toast.dismiss(t)} />);
-      router.refresh();
-    } else {
-      toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Gagal menyimpan.'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    try {
+      const promises: Promise<{ ok: boolean; message?: string }>[] = [];
+
+      const siteSettingsChanged =
+        rescheduleHours !== initialReschedule ||
+        cancellationHours !== initialCancellation ||
+        photographerEnabled !== initialPhotographer ||
+        maxWeeklyBookings !== initialMaxWeekly ||
+        waNumber.trim() !== initialWa.trim();
+
+      if (siteSettingsChanged) {
+        const payload = {
+          reschedule_hours: parseInt(rescheduleHours, 10),
+          admin_whatsapp: waNumber.trim(),
+          max_weekly_bookings: parseInt(maxWeeklyBookings, 10),
+          cancellation_hours: parseInt(cancellationHours, 10),
+          photographer_enabled: photographerEnabled,
+        };
+        promises.push(updateSiteSettings(payload));
+      }
+
+      if (afternoonEndTime !== initialAfternoonEnd) {
+        promises.push(updateAfternoonEndTime(afternoonEndTime + ':00'));
+      }
+
+      const results = await Promise.all(promises);
+      const failed = results.find(r => !r.ok);
+      if (failed) {
+        toast.custom((t) => <AlertToast title="Gagal" description={failed.message || 'Gagal menyimpan.'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+      } else {
+        toast.custom((t) => <AlertToast title="Berhasil" description="Pengaturan berhasil disimpan." onDismiss={() => toast.dismiss(t)} />);
+        router.refresh();
+      }
+    } catch (err: any) {
+      toast.custom((t) => <AlertToast title="Gagal" description={err?.message || 'Gagal menyimpan.'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    } finally {
+      setSavingSettings(false);
     }
-    setSavingSettings(false);
   };
 
   return (
     <div style={{ background: '#faf8f5', minHeight: '100vh' }}>
-      <div style={{ padding: '24px 24px 8px', display: 'flex', alignItems: 'center', gap: '16px', position: 'sticky', top: 0, zIndex: 10, background: '#faf8f5' }}>
+      <div style={{ padding: '24px 24px 12px', display: 'flex', alignItems: 'center', gap: '16px', position: 'sticky', top: 0, zIndex: 30, background: '#faf8f5' }}>
         <button onClick={() => window.history.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <ChevronLeft size={20} strokeWidth={2} />
         </button>
         <h1 style={{ font: '24px var(--font-display)', margin: 0, color: 'var(--ink)' }}>Pengaturan Kandang</h1>
       </div>
+
+      {/* ── NAVBAR ATAS LENGKET SAAT ADA PERUBAHAN ── */}
+      {hasChanges && (
+        <div
+          style={{
+            position: 'sticky',
+            top: '76px',
+            zIndex: 25,
+            margin: '0 24px 16px',
+            padding: '10px 16px',
+            background: 'var(--ink, #1F291E)',
+            color: '#FFF',
+            borderRadius: '16px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            animation: 'slideDown 0.2s ease-out',
+            border: '1px solid rgba(255,255,255,0.12)'
+          }}
+        >
+          {/* Tombol Batal / Cancel [X] di kiri */}
+          <button
+            type="button"
+            onClick={() => {
+              setRescheduleHours(initialReschedule);
+              setCancellationHours(initialCancellation);
+              setPhotographerEnabled(initialPhotographer);
+              setMaxWeeklyBookings(initialMaxWeekly);
+              setWaNumber(initialWa);
+              setAfternoonEndTime(initialAfternoonEnd);
+            }}
+            disabled={savingSettings}
+            style={{
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: '#FFF',
+              padding: '8px 12px',
+              borderRadius: '10px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <X size={15} strokeWidth={2.5} />
+            <span>Batal</span>
+          </button>
+
+          {/* Indikator di tengah */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EAB308', display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              Perubahan belum disimpan
+            </span>
+          </div>
+
+          {/* Tombol Simpan [✓] di kanan */}
+          <button
+            type="button"
+            onClick={handleSaveSettings}
+            disabled={savingSettings}
+            style={{
+              background: '#4a5d23',
+              border: '1px solid #627b30',
+              color: '#FFF',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            }}
+          >
+            <Check size={16} strokeWidth={2.5} />
+            <span>{savingSettings ? 'Menyimpan...' : 'Simpan'}</span>
+          </button>
+        </div>
+      )}
 
       <div style={{ padding: '24px' }}>
         <h2 style={{ font: '24px var(--font-display)', margin: '0 0 16px', color: 'var(--ink)' }}>Manajemen Kuda</h2>
@@ -405,161 +527,247 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
           )}
         </div>
 
-        <div style={{ marginTop: '48px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+        <div style={{ marginTop: '40px' }}>
+          {/* GRUP 1: KETENTUAN BOOKING & KUOTA */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
             <div>
-              <h2 style={{ font: '24px var(--font-display)', margin: '0 0 4px', color: 'var(--ink)' }}>Waktu & Operasional</h2>
-              <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Atur waktu operasional dan ketentuan pemesanan.</p>
+              <h2 style={{ font: '22px var(--font-display)', margin: '0 0 4px', color: 'var(--ink)' }}>Ketentuan Booking & Kuota</h2>
+              <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Aturan reschedule, pembatalan, dan batas pemesanan mingguan.</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#edf2eb', color: '#4a5d23', borderRadius: '100px', fontSize: '12px', fontWeight: 600 }}>
-              <Clock size={14} /> Operasional
+              <Calendar size={14} /> Aturan
             </div>
           </div>
 
-          <div style={{ background: '#fff', borderRadius: '16px', marginBottom: '32px' }}>
+          <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', marginBottom: '32px', overflow: 'visible' }}>
             {/* Batas Waktu Reschedule */}
-            <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
-              <div style={{ width: '44px', height: '44px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px', flexShrink: 0 }}>
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+              <div style={{ width: '40px', height: '40px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
                 <Clock size={20} />
               </div>
-              <div style={{ flex: 1, paddingRight: '16px' }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Batas Waktu Reschedule (Jam)</div>
-                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Batas minimum sebelum sesi dimulai.</div>
-              </div>
-              <div className="dropdown-container" style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setOpenDropdown(openDropdown === 'reschedule' ? null : 'reschedule')}
-                  style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
-                >
-                  {rescheduleHours} Jam
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'reschedule' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
-                {openDropdown === 'reschedule' && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '120px' }}>
-                    {['12', '24', '48'].map(val => (
-                      <div
-                        key={val}
-                        onClick={() => { setRescheduleHours(val); setOpenDropdown(null); }}
-                        style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: rescheduleHours === val ? '#f4f4f5' : '#fff', color: rescheduleHours === val ? 'var(--ink)' : 'var(--muted)' }}
-                      >
-                        {val} Jam
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Batas Waktu Reschedule (Jam)</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>Batas minimum sebelum sesi dimulai.</div>
+                </div>
+                <div className="dropdown-container" style={{ position: 'relative', flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenDropdown(openDropdown === 'reschedule' ? null : 'reschedule')}
+                    style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '95px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
+                  >
+                    <span>{rescheduleHours} Jam</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'reschedule' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                  {openDropdown === 'reschedule' && (
+                    <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflowY: 'auto', maxHeight: '240px', zIndex: 100, minWidth: '120px' }}>
+                      {Array.from({ length: 24 }, (_, i) => String(i + 1)).map(val => (
+                        <div
+                          key={val}
+                          onClick={() => { setRescheduleHours(val); setOpenDropdown(null); }}
+                          style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: rescheduleHours === val ? '#f4f4f5' : '#fff', color: rescheduleHours === val ? 'var(--ink)' : 'var(--muted)' }}
+                        >
+                          {val} Jam
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Jam Tutup Sesi Akhir */}
-            <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
-              <div style={{ width: '44px', height: '44px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px', flexShrink: 0 }}>
+            {/* Batas Waktu Cancel */}
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+              <div style={{ width: '40px', height: '40px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
                 <Clock size={20} />
               </div>
-              <div style={{ flex: 1, paddingRight: '16px' }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Jam Tutup Kandang (Sesi Terakhir)</div>
-                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Tentukan jam operasional buka sampai malam (misal 21:00).</div>
-              </div>
-              <div className="dropdown-container" style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setOpenDropdown(openDropdown === 'endTime' ? null : 'endTime')}
-                  style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
-                >
-                  {afternoonEndTime}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'endTime' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
-                {openDropdown === 'endTime' && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '120px' }}>
-                    {['18:00', '19:00', '20:00', '21:00', '22:00'].map(val => (
-                      <div
-                        key={val}
-                        onClick={async () => {
-                          setAfternoonEndTime(val);
-                          setOpenDropdown(null);
-                          const res = await updateAfternoonEndTime(val + ':00');
-                          if (res.ok) {
-                            toast.custom((t) => <AlertToast title="Berhasil" description={`Jam tutup diupdate ke ${val}.`} onDismiss={() => toast.dismiss(t)} />);
-                          } else {
-                            toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Unknown error'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
-                          }
-                        }}
-                        style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: afternoonEndTime === val ? '#f4f4f5' : '#fff', color: afternoonEndTime === val ? 'var(--ink)' : 'var(--muted)' }}
-                      >
-                        {val}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Batas Waktu Cancel (Jam)</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>Batas minimum pembatalan agar kuota sesi tidak hangus.</div>
+                </div>
+                <div className="dropdown-container" style={{ position: 'relative', flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenDropdown(openDropdown === 'cancelHours' ? null : 'cancelHours')}
+                    style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '95px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
+                  >
+                    <span>{cancellationHours} Jam</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'cancelHours' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                  {openDropdown === 'cancelHours' && (
+                    <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflowY: 'auto', maxHeight: '240px', zIndex: 100, minWidth: '120px' }}>
+                      {Array.from({ length: 24 }, (_, i) => String(i + 1)).map(val => (
+                        <div
+                          key={val}
+                          onClick={() => { setCancellationHours(val); setOpenDropdown(null); }}
+                          style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: cancellationHours === val ? '#f4f4f5' : '#fff', color: cancellationHours === val ? 'var(--ink)' : 'var(--muted)' }}
+                        >
+                          {val} Jam
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Maksimal Booking Sesi per Minggu (per Member) */}
-            <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px' }}>
-              <div style={{ width: '44px', height: '44px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px', flexShrink: 0 }}>
+            {/* Maksimal Booking Sesi per Minggu */}
+            <div style={{ padding: '20px' }}>
+              <div style={{ width: '40px', height: '40px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
                 <Calendar size={20} />
               </div>
-              <div style={{ flex: 1, paddingRight: '16px' }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Maksimal Booking per Minggu</div>
-                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Batas sesi per minggu untuk member reguler (Silver & Gold bebas tanpa batas).</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Maksimal Booking per Minggu</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>Batas maksimal pemesanan sesi per minggu untuk member.</div>
+                </div>
+                <div className="dropdown-container" style={{ position: 'relative', flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenDropdown(openDropdown === 'maxWeekly' ? null : 'maxWeekly')}
+                    style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '100px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
+                  >
+                    <span>{maxWeeklyBookings === '999' ? 'Bebas' : `${maxWeeklyBookings} Sesi`}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'maxWeekly' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                  {openDropdown === 'maxWeekly' && (
+                    <div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 12px 30px rgba(0,0,0,0.15)', border: '1px solid rgba(0,0,0,0.08)', overflowY: 'auto', maxHeight: '280px', zIndex: 1000, minWidth: '160px' }}>
+                      {[
+                        { label: '1 Sesi / Minggu', val: '1' },
+                        { label: '2 Sesi / Minggu', val: '2' },
+                        { label: '3 Sesi / Minggu', val: '3' },
+                        { label: '4 Sesi / Minggu', val: '4' },
+                        { label: '5 Sesi / Minggu', val: '5' },
+                        { label: '6 Sesi / Minggu', val: '6' },
+                        { label: '7 Sesi / Minggu', val: '7' },
+                        { label: 'Bebas (Tanpa Batas)', val: '999' }
+                      ].map(item => (
+                        <div
+                          key={item.val}
+                          onClick={() => { setMaxWeeklyBookings(item.val); setOpenDropdown(null); }}
+                          style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: maxWeeklyBookings === item.val ? '#f4f4f5' : '#fff', color: maxWeeklyBookings === item.val ? 'var(--ink)' : 'var(--muted)' }}
+                        >
+                          {item.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="dropdown-container" style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  onClick={() => setOpenDropdown(openDropdown === 'maxWeekly' ? null : 'maxWeekly')}
-                  style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '100px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
-                >
-                  {maxWeeklyBookings === '999' ? 'Bebas' : `${maxWeeklyBookings} Sesi`}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'maxWeekly' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
-                {openDropdown === 'maxWeekly' && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '140px' }}>
-                    {[
-                      { label: '1 Sesi / Minggu', val: '1' },
-                      { label: '2 Sesi / Minggu', val: '2' },
-                      { label: '3 Sesi / Minggu', val: '3' },
-                      { label: '4 Sesi / Minggu', val: '4' },
-                      { label: '5 Sesi / Minggu', val: '5' },
-                      { label: 'Bebas (Tanpa Batas)', val: '999' }
-                    ].map(item => (
-                      <div
-                        key={item.val}
-                        onClick={() => { setMaxWeeklyBookings(item.val); setOpenDropdown(null); }}
-                        style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: maxWeeklyBookings === item.val ? '#f4f4f5' : '#fff', color: maxWeeklyBookings === item.val ? 'var(--ink)' : 'var(--muted)' }}
-                      >
-                        {item.label}
-                      </div>
-                    ))}
-                  </div>
-                )}
+            </div>
+          </div>
+
+          {/* GRUP 2: OPERASIONAL & FASILITAS */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+            <div>
+              <h2 style={{ font: '22px var(--font-display)', margin: '0 0 4px', color: 'var(--ink)' }}>Operasional & Layanan Tambahan</h2>
+              <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Jam operasional kandang dan ketersediaan layanan fotografi.</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#edf2eb', color: '#4a5d23', borderRadius: '100px', fontSize: '12px', fontWeight: 600 }}>
+              <Clock size={14} /> Fasilitas
+            </div>
+          </div>
+
+          <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', marginBottom: '32px', overflow: 'visible' }}>
+            {/* Jam Tutup Sesi Akhir */}
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+              <div style={{ width: '40px', height: '40px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                <Clock size={20} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Jam Tutup Kandang (Sesi Terakhir)</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>Tentukan batas operasional sesi malam (misal 21:00).</div>
+                </div>
+                <div className="dropdown-container" style={{ position: 'relative', flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenDropdown(openDropdown === 'endTime' ? null : 'endTime')}
+                    style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '95px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
+                  >
+                    <span>{afternoonEndTime}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openDropdown === 'endTime' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                  {openDropdown === 'endTime' && (
+                    <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '120px' }}>
+                      {['18:00', '19:00', '20:00', '21:00', '22:00'].map(val => (
+                        <div
+                          key={val}
+                          onClick={() => {
+                            setAfternoonEndTime(val);
+                            setOpenDropdown(null);
+                          }}
+                          style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: afternoonEndTime === val ? '#f4f4f5' : '#fff', color: afternoonEndTime === val ? 'var(--ink)' : 'var(--muted)' }}
+                        >
+                          {val}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
+            {/* Layanan Fotografer Weekend */}
+            <div style={{ padding: '20px' }}>
+              <div style={{ width: '40px', height: '40px', background: photographerEnabled ? '#edf2eb' : '#f4f4f5', color: photographerEnabled ? '#4a5d23' : 'var(--muted)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                <Camera size={20} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Layanan Fotografer Weekend</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>Tampilkan add-on fotografer (+Rp 200rb) untuk jadwal Sabtu & Minggu.</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPhotographerEnabled(!photographerEnabled)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '100px',
+                    border: 'none',
+                    background: photographerEnabled ? '#4a5d23' : '#e4e4e7',
+                    color: photographerEnabled ? '#fff' : 'var(--muted)',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    flexShrink: 0
+                  }}
+                >
+                  {photographerEnabled && <Check size={14} strokeWidth={3} />}
+                  <span>{photographerEnabled ? 'Aktif' : 'Libur'}</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* CONTACT */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
             <div>
-              <h2 style={{ font: '24px var(--font-display)', margin: '0 0 4px', color: 'var(--ink)' }}>Kontak & Bantuan</h2>
-              <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Informasi kontak untuk bantuan dan komunikasi.</p>
+              <h2 style={{ font: '22px var(--font-display)', margin: '0 0 4px', color: 'var(--ink)' }}>Kontak & Bantuan</h2>
+              <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Informasi kontak untuk bantuan dan komunikasi member.</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#edf2eb', color: '#4a5d23', borderRadius: '100px', fontSize: '12px', fontWeight: 600 }}>
               <Headphones size={14} /> Bantuan
             </div>
           </div>
 
-          <div style={{ background: '#fff', borderRadius: '16px' }}>
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                <div style={{ width: '44px', height: '44px', background: '#458553', color: '#fff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px', flexShrink: 0 }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
-                  </svg>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Nomor WhatsApp Admin</div>
-                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px', lineHeight: 1.4 }}>Nomor tujuan untuk tombol "Hubungi Admin" di aplikasi member.</div>
-                </div>
+          <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', marginBottom: '32px' }}>
+            <div style={{ padding: '20px' }}>
+              <div style={{ width: '40px', height: '40px', background: '#458553', color: '#fff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+                </svg>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', background: '#f4f4f5', padding: '12px 16px', borderRadius: '12px', alignSelf: 'stretch' }}>
+              <div style={{ marginBottom: '14px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Nomor WhatsApp Admin</div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px', lineHeight: 1.4 }}>Nomor tujuan untuk tombol &quot;Hubungi Admin&quot; di aplikasi member.</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', background: '#f4f4f5', padding: '12px 16px', borderRadius: '12px' }}>
                 <span style={{ fontWeight: 600, fontSize: '15px', color: 'var(--muted)', marginRight: '8px' }}>+62</span>
                 <input type="tel" value={waNumber} onChange={(e) => setWaNumber(e.target.value.replace(/[^0-9 ]/g, ''))} placeholder="812 3194 014" style={{ background: 'transparent', fontWeight: 600, fontSize: '15px', color: 'var(--ink)', border: 'none', outline: 'none', width: '100%', letterSpacing: '0.5px' }} />
               </div>
@@ -604,15 +812,18 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
         </div>
       )}
 
-      <div style={{ padding: '24px', paddingTop: 0, paddingBottom: '48px' }}>
-        <button
-          onClick={handleSaveSettings}
-          disabled={savingSettings}
-          style={{ width: '100%', padding: '16px', background: '#4a5d23', color: '#fff', borderRadius: '16px', fontSize: '15px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(74, 93, 35, 0.2)', opacity: savingSettings ? 0.7 : 1 }}
-        >
-          <Save size={18} /> {savingSettings ? 'Menyimpan...' : 'Simpan Perubahan'}
-        </button>
-      </div>
+      {/* Tombol Simpan Perubahan: Default di-hide, hanya muncul jika ada perubahan */}
+      {hasChanges && (
+        <div style={{ padding: '0 24px 48px' }}>
+          <button
+            onClick={handleSaveSettings}
+            disabled={savingSettings}
+            style={{ width: '100%', padding: '16px', background: '#4a5d23', color: '#fff', borderRadius: '16px', fontSize: '15px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(74, 93, 35, 0.2)', opacity: savingSettings ? 0.7 : 1 }}
+          >
+            <Save size={18} /> {savingSettings ? 'Menyimpan...' : 'Simpan Perubahan'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

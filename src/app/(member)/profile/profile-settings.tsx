@@ -16,6 +16,27 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
 
   const [pushEnabled, setPushEnabled] = useState(true); // Example toggle state for firebase
 
+  // Form field state tracking
+  const initialFullName = initialUser?.full_name || '';
+  const initialPhone = initialMember?.phone || '';
+  const initialDob = initialMember?.date_of_birth || '';
+
+  const [fullName, setFullName] = useState(initialFullName);
+  const [phone, setPhone] = useState(initialPhone);
+  const [dob, setDob] = useState(initialDob);
+
+  const initialEmergencyName = initialMember?.emergency_contact_name || '';
+  const initialEmergencyPhone = initialMember?.emergency_contact_phone || '';
+
+  const [emergencyName, setEmergencyName] = useState(initialEmergencyName);
+  const [emergencyPhone, setEmergencyPhone] = useState(initialEmergencyPhone);
+
+  const [savedPersonal, setSavedPersonal] = useState({ fullName: initialFullName, phone: initialPhone, dob: initialDob });
+  const [savedEmergency, setSavedEmergency] = useState({ emergencyName: initialEmergencyName, emergencyPhone: initialEmergencyPhone });
+
+  const hasPersonalChanges = fullName !== savedPersonal.fullName || phone !== savedPersonal.phone || dob !== savedPersonal.dob;
+  const hasEmergencyChanges = emergencyName !== savedEmergency.emergencyName || emergencyPhone !== savedEmergency.emergencyPhone;
+
   const toggleSection = (section: string) => {
     if (openSection === section) setOpenSection(null);
     else setOpenSection(section);
@@ -31,6 +52,8 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
     
     setLoading(false);
     if (res.ok) {
+      setSavedPersonal({ fullName, phone, dob });
+      setSavedEmergency({ emergencyName, emergencyPhone });
       setMessage('Profile updated successfully!');
       setTimeout(() => setMessage(''), 3000);
     } else {
@@ -109,23 +132,29 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
       </p>
 
       {/* Membership Badge */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-        <div style={{ 
-          background: tierName.toUpperCase() === 'GOLD' 
-            ? 'linear-gradient(135deg, #eaddbd 0%, #d0b070 100%)' 
-            : tierName.toUpperCase() === 'SILVER'
-              ? 'linear-gradient(135deg, #e0e0e0, #9e9e9e)'
-              : 'linear-gradient(135deg, #f5f5f5, #d4d4d4)', // Basic tier color 
-          padding: '6px 16px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', 
-          color: tierName.toUpperCase() === 'GOLD' ? '#5a4214' : tierName.toUpperCase() === 'SILVER' ? '#fff' : '#555', 
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' 
-        }}>
-          <Award size={14} strokeWidth={2.5} />
-          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
-            {tierName.toUpperCase()} MEMBER
-          </span>
-        </div>
-      </div>
+      {(() => {
+        const isGold = tierName.toLowerCase().includes('gold');
+        const isSilver = tierName.toLowerCase().includes('silver');
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+            <div style={{ 
+              background: isGold 
+                ? 'linear-gradient(135deg, #f3e9d2, #d1a85b)' 
+                : isSilver
+                  ? 'linear-gradient(135deg, #e0e0e0, #9e9e9e)'
+                  : 'linear-gradient(135deg, #f5f5f5, #d4d4d4)', 
+              padding: '6px 16px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', 
+              color: isGold ? '#5a4214' : isSilver ? '#fff' : '#555', 
+              boxShadow: isGold ? '0 4px 14px rgba(209, 168, 91, 0.25)' : '0 4px 12px rgba(0, 0, 0, 0.08)' 
+            }}>
+              <Award size={14} strokeWidth={2.5} />
+              <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
+                {tierName.toUpperCase()} MEMBER
+              </span>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Accordion List */}
       <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #efeade', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', marginBottom: '24px', marginTop: '32px', width: '100%' }}>
@@ -148,7 +177,7 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
                   <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Full Name</label>
-                      <input type="text" name="fullName" defaultValue={initialUser?.full_name || ''} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #efeade', fontSize: '14px', background: '#fff' }} />
+                      <input type="text" name="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #efeade', fontSize: '14px', background: '#fff' }} />
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Email</label>
@@ -156,11 +185,11 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Phone Number</label>
-                      <input type="text" name="phone" defaultValue={initialMember?.phone || ''} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #efeade', fontSize: '14px', background: '#fff' }} />
+                      <input type="text" name="phone" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #efeade', fontSize: '14px', background: '#fff' }} />
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Date of Birth</label>
-                      <input type="date" name="dob" defaultValue={initialMember?.date_of_birth || ''} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #efeade', fontSize: '14px', background: '#fff' }} />
+                      <input type="date" name="dob" value={dob} onChange={(e) => setDob(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #efeade', fontSize: '14px', background: '#fff' }} />
                     </div>
                     
                     {message && (
@@ -169,9 +198,11 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
                       </div>
                     )}
                     
-                    <button type="submit" disabled={loading} style={{ width: '100%', padding: '14px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '14px', fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '8px', opacity: loading ? 0.7 : 1 }}>
-                      {loading ? 'Saving...' : 'Save Changes'}
-                    </button>
+                    {hasPersonalChanges && (
+                      <button type="submit" disabled={loading} style={{ width: '100%', padding: '14px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '14px', fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '8px', opacity: loading ? 0.7 : 1 }}>
+                        {loading ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    )}
                   </form>
                 </div>
               )}
@@ -188,7 +219,8 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
                       <input
                         type="text"
                         name="emergencyName"
-                        defaultValue={initialMember?.emergency_contact_name || ''}
+                        value={emergencyName}
+                        onChange={(e) => setEmergencyName(e.target.value)}
                         placeholder="e.g. Jane Doe"
                         style={{
                           width: '100%',
@@ -211,7 +243,8 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
                       <input
                         type="tel"
                         name="emergencyPhone"
-                        defaultValue={initialMember?.emergency_contact_phone || ''}
+                        value={emergencyPhone}
+                        onChange={(e) => setEmergencyPhone(e.target.value)}
                         placeholder="08xxxxxxxx"
                         style={{
                           width: '100%',
@@ -226,29 +259,32 @@ export function ProfileSettings({ initialUser, initialMember, initialAvatarUrl, 
                       />
                     </div>
 
-                    <button 
-                      type="submit"
-                      disabled={loading}
-                      style={{ 
-                        marginTop: '8px',
-                        width: '100%', 
-                        padding: '14px', 
-                        borderRadius: '24px', 
-                        background: 'var(--ink)', 
-                        color: 'var(--white)', 
-                        border: 'none', 
-                        fontSize: '15px', 
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }}
-                    >
-                      {loading ? <Loader2 size={18} className="spin" /> : 'Save Contact'}
-                    </button>
+                    {hasEmergencyChanges && (
+                      <button 
+                        type="submit"
+                        disabled={loading}
+                        style={{ 
+                          marginTop: '8px',
+                          width: '100%', 
+                          padding: '14px', 
+                          borderRadius: '24px', 
+                          background: 'var(--ink)', 
+                          color: 'var(--white)', 
+                          border: 'none', 
+                          fontSize: '15px', 
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          gap: '8px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          opacity: loading ? 0.7 : 1
+                        }}
+                      >
+                        {loading ? <Loader2 size={18} className="spin" /> : 'Save Contact'}
+                      </button>
+                    )}
                     {message && <p style={{ fontSize: '12px', color: 'var(--gold)', textAlign: 'center', margin: 0 }}>{message}</p>}
                   </form>
                 </div>

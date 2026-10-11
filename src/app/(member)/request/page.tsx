@@ -7,7 +7,7 @@ import { ensureSlotsForDateRange } from '@/modules/bookings/booking-queries';
 export default async function RequestPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string }>;
+  searchParams: Promise<{ type?: string; planId?: string }>;
 }) {
   const actor = await requireActor(['MEMBER']);
   const db = await createServerClient();
@@ -44,6 +44,7 @@ export default async function RequestPage({
         initialData={member || {}}
         plans={plans || []}
         isRenewal={Boolean(activeMembership)}
+        defaultPlanId={params.planId}
         activeApp={activeApp as any || null}
         bankName={bankName}
         accountNumber={accountNumber}

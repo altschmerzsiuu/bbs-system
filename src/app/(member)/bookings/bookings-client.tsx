@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, X, Star, Bell } from 'lucide-react';
 import { BookingCard } from './booking-card';
 import { TearableTicket } from '@/components/ui/tearable-ticket';
+import { createClient } from '@/infrastructure/supabase-browser';
 
 function isBookingPast(booking: any): boolean {
   const slot = booking.session_slots;
@@ -17,8 +19,29 @@ function isBookingPast(booking: any): boolean {
 }
 
 export function BookingsClient({ list, currentUserId }: { list: any[], currentUserId: string }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'Upcoming' | 'Completed' | 'Cancelled'>('Upcoming');
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+
+  // Background auto-refresh for near real-time updates using Supabase Realtime
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase.channel('member_rides_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'booking_participants' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_slots' }, () => {
+        router.refresh();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
 
   const UPCOMING_STATUSES = new Set(['PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED']);
 
@@ -165,9 +188,21 @@ export function BookingsClient({ list, currentUserId }: { list: any[], currentUs
                         {selectedBooking.session_slots.start_time.slice(0, 5)} — {selectedBooking.session_slots.end_time.slice(0, 5)}
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '8px' }}>
-                        <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Membership</span><span style={{ fontSize: '13px', fontWeight: 700 }}>—</span></div>
+                        <div>
+                          <span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Rider</span>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: (selectedBooking.notes?.includes('Rider Tamu') || selectedBooking.notes?.includes('Rider Tambahan')) ? '#1D4ED8' : 'var(--ink)' }}>
+                            {(selectedBooking.notes?.includes('Rider Tamu') || selectedBooking.notes?.includes('Rider Tambahan'))
+                              ? `${selectedBooking.notes.match(/(?:👤?\s*)?Rider (?:Tamu|Tambahan):\s*([^(•]+)/i)?.[1]?.trim() || 'Tamu'} (Tamu)`
+                              : 'Member'}
+                          </span>
+                        </div>
                         <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Arena</span><span style={{ fontSize: '13px', fontWeight: 700 }}>Arena 01</span></div>
                       </div>
+                      {(selectedBooking.notes?.includes('Rider Tamu') || selectedBooking.notes?.includes('Rider Tambahan')) && (
+                        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '8px', padding: '6px 10px', fontSize: '11px', color: '#1E40AF', fontWeight: 600, marginBottom: '8px' }}>
+                          {selectedBooking.notes.split('•').find((p: string) => p.includes('Rider Tamu') || p.includes('Rider Tambahan'))?.replace(/^[📸👤\s]+/, '').trim()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 }

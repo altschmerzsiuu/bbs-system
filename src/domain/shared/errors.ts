@@ -64,7 +64,7 @@ const MESSAGES: Record<DomainErrorCode, string> = {
   HORSE_INACTIVE: 'Horse is currently inactive and cannot be assigned.',
   DUPLICATE_PARTICIPANT: 'Duplicate participant in booking.',
   ALREADY_BOOKED_FOR_SLOT: 'Participant is already booked for this session.',
-  DAILY_BOOKING_LIMIT_REACHED: 'Setiap member hanya dapat memesan maksimal 2 sesi dalam sehari.',
+  DAILY_BOOKING_LIMIT_REACHED: 'Batas pemesanan sesi telah tercapai.',
   WEEKLY_BOOKING_LIMIT_REACHED: 'Anda telah mencapai batas maksimal pemesanan per minggu.',
   NO_PARTICIPANTS: 'A booking must have at least one participant.',
   INVALID_PARTICIPANT_TYPE: 'Invalid participant type specified.',

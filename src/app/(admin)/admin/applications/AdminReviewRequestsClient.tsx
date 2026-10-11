@@ -5,6 +5,12 @@ import Link from 'next/link';
 import { ChevronLeft, Calendar, Star, CheckCircle, XCircle, User, MessageCircle, Loader2 } from 'lucide-react';
 import { approveRidingRequestAction, rejectRidingRequestAction } from '@/app/(admin)/admin/schedule/actions';
 import { rejectApplicationAction, rejectPaymentAction, confirmAndActivateMembershipAction, getReceiptSignedUrlAction } from './actions';
+import {
+  approveBookingAction,
+  rejectBookingAction,
+  approveRescheduleAction,
+  rejectRescheduleAction
+} from '@/app/(admin)/admin/bookings/actions';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
 import { useRouter } from 'next/navigation';
@@ -120,15 +126,23 @@ function ReceiptViewer({ path, filename }: { path: string, filename: string }) {
   );
 }
 
-type TabType = 'all' | 'riding' | 'membership';
+type TabType = 'all' | 'booking' | 'riding' | 'membership';
 
-export default function AdminReviewRequestsClient({ initialRequests }: { initialRequests: any[] }) {
+export default function AdminReviewRequestsClient({
+  initialRequests,
+  defaultTab
+}: {
+  initialRequests: any[];
+  defaultTab?: string;
+}) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>('all');
+  const [activeTab, setActiveTab] = useState<TabType>((defaultTab as TabType) || 'all');
   const [isSubmittingId, setIsSubmittingId] = useState<string | null>(null);
   const [rejectModalReqId, setRejectModalReqId] = useState<string | null>(null);
   const [rejectPaymentModalReqId, setRejectPaymentModalReqId] = useState<string | null>(null);
+  const [rejectBookingModalReqId, setRejectBookingModalReqId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [rejectBookingReason, setRejectBookingReason] = useState('Sesi penuh atau berhalangan');
 
   useEffect(() => {
     const supabase = createClient();
@@ -138,6 +152,9 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
         router.refresh();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_applications' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
         router.refresh();
       })
       .subscribe();
@@ -179,8 +196,61 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
       return;
     }
     const formattedPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
-    const message = encodeURIComponent(`Halo Kak ${name}, kami dari Admin BBS. Terkait permohonan jadwal ${type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'} Anda ...`);
+    let subject = 'jadwal berkuda';
+    if (type === 'JOY_RIDE') subject = 'jadwal Joy Ride';
+    else if (type === 'RESCHEDULE') subject = 'permohonan reschedule jadwal berkuda';
+    else if (type === 'BOOKING') subject = 'booking jadwal berkuda';
+    const message = encodeURIComponent(`Halo Kak ${name}, kami dari Admin BBS. Terkait ${subject} Anda ...`);
     window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
+  };
+
+  const handleApproveBooking = async (bookingId: string) => {
+    setIsSubmittingId(bookingId);
+    const res = await approveBookingAction(bookingId);
+    setIsSubmittingId(null);
+    if (res.ok) {
+      toast.custom((t) => <AlertToast title="Berhasil" description="Booking member telah disetujui" onDismiss={() => toast.dismiss(t)} />);
+      router.refresh();
+    } else {
+      toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Terjadi kesalahan'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    }
+  };
+
+  const handleRejectBooking = async (bookingId: string) => {
+    setIsSubmittingId(bookingId);
+    const res = await rejectBookingAction(bookingId, rejectBookingReason || 'Ditolak oleh admin');
+    setIsSubmittingId(null);
+    setRejectBookingModalReqId(null);
+    if (res.ok) {
+      toast.custom((t) => <AlertToast title="Berhasil" description="Booking member ditolak" onDismiss={() => toast.dismiss(t)} />);
+      router.refresh();
+    } else {
+      toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Terjadi kesalahan'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    }
+  };
+
+  const handleApproveReschedule = async (bookingId: string) => {
+    setIsSubmittingId(bookingId);
+    const res = await approveRescheduleAction(bookingId);
+    setIsSubmittingId(null);
+    if (res.ok) {
+      toast.custom((t) => <AlertToast title="Berhasil" description="Permintaan reschedule disetujui" onDismiss={() => toast.dismiss(t)} />);
+      router.refresh();
+    } else {
+      toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Terjadi kesalahan'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    }
+  };
+
+  const handleRejectReschedule = async (bookingId: string) => {
+    setIsSubmittingId(bookingId);
+    const res = await rejectRescheduleAction(bookingId);
+    setIsSubmittingId(null);
+    if (res.ok) {
+      toast.custom((t) => <AlertToast title="Berhasil" description="Permintaan reschedule ditolak" onDismiss={() => toast.dismiss(t)} />);
+      router.refresh();
+    } else {
+      toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Terjadi kesalahan'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    }
   };
 
   const handleRejectRiding = async (reqId: string) => {
@@ -215,6 +285,7 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
   };
 
   const requests = initialRequests;
+  const bookingRequests = requests.filter(r => r.category === 'booking');
   const ridingRequests = requests.filter(r => r.category === 'riding');
   const membershipRequests = requests.filter(r => r.category === 'membership');
 
@@ -232,38 +303,323 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
         </div>
       </div>
 
-      <div className="tabs" data-tabgroup>
-        <button
-          className={activeTab === 'all' ? 'active' : ''}
-          onClick={() => setActiveTab('all')}
-        >
-          Semua · {requests.length}
-        </button>
-        <button
-          className={activeTab === 'riding' ? 'active' : ''}
-          onClick={() => setActiveTab('riding')}
-        >
-          Casual · {ridingRequests.length}
-        </button>
-        <button
-          className={activeTab === 'membership' ? 'active' : ''}
-          onClick={() => setActiveTab('membership')}
-        >
-          Membership · {membershipRequests.length}
-        </button>
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          padding: '4px 0 12px',
+          marginBottom: '12px',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        {[
+          { key: 'all', label: 'Semua', count: requests.length },
+          { key: 'booking', label: 'Booking Member', count: bookingRequests.length },
+          { key: 'riding', label: 'Casual', count: ridingRequests.length },
+          { key: 'membership', label: 'Membership', count: membershipRequests.length },
+        ].map(tab => {
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as TabType)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '9px 16px',
+                borderRadius: '100px',
+                border: isActive ? '1px solid var(--ink)' : '1px solid #EBE4D5',
+                background: isActive ? 'var(--ink)' : '#FFF',
+                color: isActive ? '#FFF' : 'var(--ink)',
+                fontSize: '13px',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                flexShrink: 0,
+                boxShadow: isActive ? '0 3px 10px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.03)'
+              }}
+            >
+              <span>{tab.label}</span>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  padding: '2px 7px',
+                  borderRadius: '100px',
+                  background: isActive ? 'rgba(255, 255, 255, 0.22)' : '#F2ECE1',
+                  color: isActive ? '#FFF' : '#8C6E2D',
+                  minWidth: '18px',
+                  textAlign: 'center',
+                  lineHeight: '14px'
+                }}
+              >
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {filteredRequests.length > 0 ? (
-        <p className="helper">
+        <p className="helper" style={{ margin: '0 0 16px', fontSize: '13px' }}>
           Pilih request untuk disetujui atau hubungi via WhatsApp.
         </p>
       ) : (
-        <p className="helper" style={{ textAlign: 'center', marginTop: '60px' }}>
-          Tidak ada permintaan pending!
-        </p>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#F5F5F7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: 'var(--ink)' }}>
+            <Calendar size={22} />
+          </div>
+          <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--ink)' }}>Tidak ada permintaan pending</div>
+          <div style={{ fontSize: '13px', marginTop: '4px' }}>Semua permohonan dalam kategori ini sudah diproses.</div>
+        </div>
       )}
 
       {filteredRequests.map(req => {
+        if (req.category === 'booking') {
+          const isReschedule = req.type === 'RESCHEDULE';
+          return (
+            <div key={req.id} className="card" style={{ padding: '20px', borderRadius: '20px', background: '#FFF', boxShadow: '0 8px 30px rgba(0,0,0,0.04)', border: '1px solid var(--line)', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: isReschedule ? '#B45309' : '#1E40AF',
+                  background: isReschedule ? '#FEF3C7' : '#EFF6FF',
+                  padding: '6px 12px',
+                  borderRadius: '999px',
+                  fontSize: '11px',
+                  fontWeight: 700
+                }}>
+                  <Calendar size={14} />
+                  {isReschedule ? 'Permintaan Reschedule' : 'Booking Member (60 menit)'}
+                </div>
+                <span className="hint">{new Date(req.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0 }}>
+                  <div className="avatar" style={{ position: 'absolute', inset: 0, background: '#F5F5F7', color: 'var(--ink)', fontSize: '15px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <User size={20} />
+                  </div>
+                  {req.memberAvatarUrl && (
+                    <img
+                      src={req.memberAvatarUrl}
+                      alt={req.memberName}
+                      style={{ position: 'absolute', inset: 0, width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', zIndex: 1 }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  )}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <b style={{ fontSize: '15px', color: 'var(--ink)' }}>{req.memberName}</b>
+                  <div
+                    onClick={() => {
+                      if (req.memberEmail) {
+                        navigator.clipboard.writeText(req.memberEmail);
+                        toast.custom((t) => <AlertToast title="Disalin" description="Email disalin ke clipboard" onDismiss={() => toast.dismiss(t)} />);
+                      }
+                    }}
+                    style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px', fontWeight: 500, cursor: 'pointer' }}
+                  >
+                    {req.memberEmail || '-'}
+                  </div>
+                  {req.memberPhone && (
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px', fontWeight: 500 }}>
+                      {req.memberPhone}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Detail Sesi Box */}
+              <div style={{ background: '#FDFBF7', padding: '14px 16px', borderRadius: '12px', border: '1px solid #EBE4D5', marginBottom: '16px' }}>
+                {isReschedule ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 700 }}>Jadwal Semula</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginTop: '2px' }}>
+                        {req.slotDate ? formatDateBig(req.slotDate) : '-'} • {req.startTime?.slice(0, 5)} - {req.endTime?.slice(0, 5)}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#B45309', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 700 }}>Pindah Ke</div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#B45309', marginTop: '2px' }}>
+                        {req.requestedSlotDate ? formatDateBig(req.requestedSlotDate) : '-'} • {req.requestedStartTime?.slice(0, 5)} - {req.requestedEndTime?.slice(0, 5)}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 700 }}>Jadwal Sesi</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
+                      {req.slotDate ? formatDateBig(req.slotDate) : '-'} • {req.startTime?.slice(0, 5)} - {req.endTime?.slice(0, 5)}
+                    </div>
+                  </div>
+                )}
+
+                {req.notes && (
+                  <div style={{ marginTop: '12px' }}>
+                    {req.notes.split('•').map((part: string, pIdx: number) => {
+                      const trimmed = part.trim();
+                      if (!trimmed) return null;
+                      const isGuest = trimmed.includes('Rider Tamu') || trimmed.includes('Rider Tambahan');
+
+                      if (isGuest) {
+                        const guestNameMatch = trimmed.match(/(?:👤?\s*)?Rider (?:Tamu|Tambahan):\s*([^(•]+)/i);
+                        const guestName = guestNameMatch?.[1]?.trim() || 'Tamu';
+                        const ageMatch = trimmed.match(/Usia:\s*([0-9-]+(?:th)?)/i)?.[1] || '-';
+                        const bbMatch = trimmed.match(/BB:\s*([0-9-]+(?:kg)?)/i)?.[1] || '-';
+                        const tbMatch = trimmed.match(/TB:\s*([0-9-]+(?:cm)?)/i)?.[1] || '-';
+
+                        return (
+                          <div
+                            key={pIdx}
+                            style={{
+                              background: '#F8FAFC',
+                              border: '1px solid #E2E8F0',
+                              borderRadius: '12px',
+                              padding: '12px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '8px',
+                              marginBottom: '8px'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                              <span style={{
+                                background: '#EEF2FF',
+                                color: '#4338CA',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                padding: '3px 8px',
+                                borderRadius: '100px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
+                                <User size={11} strokeWidth={2.5} /> Rider Tamu: {guestName}
+                              </span>
+                              <span style={{ fontSize: '11px', color: '#475569', fontWeight: 600 }}>
+                                Dibawa oleh: <b style={{ color: 'var(--ink)' }}>{(req as any).realMemberName || req.memberName || 'Member'}</b>
+                              </span>
+                            </div>
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(3, 1fr)',
+                              gap: '6px',
+                              background: '#FFFFFF',
+                              borderRadius: '8px',
+                              padding: '8px',
+                              border: '1px solid #E2E8F0'
+                            }}>
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '9px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Usia</div>
+                                <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>{ageMatch !== '-' && !ageMatch.includes('th') ? `${ageMatch} th` : ageMatch}</div>
+                              </div>
+                              <div style={{ textAlign: 'center', borderLeft: '1px solid #F1F5F9', borderRight: '1px solid #F1F5F9' }}>
+                                <div style={{ fontSize: '9px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Berat</div>
+                                <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>{bbMatch !== '-' && !bbMatch.includes('kg') ? `${bbMatch} kg` : bbMatch}</div>
+                              </div>
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '9px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Tinggi</div>
+                                <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>{tbMatch !== '-' && !tbMatch.includes('cm') ? `${tbMatch} cm` : tbMatch}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={pIdx} style={{ fontSize: '12px', color: '#8C6E2D', fontWeight: 500, background: '#FDFBF7', padding: '8px 10px', borderRadius: '8px', border: '1px solid #EBE4D5', marginBottom: '6px' }}>
+                          <strong>Catatan:</strong> {trimmed.replace(/^[📸👤\s]+/, '')}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              {isReschedule ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      className="btn"
+                      style={{ flex: 1, background: '#25D366', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      onClick={() => handleWA(req.memberName, req.memberPhone, 'RESCHEDULE')}
+                    >
+                      <MessageCircle size={16} /> WA Member
+                    </button>
+                    <button
+                      className="btn"
+                      style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      disabled={isSubmittingId === req.id}
+                      onClick={() => handleApproveReschedule(req.id)}
+                    >
+                      {isSubmittingId === req.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                      Setujui Reschedule
+                    </button>
+                  </div>
+                  <button
+                    className="btn"
+                    onClick={() => handleRejectReschedule(req.id)}
+                    disabled={isSubmittingId === req.id}
+                    style={{ width: '100%', background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <XCircle size={16} /> Tolak Reschedule
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      className="btn"
+                      style={{ flex: 1, background: '#25D366', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      onClick={() => handleWA(req.memberName, req.memberPhone, 'BOOKING')}
+                    >
+                      <MessageCircle size={16} /> WA
+                    </button>
+                    {req.slotId && (
+                      <Link
+                        href={`/admin/schedule/${req.slotId}`}
+                        className="btn"
+                        style={{ flex: 1, background: '#FAF8F5', border: '1px solid #E5E0D5', color: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}
+                      >
+                        Buka Sesi
+                      </Link>
+                    )}
+                    <button
+                      className="btn"
+                      style={{ flex: 1.2, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      disabled={isSubmittingId === req.id}
+                      onClick={() => handleApproveBooking(req.id)}
+                    >
+                      {isSubmittingId === req.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                      Terima
+                    </button>
+                  </div>
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      setRejectBookingModalReqId(req.id);
+                      setRejectBookingReason('Sesi penuh atau berhalangan');
+                    }}
+                    disabled={isSubmittingId === req.id}
+                    style={{ width: '100%', background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    <XCircle size={16} /> Tolak Booking
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        }
+
         if (req.category === 'riding') {
           return (
             <div key={req.id} className="card" style={{ padding: '20px', borderRadius: '20px', background: '#FFF', boxShadow: '0 8px 30px rgba(0,0,0,0.04)', border: '1px solid var(--line)', marginBottom: '16px' }}>
@@ -644,6 +1000,40 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
                 style={{ flex: 1, padding: '14px', borderRadius: '14px', background: 'var(--red)', color: '#FFF', border: 'none', fontWeight: 600, cursor: (isSubmittingId === rejectPaymentModalReqId || !rejectReason.trim()) ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: (isSubmittingId === rejectPaymentModalReqId || !rejectReason.trim()) ? 0.7 : 1 }}
               >
                 {isSubmittingId === rejectPaymentModalReqId && <Loader2 size={16} className="spin" />}
+                Ya, Tolak
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rejectBookingModalReqId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={(e) => { if (e.target === e.currentTarget && isSubmittingId !== rejectBookingModalReqId) setRejectBookingModalReqId(null); }}>
+          <div style={{ background: '#FFF', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '400px', textAlign: 'left' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', color: 'var(--ink)' }}>Tolak Booking Member?</h2>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '16px', lineHeight: 1.5 }}>
+              Kredit sesi member akan otomatis dikembalikan (jika sudah terpotong). Alasan penolakan:
+            </p>
+            <textarea
+              value={rejectBookingReason}
+              onChange={e => setRejectBookingReason(e.target.value)}
+              placeholder="Contoh: Sesi penuh atau berhalangan."
+              style={{ width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid #EBE4D5', background: '#FDFBF7', outline: 'none', color: 'var(--ink)', fontWeight: 500, minHeight: '80px', marginBottom: '20px', resize: 'vertical' }}
+            />
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setRejectBookingModalReqId(null)}
+                disabled={isSubmittingId === rejectBookingModalReqId}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', background: '#F5F5F5', color: 'var(--ink)', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => handleRejectBooking(rejectBookingModalReqId)}
+                disabled={isSubmittingId === rejectBookingModalReqId}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', background: 'var(--red)', color: '#FFF', border: 'none', fontWeight: 600, cursor: isSubmittingId === rejectBookingModalReqId ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+              >
+                {isSubmittingId === rejectBookingModalReqId && <Loader2 size={16} className="spin" />}
                 Ya, Tolak
               </button>
             </div>

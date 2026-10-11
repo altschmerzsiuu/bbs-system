@@ -30,42 +30,116 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
   const router = useRouter();
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
-
   const firstName = data.memberName.split(' ')[0];
   const tier = data.membership?.plan ?? 'Basic';
   const isGold = tier.toUpperCase().includes('GOLD');
   const isSilver = tier.toUpperCase().includes('SILVER');
 
   const upcomingBookings = data.upcomingBookings || (data.nextBooking ? [data.nextBooking] : []);
+  const isMultiSlide = upcomingBookings.length > 1;
 
+  // Infinite slider with clones: [Last, ...Originals, First]
+  const slides = isMultiSlide
+    ? [
+        upcomingBookings[upcomingBookings.length - 1],
+        ...upcomingBookings,
+        upcomingBookings[0]
+      ]
+    : upcomingBookings;
+
+  const [currentIndex, setCurrentIndex] = useState(isMultiSlide ? 1 : 0);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchDeltaX, setTouchDeltaX] = useState<number>(0);
+
+  // Sync index when booking list changes
   useEffect(() => {
-    if (upcomingBookings.length <= 1) return;
-    const interval = setInterval(() => {
-      if (scrollRef.current) {
-        const total = upcomingBookings.length;
-        const nextSlide = (currentSlide + 1) % total;
-        const width = scrollRef.current.clientWidth;
-        scrollRef.current.scrollTo({
-          left: nextSlide * width,
-          behavior: 'smooth'
-        });
-      }
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [currentSlide, upcomingBookings.length]);
+    if (isMultiSlide) {
+      setCurrentIndex(1);
+      setIsTransitioning(true);
+    } else {
+      setCurrentIndex(0);
+    }
+  }, [upcomingBookings.length, isMultiSlide]);
 
-  const handleScroll = () => {
-    if (scrollRef.current) {
-      const width = scrollRef.current.clientWidth;
-      const left = scrollRef.current.scrollLeft;
-      const index = Math.round(left / width);
-      if (index !== currentSlide) {
-        setCurrentSlide(index);
-      }
+  const goToNext = () => {
+    if (currentIndex > upcomingBookings.length) return;
+    setIsTransitioning(true);
+    setCurrentIndex(prev => prev + 1);
+  };
+
+  const goToPrev = () => {
+    if (currentIndex < 1) return;
+    setIsTransitioning(true);
+    setCurrentIndex(prev => prev - 1);
+  };
+
+  // Seamless teleport when reaching clone at either end
+  const handleTransitionEnd = () => {
+    if (!isMultiSlide) return;
+    if (currentIndex === upcomingBookings.length + 1) {
+      // Reached clone of first slide: silently jump to index 1
+      setIsTransitioning(false);
+      setCurrentIndex(1);
+    } else if (currentIndex === 0) {
+      // Reached clone of last slide: silently jump to index N
+      setIsTransitioning(false);
+      setCurrentIndex(upcomingBookings.length);
     }
   };
+
+  // Re-enable smooth transition after silent teleport
+  useEffect(() => {
+    if (!isTransitioning) {
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsTransitioning(true);
+        });
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [isTransitioning]);
+
+  // Auto-play timer: always advances forward smoothly
+  useEffect(() => {
+    if (!isMultiSlide || isPaused || touchStartX !== null) return;
+    const interval = setInterval(() => {
+      goToNext();
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isMultiSlide, isPaused, touchStartX, currentIndex]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!isMultiSlide) return;
+    setTouchStartX(e.targetTouches[0].clientX);
+    setTouchDeltaX(0);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const diff = e.targetTouches[0].clientX - touchStartX;
+    setTouchDeltaX(diff);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null) return;
+    if (touchDeltaX < -45) {
+      goToNext();
+    } else if (touchDeltaX > 45) {
+      goToPrev();
+    }
+    setTouchStartX(null);
+    setTouchDeltaX(0);
+  };
+
+  const activeDotIndex = !isMultiSlide
+    ? 0
+    : currentIndex === 0
+      ? upcomingBookings.length - 1
+      : currentIndex === upcomingBookings.length + 1
+        ? 0
+        : currentIndex - 1;
 
   const cardGradient = isGold
     ? 'linear-gradient(135deg, #eaddbd 0%, #d0b070 100%)'
@@ -93,9 +167,33 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
         router.refresh();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'booking_participants' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_slots' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'memberships' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_applications' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
+        router.refresh();
+      })
       .subscribe();
+
+    // Auto-refresh when tab becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        router.refresh();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
       
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       supabase.removeChannel(channel);
     };
   }, [router, data.memberId]);
@@ -198,67 +296,114 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
             </div>
 
             <div 
-              ref={scrollRef}
-              onScroll={handleScroll}
-              style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              style={{ overflow: 'hidden', width: '100%', position: 'relative' }}
             >
-              {upcomingBookings.map((booking: any, index: number) => (
-                <div key={booking.id} style={{ flexShrink: 0, width: '100%', padding: '0 24px', scrollSnapAlign: 'center', position: 'relative', zIndex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink)', opacity: 0.8, marginBottom: '8px' }}>
-                        {upcomingBookings.length > 1 ? `SESSION ${index + 1}/${upcomingBookings.length}` : 'YOUR NEXT SESSION'}
-                      </div>
-                      <div style={{ fontSize: '16px', fontWeight: 600, opacity: 0.9 }}>
-                        {fmtDate(booking.date).shortLabel}
-                      </div>
-                    </div>
-                    <div style={{ background: '#7c9a75', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
-                      {booking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : booking.status}
-                    </div>
-                  </div>
+              <div
+                onTransitionEnd={handleTransitionEnd}
+                style={{
+                  display: 'flex',
+                  width: '100%',
+                  transform: touchStartX !== null
+                    ? `translateX(calc(-${currentIndex * 100}% + ${touchDeltaX}px))`
+                    : `translateX(-${currentIndex * 100}%)`,
+                  transition: isTransitioning && touchStartX === null
+                    ? 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)'
+                    : 'none',
+                  willChange: 'transform'
+                }}
+              >
+                {slides.map((booking: any, index: number) => {
+                  const sessionNum = !isMultiSlide
+                    ? 1
+                    : index === 0
+                      ? upcomingBookings.length
+                      : index === upcomingBookings.length + 1
+                        ? 1
+                        : index;
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-                    <div style={{ font: '52px/0.95 var(--font-display)', display: 'flex', flexDirection: 'column' }}>
-                      <span>{booking.startTime.slice(0, 5)} —</span>
-                      <span>{(() => {
-                        const [sh, sm] = booking.startTime.split(':').map(Number);
-                        const endMins = sh * 60 + sm + 45;
-                        const eh = Math.floor(endMins / 60).toString().padStart(2, '0');
-                        const em = (endMins % 60).toString().padStart(2, '0');
-                        return `${eh}:${em}`;
-                      })()}</span>
-                    </div>
-
-                    {/* Arrow Button */}
-                    <button
-                      onClick={() => setSelectedBooking(booking)}
-                      style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--ink)', color: 'var(--white)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 16px rgba(0,0,0,0.15)', flexShrink: 0, marginBottom: '4px' }}
+                  return (
+                    <div
+                      key={`${booking.id}-${index}`}
+                      style={{
+                        flexShrink: 0,
+                        width: '100%',
+                        padding: '0 24px',
+                        position: 'relative',
+                        zIndex: 1,
+                        userSelect: 'none'
+                      }}
                     >
-                      <ArrowRight size={24} strokeWidth={2} />
-                    </button>
-                  </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                        <div>
+                          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink)', opacity: 0.8, marginBottom: '8px' }}>
+                            {upcomingBookings.length > 1 ? `SESSION ${sessionNum}/${upcomingBookings.length}` : 'YOUR NEXT SESSION'}
+                          </div>
+                          <div style={{ fontSize: '16px', fontWeight: 600, opacity: 0.9 }}>
+                            {fmtDate(booking.date).shortLabel}
+                          </div>
+                        </div>
+                        <div style={{ background: '#7c9a75', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+                          {booking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : booking.status}
+                        </div>
+                      </div>
 
-                  <div style={{ fontSize: '11px', color: '#5f5542', fontWeight: 600, fontStyle: 'italic', marginBottom: '8px' }}>
-                    * Cancel/reschedule 24 hours before your session starts.
-                  </div>
-                </div>
-              ))}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
+                        <div style={{ font: '52px/0.95 var(--font-display)', display: 'flex', flexDirection: 'column' }}>
+                          <span>{booking.startTime.slice(0, 5)} —</span>
+                          <span>{booking.endTime ? booking.endTime.slice(0, 5) : (() => {
+                            const [sh, sm] = booking.startTime.split(':').map(Number);
+                            const endMins = sh * 60 + sm + 60;
+                            const eh = Math.floor(endMins / 60).toString().padStart(2, '0');
+                            const em = (endMins % 60).toString().padStart(2, '0');
+                            return `${eh}:${em}`;
+                          })()}</span>
+                        </div>
+
+                        {/* Arrow Button */}
+                        <button
+                          onClick={() => setSelectedBooking(booking)}
+                          style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--ink)', color: 'var(--white)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 16px rgba(0,0,0,0.15)', flexShrink: 0, marginBottom: '4px' }}
+                        >
+                          <ArrowRight size={24} strokeWidth={2} />
+                        </button>
+                      </div>
+
+                      <div style={{ fontSize: '11px', color: '#5f5542', fontWeight: 600, fontStyle: 'italic', marginBottom: '8px' }}>
+                        * Batalkan atau reschedule sebelum batas waktu operasional agar kuota sesi tidak hangus.
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Dots Indicator */}
             {upcomingBookings.length > 1 && (
               <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', position: 'relative', zIndex: 1, marginTop: '8px' }}>
                 {upcomingBookings.map((_: any, idx: number) => (
-                  <div
+                  <button
                     key={idx}
+                    type="button"
+                    onClick={() => {
+                      setIsTransitioning(true);
+                      setCurrentIndex(idx + 1);
+                    }}
                     style={{
+                      padding: 0,
+                      border: 'none',
                       width: '6px',
                       height: '6px',
                       borderRadius: '50%',
-                      background: idx === currentSlide ? 'var(--ink)' : 'var(--ink)',
-                      opacity: idx === currentSlide ? 0.9 : 0.2,
-                      transition: 'opacity 0.3s'
+                      background: 'var(--ink)',
+                      opacity: idx === activeDotIndex ? 0.9 : 0.2,
+                      transition: 'opacity 0.3s, transform 0.3s',
+                      transform: idx === activeDotIndex ? 'scale(1.2)' : 'scale(1)',
+                      cursor: 'pointer'
                     }}
                   />
                 ))}
@@ -420,9 +565,9 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
                         {new Date(`${selectedBooking.date}T00:00:00`).getDate()} {MONTHS_FULL[new Date(`${selectedBooking.date}T00:00:00`).getMonth()].toUpperCase()} {new Date(`${selectedBooking.date}T00:00:00`).getFullYear()}
                       </div>
                       <div style={{ font: '44px/1 var(--font-display)', marginBottom: '22px' }}>
-                        {selectedBooking.startTime.slice(0, 5)} — {(() => {
+                        {selectedBooking.startTime.slice(0, 5)} — {selectedBooking.endTime ? selectedBooking.endTime.slice(0, 5) : (() => {
                           const [sh, sm] = selectedBooking.startTime.split(':').map(Number);
-                          const endMins = sh * 60 + sm + 45;
+                          const endMins = sh * 60 + sm + 60;
                           const eh = Math.floor(endMins / 60).toString().padStart(2, '0');
                           const em = (endMins % 60).toString().padStart(2, '0');
                           return `${eh}:${em}`;
@@ -432,8 +577,8 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '8px' }}>
                         <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Membership</span><span style={{ fontSize: '13px', fontWeight: 700 }}>{tier}</span></div>
                         <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Arena</span><span style={{ fontSize: '13px', fontWeight: 700 }}>Arena 01</span></div>
-                        <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Rider</span><span style={{ fontSize: '13px', fontWeight: 700 }}>{firstName}</span></div>
-                        <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Groom on duty</span><span style={{ fontSize: '13px', fontWeight: 700 }}>Ridwan</span></div>
+                        <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Rider</span><span style={{ fontSize: '13px', fontWeight: 700 }}>{data.memberName || firstName}</span></div>
+                        <div><span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Kuda / Groom</span><span style={{ fontSize: '13px', fontWeight: 700 }}>{selectedBooking?.horseName ? `${selectedBooking.horseName} · Tim BBS` : 'Tim Groom BBS'}</span></div>
                       </div>
                     </div>
                   </div>
@@ -479,8 +624,10 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
                       maxWidth: '380px',
                       width: '100%'
                     }}>
-                      <div style={{ fontWeight: 700, fontSize: '15px', color: '#111827', marginBottom: '6px' }}>Batalkan sesi?</div>
-                      <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '14px', lineHeight: 1.4 }}>Kredit tidak akan dikembalikan jika dibatalkan kurang dari batas waktu.</div>
+                      <div style={{ fontWeight: 700, fontSize: '15px', color: '#111827', marginBottom: '6px' }}>Batalkan Sesi Berkuda?</div>
+                      <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '14px', lineHeight: 1.4 }}>
+                        Pembatalan kurang dari batas waktu operasional akan <b>hangus (-1 sesi)</b>. Jika masih dalam batas waktu, kuota sesi akan otomatis dikembalikan ke akun membership Anda.
+                      </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           onClick={() => toast.dismiss(t)}

@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error('[auth/callback] exchangeCodeForSession error:', error.message, error);
-      return NextResponse.redirect(`${origin}/login?error=exchange_failed`);
+      return NextResponse.redirect(`${origin}/login?error=exchange_failed&msg=${encodeURIComponent(error.message)}`);
     }
 
     if (data.user) {

@@ -56,14 +56,19 @@ export async function updateSiteSettings(settings: {
   reschedule_hours: number;
   admin_whatsapp: string;
   max_weekly_bookings?: number;
+  cancellation_hours?: number;
+  photographer_enabled?: boolean;
 }) {
   const actor = await requireActor(['ADMIN'], true);
   const db = await createServerClient();
   const { error } = await db.from('site_settings').update(settings).eq('id', 1);
   if (error) return { ok: false, message: error.message };
   revalidatePath('/admin/settings');
+  revalidatePath('/admin/schedule');
+  revalidatePath('/schedule');
   return { ok: true };
 }
+
 
 export async function updateAfternoonEndTime(endTime: string) {
   const actor = await requireActor(['ADMIN'], true);

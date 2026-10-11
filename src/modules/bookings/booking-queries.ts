@@ -68,10 +68,12 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
     db.from('booking_participants')
       .select(`
         booking_id,
+        horse_id,
+        horses ( name ),
         bookings!inner (
           id, status,
           session_slots!bookings_slot_id_fkey!inner ( slot_date, start_time, end_time ),
-          booking_participants ( members ( full_name ), casual_customers ( full_name ) )
+          booking_participants ( horse_id, horses ( name ), members ( full_name ), casual_customers ( full_name ) )
         )
       `)
       .eq('member_id', memberId)
@@ -188,6 +190,7 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
         startTime: first.session_slots.start_time.slice(0, 5),
         endTime: first.session_slots.end_time.slice(0, 5),
         status: first.status,
+        horseName: validUpcomingBookings[0]?.horses?.name ?? null,
         sharedWith: (first.booking_participants ?? [])
           .map((p: any) => p.members?.full_name ?? p.casual_customers?.full_name)
           .filter((n: string | undefined): n is string => Boolean(n) && n !== memberRes.data?.full_name),
@@ -199,6 +202,7 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
       startTime: b.bookings.session_slots.start_time.slice(0, 5),
       endTime: b.bookings.session_slots.end_time.slice(0, 5),
       status: b.bookings.status,
+      horseName: b.horses?.name ?? null,
       sharedWith: (b.bookings.booking_participants ?? [])
         .map((p: any) => p.members?.full_name ?? p.casual_customers?.full_name)
         .filter((n: string | undefined): n is string => Boolean(n) && n !== memberRes.data?.full_name),
@@ -443,29 +447,43 @@ export async function getAdminSchedule(
         (booking: any) => !['MEMBER_CANCELLED', 'BBS_CANCELLED', 'REJECTED', 'EXPIRED'].includes(booking.status)
       );
 
-      const participants = activeBookings.flatMap((booking: any) =>
-        (booking.booking_participants ?? []).map(
-          (participant: any) => ({
-            id: participant.id,
-            type: participant.participant_type,
-            name:
-              participant.participant_type === 'MEMBER'
-                ? participant.members?.full_name ?? 'Unknown rider'
-                : participant.casual_customers?.full_name ??
-                'Casual rider',
-            avatarUrl:
-              participant.participant_type === 'MEMBER'
-                ? participant.members?.users?.avatar_url ?? null
-                : null,
-            memberId: participant.member_id ?? null,
-            membershipId: participant.membership_id ?? null,
-            casualCustomerId:
-              participant.casual_customer_id ?? null,
-            horseName: participant.horses?.name ?? null,
-            hasPhotographer: Boolean(booking.notes?.includes('Fotografer')),
-          })
-        )
-      );
+      const participants = activeBookings.flatMap((booking: any) => {
+        let guestName: string | null = null;
+        if (booking.notes) {
+          const match = booking.notes.match(/(?:👤\s*)?Rider (?:Tamu|Tambahan):\s*([^(•]+)/i);
+          if (match && match[1]) {
+            guestName = match[1].trim();
+          }
+        }
+
+        return (booking.booking_participants ?? []).map(
+          (participant: any) => {
+            const memberName = participant.participant_type === 'MEMBER'
+              ? participant.members?.full_name ?? 'Unknown rider'
+              : participant.casual_customers?.full_name ?? 'Casual rider';
+
+            const displayName = guestName ? `${guestName} (Tamu)` : memberName;
+
+            return {
+              id: participant.id,
+              type: participant.participant_type,
+              name: displayName,
+              realMemberName: memberName,
+              guestName,
+              avatarUrl:
+                participant.participant_type === 'MEMBER' && !guestName
+                  ? participant.members?.users?.avatar_url ?? null
+                  : null,
+              memberId: participant.member_id ?? null,
+              membershipId: participant.membership_id ?? null,
+              casualCustomerId:
+                participant.casual_customer_id ?? null,
+              horseName: participant.horses?.name ?? null,
+              hasPhotographer: Boolean(booking.notes?.includes('Fotografer')),
+            };
+          }
+        );
+      });
 
       const bookingWithParticipants = activeBookings.find(
         (booking: any) =>
@@ -539,6 +557,11 @@ export async function getAdminSessionDetail(
           ),
           members (
             full_name,
+            phone,
+            date_of_birth,
+            height_cm,
+            weight_kg,
+            shoe_size,
             user_id,
             users (
               avatar_url
@@ -584,39 +607,90 @@ export async function getAdminSessionDetail(
 
     participants: (
       booking.booking_participants ?? []
-    ).map((participant: any) => ({
-      id: participant.id,
-      type: participant.participant_type,
+    ).map((participant: any) => {
+      let guestName: string | null = null;
+      let guestAge: string | null = null;
+      let guestWeight: string | null = null;
+      let guestHeight: string | null = null;
 
-      name:
-        participant.participant_type === 'MEMBER'
-          ? participant.members?.full_name ?? 'Unknown rider'
-          : participant.casual_customers?.full_name ?? 'Casual rider',
+      if (booking.notes) {
+        const guestMatch = booking.notes.match(/(?:👤\s*)?Rider (?:Tamu|Tambahan):\s*([^(•]+)/i);
+        if (guestMatch && guestMatch[1]) {
+          guestName = guestMatch[1].trim();
+        }
+        const ageMatch = booking.notes.match(/Usia:\s*([0-9-]+)(?:th)?/i);
+        if (ageMatch && ageMatch[1]) {
+          guestAge = ageMatch[1].trim();
+        }
+        const weightMatch = booking.notes.match(/BB:\s*([0-9-]+)(?:kg)?/i);
+        if (weightMatch && weightMatch[1]) {
+          guestWeight = weightMatch[1].trim();
+        }
+        const heightMatch = booking.notes.match(/TB:\s*([0-9-]+)(?:cm)?/i);
+        if (heightMatch && heightMatch[1]) {
+          guestHeight = heightMatch[1].trim();
+        }
+      }
 
-      avatarUrl:
-        participant.participant_type === 'MEMBER'
-          ? participant.members?.users?.avatar_url ?? null
+      const memberName = participant.participant_type === 'MEMBER'
+        ? participant.members?.full_name ?? 'Unknown rider'
+        : participant.casual_customers?.full_name ?? 'Casual rider';
+
+      const displayName = guestName ? `${guestName} (Tamu)` : memberName;
+
+      return {
+        id: participant.id,
+        type: participant.participant_type,
+        name: displayName,
+        realMemberName: memberName,
+        guestName,
+        guestInfo: guestName
+          ? {
+              name: guestName,
+              age: guestAge ?? undefined,
+              weight: guestWeight ?? undefined,
+              height: guestHeight ?? undefined,
+            }
           : null,
+        memberDetails: participant.members
+          ? {
+              phone: participant.members.phone,
+              dateOfBirth: participant.members.date_of_birth,
+              heightCm: participant.members.height_cm,
+              weightKg: participant.members.weight_kg,
+              shoeSize: participant.members.shoe_size,
+            }
+          : null,
+        avatarUrl:
+          participant.participant_type === 'MEMBER' && !guestName
+            ? participant.members?.users?.avatar_url ?? null
+            : null,
 
-      memberId: participant.member_id ?? null,
-      membershipId: participant.membership_id ?? null,
-      casualCustomerId: participant.casual_customer_id ?? null,
+        memberId: participant.member_id ?? null,
+        membershipId: participant.membership_id ?? null,
+        casualCustomerId: participant.casual_customer_id ?? null,
 
-      participantStatus: participant.participant_status,
-      requestedSlotId: booking.requested_slot_id ?? null,
-      cancellationReason: booking.cancellation_reason ?? null,
-      cancelledAt: booking.cancelled_at ?? null,
+        participantStatus: participant.participant_status,
+        requestedSlotId: booking.requested_slot_id ?? null,
+        cancellationReason: booking.cancellation_reason ?? null,
+        cancelledAt: booking.cancelled_at ?? null,
 
-      attendanceStatus: participant.attendance_records?.[0]?.status ?? 'NOT_CHECKED_IN',
-      checkedInAt: participant.attendance_records?.[0]?.resolved_at ?? null,
-      checkedInBy: participant.attendance_records?.[0]?.resolved_by ?? null,
-      checkInMethod: null,
+        attendanceStatus: participant.attendance_records?.[0]?.status ?? 'NOT_CHECKED_IN',
+        checkedInAt: participant.attendance_records?.[0]?.resolved_at ?? null,
+        checkedInBy: participant.attendance_records?.[0]?.resolved_by ?? null,
+        checkInMethod: null,
 
-      priceIdr: participant.price_idr ?? null,
+        priceIdr: participant.price_idr ?? null,
 
-      horseId: participant.horses?.id ?? null,
-      horseName: participant.horses?.name ?? null,
-    }))
+        horseId: participant.horses?.id ?? null,
+        horseName: participant.horses?.name ?? null,
+        horse: participant.horses ? {
+          id: participant.horses.id,
+          name: participant.horses.name,
+          status: participant.horses.status,
+        } : null,
+      };
+    })
   }));
 
   // Fetch pending riding requests for this slot
@@ -732,10 +806,74 @@ export async function ensureSlotsForDateRange(startDate: string, endDate: string
 
 export async function getPendingRequests() {
   const db = await createServerClient();
-  const [riding, membership] = await Promise.all([
+  const [riding, membership, bookings] = await Promise.all([
     db.from('riding_requests').select('id, request_type, status, created_at, member_id, height_cm, weight_kg, shoe_size, members(full_name, phone, date_of_birth, domicile, users(email, avatar_url))').eq('status', 'UNDER_REVIEW').order('created_at', { ascending: false }),
-    db.from('membership_applications').select('id, status, application_type, created_at, requested_plan_id, final_price_idr, receipt_path, receipt_filename, rejection_reason, member_id, members(full_name, phone, users(email, avatar_url)), membership_plans(name)').in('status', ['PENDING_REVIEW', 'PAYMENT_SUBMITTED']).order('created_at', { ascending: false })
+    db.from('membership_applications').select('id, status, application_type, created_at, requested_plan_id, final_price_idr, receipt_path, receipt_filename, rejection_reason, member_id, members(full_name, phone, users(email, avatar_url)), membership_plans(name)').in('status', ['PENDING_REVIEW', 'PAYMENT_SUBMITTED']).order('created_at', { ascending: false }),
+    db.from('bookings').select(`
+      id, status, notes, created_at, created_by,
+      session_slots!bookings_slot_id_fkey(id, slot_date, start_time, end_time),
+      requested_slot:session_slots!bookings_requested_slot_id_fkey(id, slot_date, start_time, end_time),
+      booking_participants(
+        id, participant_type, member_id, casual_customer_id,
+        members(id, full_name, phone, date_of_birth, domicile, users(email, avatar_url)),
+        casual_customers(id, full_name, phone)
+      )
+    `).in('status', ['PENDING', 'RESCHEDULE_REQUESTED']).order('created_at', { ascending: false })
   ]);
+
+  if (bookings.error) console.error('[getPendingRequests] bookings error:', bookings.error);
+  if (riding.error) console.error('[getPendingRequests] riding error:', riding.error);
+  if (membership.error) console.error('[getPendingRequests] membership error:', membership.error);
+
+  const bookingsMapped = (bookings.data || []).map((b: any) => {
+    const slot = Array.isArray(b.session_slots) ? b.session_slots[0] : b.session_slots;
+    const reqSlot = Array.isArray(b.requested_slot) ? b.requested_slot[0] : b.requested_slot;
+    const participants = b.booking_participants || [];
+    const firstP = participants[0];
+    const mem = firstP?.participant_type === 'MEMBER' ? firstP.members : null;
+    const casual = firstP?.participant_type === 'CASUAL' ? firstP.casual_customers : null;
+    const riderNames = participants.map((p: any) => 
+      p.participant_type === 'MEMBER' ? p.members?.full_name : p.casual_customers?.full_name
+    ).filter(Boolean).join(', ') || 'Rider';
+
+    let guestName: string | null = null;
+    if (b.notes) {
+      const match = b.notes.match(/(?:👤\s*)?Rider (?:Tamu|Tambahan):\s*([^(•]+)/i);
+      if (match && match[1]) {
+        guestName = match[1].trim();
+      }
+    }
+    const displayName = guestName ? `${guestName} (Tamu)` : riderNames;
+
+    const phone = mem?.phone || casual?.phone || '';
+    const email = mem?.users?.email || '';
+    const avatarUrl = guestName ? '' : (mem?.users?.avatar_url || '');
+
+    return {
+      id: b.id,
+      category: 'booking',
+      type: b.status === 'RESCHEDULE_REQUESTED' ? 'RESCHEDULE' : 'MEMBER_BOOKING',
+      status: b.status,
+      createdAt: b.created_at,
+      memberId: mem?.id || null,
+      memberName: displayName,
+      realMemberName: riderNames,
+      guestName,
+      memberPhone: phone,
+      memberEmail: email,
+      memberAvatarUrl: avatarUrl,
+      slotId: slot?.id,
+      slotDate: slot?.slot_date,
+      startTime: slot?.start_time,
+      endTime: slot?.end_time,
+      requestedSlotId: reqSlot?.id,
+      requestedSlotDate: reqSlot?.slot_date,
+      requestedStartTime: reqSlot?.start_time,
+      requestedEndTime: reqSlot?.end_time,
+      notes: b.notes,
+      participantsCount: participants.length
+    };
+  });
 
   const ridingMapped = (riding.data || []).map(r => {
     const mem = Array.isArray(r.members) ? r.members[0] : r.members;
@@ -782,7 +920,7 @@ export async function getPendingRequests() {
     };
   });
 
-  const allRequests = [...ridingMapped, ...membershipMapped].sort((a, b) => {
+  const allRequests = [...bookingsMapped, ...ridingMapped, ...membershipMapped].sort((a, b) => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 

@@ -17,7 +17,7 @@ export default async function SchedulePage() {
       const { data } = await db.from('session_slots')
         .select(`
           id, slot_date, start_time, end_time, capacity, is_open,
-          bookings!bookings_slot_id_fkey(id, status, booking_participants(id))
+          bookings!bookings_slot_id_fkey(id, status, booking_participants(id, member_id))
         `)
         .gte('slot_date', today)
         .lte('slot_date', next7Days)
@@ -26,17 +26,20 @@ export default async function SchedulePage() {
         .order('start_time', { ascending: true });
       return data;
     })(),
-    db.from('site_settings').select('admin_whatsapp').eq('id', 1).single()
+    db.from('site_settings').select('admin_whatsapp, photographer_enabled, cancellation_hours').eq('id', 1).single()
   ]);
 
   const slots = slotsData;
 
-
   const mappedSlots = (slots ?? []).map((s: any) => {
     let count = 0;
+    let isUserBooked = false;
     const activeBookings = s.bookings?.filter((b: any) => b.status === 'CONFIRMED' || b.status === 'PENDING' || b.status === 'RESCHEDULE_REQUESTED') || [];
     for (const b of activeBookings) {
       count += (b.booking_participants?.length || 0);
+      if (b.booking_participants?.some((p: any) => p.member_id === actor.memberId)) {
+        isUserBooked = true;
+      }
     }
     return {
       id: s.id,
@@ -45,9 +48,19 @@ export default async function SchedulePage() {
       end_time: s.end_time,
       capacity: s.capacity,
       booked_count: count,
-      status: s.is_open ? 'OPEN' : 'CLOSED'
+      status: s.is_open ? 'OPEN' : 'CLOSED',
+      is_user_booked: isUserBooked
     };
   });
 
-  return <ScheduleClient initialSlots={mappedSlots} memberName={actor.fullName ?? 'Rider'} adminWa={settings?.admin_whatsapp || '6281234567890'} />;
+  return (
+    <ScheduleClient 
+      initialSlots={mappedSlots} 
+      memberName={actor.fullName ?? 'Rider'} 
+      adminWa={settings?.admin_whatsapp || '6281234567890'} 
+      photographerEnabled={settings?.photographer_enabled !== false}
+      cancellationHours={settings?.cancellation_hours || 8}
+    />
+  );
 }
+

@@ -45,6 +45,7 @@ interface MembershipWizardProps {
   initialData: MemberData;
   plans: PlanData[];
   isRenewal: boolean;
+  defaultPlanId?: string;
   activeApp?: ExistingApplicationData | null;
   bankName: string;
   accountNumber: string;
@@ -71,6 +72,7 @@ export default function MembershipWizard({
   initialData,
   plans,
   isRenewal,
+  defaultPlanId,
   activeApp,
   bankName,
   accountNumber,
@@ -78,10 +80,15 @@ export default function MembershipWizard({
 }: MembershipWizardProps) {
   const router = useRouter();
 
-  // If already in PAYMENT_SUBMITTED or PENDING_REVIEW, start directly at Step 4 (Review state)
+  const hasPersonalData = Boolean(initialData.full_name && initialData.phone && initialData.phone !== '-');
+  // If already in review or payment state, show Step 4. If renewal with complete data, start at Step 2 (Plan Selection)
   const initialStep = activeApp && ['PAYMENT_SUBMITTED', 'PENDING_REVIEW', 'APPROVED'].includes(activeApp.status) 
     ? 4 
-    : 1;
+    : (isRenewal && hasPersonalData ? 2 : 1);
+
+  const initialPlanId = defaultPlanId && plans.some(p => p.id === defaultPlanId)
+    ? defaultPlanId
+    : (plans.length > 0 ? plans[0].id : '');
 
   const [step, setStep] = useState<number>(initialStep);
 
@@ -95,7 +102,7 @@ export default function MembershipWizard({
   const [shoeSize, setShoeSize] = useState<string>(initialData.shoe_size ? String(initialData.shoe_size) : '');
 
   // Form State - Step 2: Plan
-  const [selectedPlanId, setSelectedPlanId] = useState<string>(plans.length > 0 ? plans[0].id : '');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId);
 
   // Form State - Step 3: Payment
   const [file, setFile] = useState<File | null>(null);

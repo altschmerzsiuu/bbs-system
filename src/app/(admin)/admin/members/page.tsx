@@ -14,6 +14,7 @@ export default async function AdminMembersPage() {
       full_name,
       phone,
       created_at,
+      users ( id, avatar_url ),
       memberships (
         id,
         status,

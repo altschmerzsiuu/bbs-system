@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getMessaging, getToken, isSupported } from 'firebase/messaging';
+import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
+import { toast } from 'sonner';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,6 +27,33 @@ export function useFCM() {
     }
   }, []);
 
+  // Listen for foreground FCM messages
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    isSupported().then((supported) => {
+      if (supported && typeof window !== 'undefined') {
+        try {
+          const messaging = getMessaging(app);
+          unsubscribe = onMessage(messaging, (payload) => {
+            const title = payload.notification?.title || 'Notifikasi BBS';
+            const body = payload.notification?.body || '';
+            toast(title, {
+              description: body,
+              icon: '🔔',
+              duration: 6000,
+            });
+          });
+        } catch (e) {
+          console.debug('[useFCM] onMessage init skipped:', e);
+        }
+      }
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
   const registerToken = useCallback(async () => {
     try {
       setIsRegistering(true);
@@ -46,8 +74,15 @@ export function useFCM() {
 
       const messaging = getMessaging(app);
       
-      // Wait for service worker to be ready to ensure token binds to our SW
-      const swRegistration = await navigator.serviceWorker.ready;
+      let swRegistration: ServiceWorkerRegistration | undefined;
+      if ('serviceWorker' in navigator) {
+        try {
+          swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
+          await navigator.serviceWorker.ready;
+        } catch (swErr) {
+          console.warn('[FCM] SW registration warning:', swErr);
+        }
+      }
 
       const token = await getToken(messaging, {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,

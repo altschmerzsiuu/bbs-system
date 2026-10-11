@@ -64,6 +64,7 @@ export interface MemberHomeViewModel {
         startTime: string;
         endTime: string;
         status: BookingStatus;
+        horseName?: string | null;
         sharedWith: string[];
     } | null;
 
@@ -73,6 +74,7 @@ export interface MemberHomeViewModel {
         startTime: string;
         endTime: string;
         status: BookingStatus;
+        horseName?: string | null;
         sharedWith: string[];
     }[];
 
@@ -167,6 +169,22 @@ export interface AdminSessionDetailParticipant {
         id: string;
         name: string;
         status: string;
+    } | null;
+
+    realMemberName?: string | null;
+    guestName?: string | null;
+    guestInfo?: {
+        name: string;
+        age?: string;
+        weight?: string;
+        height?: string;
+    } | null;
+    memberDetails?: {
+        phone?: string | null;
+        dateOfBirth?: string | null;
+        heightCm?: number | null;
+        weightKg?: number | null;
+        shoeSize?: number | null;
     } | null;
 }
 

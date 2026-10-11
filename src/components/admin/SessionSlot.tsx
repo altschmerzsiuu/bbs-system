@@ -30,10 +30,10 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
         e.stopPropagation();
         if (approvingReqId) return;
         setApprovingReqId(reqId);
-        
+
         // Use capacity 2 as default if it's a new slot being created
         const res = await approveRidingRequestAction(reqId, slot.date, slot.startTime, slot.capacity || 2);
-        
+
         if (res.ok) {
             toast.custom((t) => <AlertToast title="Berhasil" description="Request disetujui dan booking dibuat." onDismiss={() => toast.dismiss(t)} />);
             router.refresh();
@@ -93,7 +93,7 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
                     {slot.pendingRequests!.map(req => (
                         <div key={req.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#FDFBF7', padding: '10px', borderRadius: '8px', border: '1px solid #EBE4D5' }} onClick={e => e.stopPropagation()}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div 
+                                <div
                                     style={{ display: 'flex', flexDirection: 'column', gap: '2px', cursor: 'pointer' }}
                                     onClick={() => window.location.href = '/admin/applications'}
                                 >
@@ -102,7 +102,7 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
                                 <span style={{ fontSize: '10px', background: '#F5EEDD', color: '#A37834', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>{req.type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual'}</span>
                             </div>
                             <div style={{ display: 'flex', gap: '6px' }}>
-                                <button 
+                                <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         // TODO: implement Tolak
@@ -112,7 +112,7 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                     Tolak
                                 </button>
-                                <button 
+                                <button
                                     onClick={(e) => handleApproveRequest(e, req.id)}
                                     disabled={approvingReqId === req.id}
                                     style={{ flex: 1, padding: '6px', background: 'var(--ink)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: approvingReqId === req.id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
@@ -155,8 +155,8 @@ export default function SessionSlot({ slot, isSelected, onSelectToggle, readOnly
         <div onClick={handleClick} style={{ background: isFull ? '#F0F7F1' : '#F4F7FB', border: `1px solid ${isFull ? '#CBE1D0' : '#D6E2F0'}`, borderRadius: '18px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '11px', cursor: readOnly ? 'default' : 'pointer', boxShadow: '0 6px 20px rgba(24,24,23,0.045)', opacity: readOnly ? 0.58 : 1, filter: readOnly ? 'grayscale(0.85)' : 'none' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <b style={{ fontSize: '14px', color: 'var(--ink)' }}>{isFull ? 'Sesi penuh' : 'Sesi terisi'}</b>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{participants.length}/{slot.capacity} rider terdaftar</div>
+                    <b style={{ fontSize: '14px', color: 'var(--ink)' }}>{isFull ? 'Sesi Penuh' : 'Sesi Terisi'}</b>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{participants.length}/{slot.capacity} Rider</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {hasPhotographer && (

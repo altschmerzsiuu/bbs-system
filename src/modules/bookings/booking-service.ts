@@ -45,34 +45,92 @@ export class BookingService {
       return { type: 'CASUAL', full_name: p.fullName, phone: p.phone };
     });
 
-    // Check constraints for members (Max 2 sessions/day & no duplicate booking on same slot)
+    // Check constraints for members (Weekly limit & no duplicate booking on same slot)
     if (memberIds.size > 0) {
-      const { data: slotData } = await this.db.from('session_slots').select('slot_date').eq('id', parsed.slotId).single();
+      let adminDb = this.db;
+      try {
+        const { createServiceRoleClient } = await import('../../infrastructure/supabase-server');
+        adminDb = createServiceRoleClient() as any;
+      } catch {
+        // Fallback to this.db in test environments
+      }
+
+      const { data: slotData } = await adminDb
+        .from('session_slots')
+        .select('slot_date, is_open')
+        .eq('id', parsed.slotId)
+        .single();
       if (!slotData) throw new DomainError('SLOT_NOT_FOUND');
+      if (slotData.is_open === false) throw new DomainError('SLOT_CLOSED');
 
-      const { data: dailySlots } = await this.db.from('session_slots').select('id').eq('slot_date', slotData.slot_date);
-      const dailySlotIds = dailySlots?.map((s: any) => s.id) || [];
+      // 1. Prevent duplicate booking on the exact same slot
+      const { data: existingSlotBookings } = await adminDb
+        .from('booking_participants')
+        .select('member_id, bookings!inner(id, slot_id, status)')
+        .in('member_id', Array.from(memberIds))
+        .eq('bookings.slot_id', parsed.slotId)
+        .in('bookings.status', ['PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED']);
 
-      if (dailySlotIds.length > 0) {
-        const { data: dailyBookings } = await this.db.from('booking_participants')
-          .select('member_id, bookings!inner(slot_id, status)')
-          .in('member_id', Array.from(memberIds))
-          .in('bookings.slot_id', dailySlotIds)
-          .in('bookings.status', ['PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED']);
-          
-        if (dailyBookings && dailyBookings.length > 0) {
-          const counts: Record<string, number> = {};
-          for (const b of dailyBookings) {
-            if ((b.bookings as any).slot_id === parsed.slotId) {
-              throw new DomainError('ALREADY_BOOKED_FOR_SLOT');
-            }
-            counts[b.member_id] = (counts[b.member_id] || 0) + 1;
-          }
+      if (existingSlotBookings && existingSlotBookings.length > 0) {
+        throw new DomainError('ALREADY_BOOKED_FOR_SLOT');
+      }
 
-          for (const count of Object.values(counts)) {
-            if (count >= 2) {
-              throw new DomainError('DAILY_BOOKING_LIMIT_REACHED');
-            }
+      // 2. Fetch dynamic weekly limit from site_settings (configured by admin)
+      const { data: siteSettings } = await adminDb
+        .from('site_settings')
+        .select('max_weekly_bookings')
+        .eq('id', 1)
+        .single();
+
+      const configuredLimit = siteSettings?.max_weekly_bookings ?? 4;
+      const maxAllowed = configuredLimit === 999 ? 999 : configuredLimit;
+
+      // 3. Enforce weekly frequency limit if not unlimited (999)
+      if (maxAllowed !== 999) {
+        const [y, m, d] = slotData.slot_date.split('-').map(Number);
+        const targetDate = new Date(y, m - 1, d);
+        const dayOfWeek = targetDate.getDay(); // 0 is Sunday, 1 is Monday...
+        const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
+        const monday = new Date(targetDate);
+        monday.setDate(targetDate.getDate() + diffToMonday);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        const mondayStr = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+        const sundayStr = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+
+        const { data: weekSlots } = await adminDb
+          .from('session_slots')
+          .select('id')
+          .gte('slot_date', mondayStr)
+          .lte('slot_date', sundayStr);
+
+        const weekSlotIds = weekSlots?.map((s: any) => s.id) || [];
+
+        if (weekSlotIds.length > 0) {
+          // Check bookings created by this user
+          const { data: weekBookings } = await adminDb
+            .from('bookings')
+            .select('id, slot_id, status')
+            .eq('created_by', actor.userId)
+            .in('slot_id', weekSlotIds)
+            .in('status', ['PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED', 'COMPLETED']);
+
+          // Check bookings where this member is a participant
+          const { data: participantBookings } = await adminDb
+            .from('booking_participants')
+            .select('booking_id, bookings!inner(id, slot_id, status)')
+            .in('member_id', Array.from(memberIds))
+            .in('bookings.slot_id', weekSlotIds)
+            .in('bookings.status', ['PENDING', 'CONFIRMED', 'RESCHEDULE_REQUESTED', 'COMPLETED']);
+
+          const allBookingIds = new Set<string>();
+          (weekBookings || []).forEach((b: any) => allBookingIds.add(b.id));
+          (participantBookings || []).forEach((p: any) => allBookingIds.add(p.booking_id));
+
+          if (allBookingIds.size >= maxAllowed) {
+            throw new DomainError('WEEKLY_BOOKING_LIMIT_REACHED');
           }
         }
       }
@@ -87,7 +145,14 @@ export class BookingService {
     rethrow(error);
     const bookingId = data as string;
     if (parsed.notes) {
-      await this.db.from('bookings').update({ notes: parsed.notes }).eq('id', bookingId);
+      let adminDb = this.db;
+      try {
+        const { createServiceRoleClient } = await import('../../infrastructure/supabase-server');
+        adminDb = createServiceRoleClient() as any;
+      } catch {
+        // Fallback to this.db in test environments
+      }
+      await adminDb.from('bookings').update({ notes: parsed.notes }).eq('id', bookingId);
     }
     return bookingId;
   }

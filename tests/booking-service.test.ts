@@ -12,19 +12,24 @@ describe('BookingService', () => {
       from: vi.fn((table: string) => {
         if (table === 'session_slots') {
           return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => {
-                const queryResult = Promise.resolve({
-                  data: [{ id: '11111111-1111-1111-1111-111111111111' }],
-                  error: null,
-                });
-                (queryResult as any).single = vi.fn().mockResolvedValue({
-                  data: { slot_date: '2026-10-10' },
-                  error: null,
-                });
-                return queryResult;
-              }),
-            })),
+            select: vi.fn(() => {
+              const builder: any = {
+                gte: vi.fn(() => builder),
+                lte: vi.fn(() => Promise.resolve({ data: [{ id: '11111111-1111-1111-1111-111111111111' }], error: null })),
+                eq: vi.fn(() => {
+                  const queryResult = Promise.resolve({
+                    data: [{ id: '11111111-1111-1111-1111-111111111111' }],
+                    error: null,
+                  });
+                  (queryResult as any).single = vi.fn().mockResolvedValue({
+                    data: { slot_date: '2026-10-10' },
+                    error: null,
+                  });
+                  return queryResult;
+                }),
+              };
+              return builder;
+            }),
           };
         }
         if (table === 'booking_participants') {
@@ -33,11 +38,36 @@ describe('BookingService', () => {
             catch: (reject: any) => reject,
           };
           builder.in = vi.fn(() => builder);
+          builder.eq = vi.fn(() => builder);
           return {
             select: vi.fn(() => builder),
           };
         }
-        return {};
+        if (table === 'site_settings') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({ data: { max_weekly_bookings: 4 }, error: null })
+              }))
+            }))
+          };
+        }
+        const chainableBuilder: any = {
+          then: (resolve: any) => resolve({ data: [], error: null }),
+          catch: (reject: any) => reject,
+          single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        };
+        chainableBuilder.eq = vi.fn(() => chainableBuilder);
+        chainableBuilder.in = vi.fn(() => chainableBuilder);
+        chainableBuilder.gte = vi.fn(() => chainableBuilder);
+        chainableBuilder.lte = vi.fn(() => chainableBuilder);
+
+        return {
+          select: vi.fn(() => chainableBuilder),
+          update: vi.fn(() => chainableBuilder),
+          insert: vi.fn(() => chainableBuilder),
+        };
       }),
     };
     service = new BookingService(dbMock as any);

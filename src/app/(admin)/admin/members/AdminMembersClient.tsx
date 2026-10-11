@@ -16,6 +16,11 @@ export default function AdminMembersClient({ members }: { members: any[] }) {
     const planName = activeMembership?.membership_plans?.name || '';
     if (activeChip === 'Gold' && !planName.toLowerCase().includes('gold')) return false;
     if (activeChip === 'Silver' && !planName.toLowerCase().includes('silver')) return false;
+    if (activeChip === 'Basic') {
+      const isGold = planName.toLowerCase().includes('gold');
+      const isSilver = planName.toLowerCase().includes('silver');
+      if (isGold || isSilver) return false;
+    }
     return true;
   });
 
@@ -53,7 +58,7 @@ export default function AdminMembersClient({ members }: { members: any[] }) {
       </div>
 
       <div className="chips" data-chipgroup style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', WebkitOverflowScrolling: 'touch', marginBottom: '8px' }}>
-        {['Semua', 'Gold', 'Silver'].map(chip => (
+        {['Semua', 'Gold', 'Silver', 'Basic'].map(chip => (
           <button
             key={chip}
             className={`chip ${activeChip === chip ? 'active' : ''}`}
@@ -69,13 +74,14 @@ export default function AdminMembersClient({ members }: { members: any[] }) {
         {filteredMembers.map((m: any) => {
           const activeMembership = m.memberships?.find((ms: any) => ms.status === 'ACTIVE');
           const planName = activeMembership?.membership_plans?.name || 'Basic';
-          const initials = m.full_name.substring(0, 2).toUpperCase();
           const isGold = planName.toLowerCase().includes('gold');
           const isSilver = planName.toLowerCase().includes('silver');
 
           return (
             <div key={m.id} className="row" onClick={() => router.push(`/admin/members/${m.id}`)}>
-              <div className="avatar">{initials}</div>
+              <div className="avatar" style={{ overflow: 'hidden' }}>
+                <MemberAvatar avatarUrl={m.users?.avatar_url} name={m.full_name} />
+              </div>
               <div className="rowmain">
                 <b>{m.full_name}</b>
                 <span>{m.phone || '—'}</span>
@@ -250,3 +256,59 @@ function AddMemberModal({ onClose, onSuccess }: { onClose: () => void; onSuccess
     </div>
   );
 }
+
+// ─── Member Avatar with Fallback ──────────────────────────────────────────
+
+function MemberAvatar({ avatarUrl, name }: { avatarUrl?: string | null; name: string }) {
+  const [error, setError] = useState(false);
+  const initials = name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n: string) => n[0].toUpperCase())
+    .join('') || name.substring(0, 2).toUpperCase();
+
+  const colors = [
+    { bg: '#EBF3FF', text: '#2563EB' },
+    { bg: '#FEF3C7', text: '#D97706' },
+    { bg: '#ECFDF5', text: '#059669' },
+    { bg: '#F3E8FF', text: '#7C3AED' },
+    { bg: '#FEE2E2', text: '#DC2626' },
+    { bg: '#F0FDF4', text: '#16A34A' },
+  ];
+  const charCode = name.charCodeAt(0) || 0;
+  const theme = colors[charCode % colors.length];
+
+  if (avatarUrl && !error) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name}
+        referrerPolicy="no-referrer"
+        onError={() => setError(true)}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        background: theme.bg,
+        color: theme.text,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 700,
+        fontSize: '13px',
+        letterSpacing: '0.5px'
+      }}
+    >
+      {initials}
+    </div>
+  );
+}
+

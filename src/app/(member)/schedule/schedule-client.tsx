@@ -132,12 +132,25 @@ interface Slot {
   capacity: number;
   booked_count: number;
   status: string;
+  is_user_booked?: boolean;
 }
 
 const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '6281234567890' }: { initialSlots: Slot[], memberName?: string, adminWa?: string }) {
+export function ScheduleClient({ 
+  initialSlots, 
+  memberName = 'Rider', 
+  adminWa = '6281234567890',
+  photographerEnabled = true,
+  cancellationHours = 8
+}: { 
+  initialSlots: Slot[]; 
+  memberName?: string; 
+  adminWa?: string;
+  photographerEnabled?: boolean;
+  cancellationHours?: number;
+}) {
   const next7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
@@ -159,12 +172,24 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
   const [copiedRekening, setCopiedRekening] = useState(false);
   const [sliderResetKey, setSliderResetKey] = useState(0);
 
+  // Guest booking state
+  const [isGuest, setIsGuest] = useState(false);
+  const [guestName, setGuestName] = useState('');
+  const [guestAge, setGuestAge] = useState('');
+  const [guestWeight, setGuestWeight] = useState('');
+  const [guestHeight, setGuestHeight] = useState('');
+
   useEffect(() => {
     if (!isConfirmModalOpen) {
       setWithPhotographer(false);
       setReceiptFile(null);
       setReceiptPreview(null);
       setCopiedRekening(false);
+      setIsGuest(false);
+      setGuestName('');
+      setGuestAge('');
+      setGuestWeight('');
+      setGuestHeight('');
     }
   }, [isConfirmModalOpen]);
 
@@ -181,12 +206,23 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
         router.refresh();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'booking_participants' }, () => {
+        router.refresh();
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_slots' }, () => {
         router.refresh();
       })
       .subscribe();
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        router.refresh();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       supabase.removeChannel(channel);
     };
   }, [router]);
@@ -208,8 +244,25 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
   });
   const eveningSlots = filteredSlots.filter(s => parseInt(s.start_time.slice(0, 2)) >= 18);
 
+  const selectedDateObj = selectedSlot ? new Date(`${selectedSlot.slot_date}T00:00:00`) : null;
+  const isWeekend = selectedDateObj ? [0, 6].includes(selectedDateObj.getDay()) : false;
+  const canOfferPhotographer = (photographerEnabled !== false) && isWeekend;
+
   const handleBook = async () => {
     if (!selectedSlot) return;
+
+    if (isGuest && !guestName.trim()) {
+      toast.custom((t) => (
+        <AlertToast
+          title="Nama Rider Tamu Diperlukan"
+          description="Silakan masukkan nama lengkap orang yang akan menunggangi kuda."
+          variant="destructive"
+          onDismiss={() => toast.dismiss(t)}
+        />
+      ));
+      setSliderResetKey(k => k + 1);
+      return;
+    }
 
     if (withPhotographer && !receiptFile && !selectedSlot.id.startsWith('mock-')) {
       toast.custom((t) => (
@@ -257,7 +310,13 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
       } else {
         res = await submitBooking(selectedSlot.id, { 
           hasPhotographer: withPhotographer,
-          receiptUrl 
+          receiptUrl,
+          guestInfo: isGuest ? {
+            fullName: guestName.trim(),
+            age: guestAge ? Number(guestAge) : undefined,
+            weightKg: guestWeight ? Number(guestWeight) : undefined,
+            heightCm: guestHeight ? Number(guestHeight) : undefined,
+          } : undefined
         });
       }
 
@@ -396,10 +455,15 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
               const isSelected = selectedSlot?.id === slot.id;
               const remaining = slot.capacity - slot.booked_count;
               const isFull = remaining <= 0;
+              const isUserBooked = Boolean(slot.is_user_booked);
               return (
                 <div
                   key={slot.id}
                   onClick={() => {
+                    if (isUserBooked) {
+                      toast.custom((t) => <AlertToast title="Sudah Terdaftar" description="Kamu sudah terdaftar di sesi ini. Kamu dapat mengecek detail tiket di menu Booking." onDismiss={() => toast.dismiss(t)} />);
+                      return;
+                    }
                     if (!isFull) {
                       setSelectedSlot(slot);
                       setWithPhotographer(false);
@@ -410,25 +474,33 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
-                    border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
-                    cursor: isFull ? 'not-allowed' : 'pointer',
-                    opacity: isFull ? 0.6 : 1,
+                    background: isUserBooked ? '#fcfbf7' : isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
+                    border: isUserBooked ? '1px solid #e8deb8' : isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
+                    cursor: isUserBooked ? 'default' : isFull ? 'not-allowed' : 'pointer',
+                    opacity: isFull && !isUserBooked ? 0.6 : 1,
                     boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
                     marginBottom: '10px'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                     <div style={{ font: '22px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
-                      {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: isUserBooked ? '#8C6E2D' : isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
+                      {isUserBooked ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FAF3E0', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                          <Check size={12} strokeWidth={3} /> Sesi Anda
+                        </span>
+                      ) : isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{remaining}/{slot.capacity}</div>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isUserBooked ? '#FAF3E0' : isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isUserBooked ? (
+                        <Check size={16} strokeWidth={2.5} color="#8C6E2D" />
+                      ) : (
+                        <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -448,10 +520,15 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
               const isSelected = selectedSlot?.id === slot.id;
               const remaining = slot.capacity - slot.booked_count;
               const isFull = remaining <= 0;
+              const isUserBooked = Boolean(slot.is_user_booked);
               return (
                 <div
                   key={slot.id}
                   onClick={() => {
+                    if (isUserBooked) {
+                      toast.custom((t) => <AlertToast title="Sudah Terdaftar" description="Kamu sudah terdaftar di sesi ini. Kamu dapat mengecek detail tiket di menu Booking." onDismiss={() => toast.dismiss(t)} />);
+                      return;
+                    }
                     if (!isFull) {
                       setSelectedSlot(slot);
                       setWithPhotographer(false);
@@ -462,25 +539,33 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
-                    border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
-                    cursor: isFull ? 'not-allowed' : 'pointer',
-                    opacity: isFull ? 0.6 : 1,
+                    background: isUserBooked ? '#fcfbf7' : isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
+                    border: isUserBooked ? '1px solid #e8deb8' : isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
+                    cursor: isUserBooked ? 'default' : isFull ? 'not-allowed' : 'pointer',
+                    opacity: isFull && !isUserBooked ? 0.6 : 1,
                     boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
                     marginBottom: '10px'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                     <div style={{ font: '22px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
-                      {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: isUserBooked ? '#8C6E2D' : isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
+                      {isUserBooked ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FAF3E0', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                          <Check size={12} strokeWidth={3} /> Sesi Anda
+                        </span>
+                      ) : isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{remaining}/{slot.capacity}</div>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isUserBooked ? '#FAF3E0' : isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isUserBooked ? (
+                        <Check size={16} strokeWidth={2.5} color="#8C6E2D" />
+                      ) : (
+                        <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -500,10 +585,15 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
               const isSelected = selectedSlot?.id === slot.id;
               const remaining = slot.capacity - slot.booked_count;
               const isFull = remaining <= 0;
+              const isUserBooked = Boolean(slot.is_user_booked);
               return (
                 <div
                   key={slot.id}
                   onClick={() => {
+                    if (isUserBooked) {
+                      toast.custom((t) => <AlertToast title="Sudah Terdaftar" description="Kamu sudah terdaftar di sesi ini. Kamu dapat mengecek detail tiket di menu Booking." onDismiss={() => toast.dismiss(t)} />);
+                      return;
+                    }
                     if (!isFull) {
                       setSelectedSlot(slot);
                       setWithPhotographer(false);
@@ -514,25 +604,33 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    background: isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
-                    border: isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
-                    cursor: isFull ? 'not-allowed' : 'pointer',
-                    opacity: isFull ? 0.6 : 1,
+                    background: isUserBooked ? '#fcfbf7' : isFull ? '#f7f6f2' : isSelected ? '#fffdf7' : 'var(--white)',
+                    border: isUserBooked ? '1px solid #e8deb8' : isSelected ? '1px solid #d0b070' : '1px solid #efeee9',
+                    cursor: isUserBooked ? 'default' : isFull ? 'not-allowed' : 'pointer',
+                    opacity: isFull && !isUserBooked ? 0.6 : 1,
                     boxShadow: isSelected ? '0 4px 12px rgba(208, 176, 112, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
                     marginBottom: '10px'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                     <div style={{ font: '22px var(--font-display)', fontWeight: 600, color: 'var(--ink)' }}>{slot.start_time.slice(0, 5)}</div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
-                      {isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: isUserBooked ? '#8C6E2D' : isFull ? 'var(--red)' : remaining === 1 ? '#b08d4b' : 'var(--green)' }}>
+                      {isUserBooked ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FAF3E0', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                          <Check size={12} strokeWidth={3} /> Sesi Anda
+                        </span>
+                      ) : isFull ? 'Full' : remaining === 1 ? '1 spot left' : 'Available'}
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{slot.booked_count}/{slot.capacity}</div>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>{remaining}/{slot.capacity}</div>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isUserBooked ? '#FAF3E0' : isFull ? '#e8e8e8' : '#f5f7f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isUserBooked ? (
+                        <Check size={16} strokeWidth={2.5} color="#8C6E2D" />
+                      ) : (
+                        <ArrowRight size={16} strokeWidth={2} color={isFull ? '#fff' : 'var(--ink)'} />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -588,15 +686,21 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
               <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', marginBottom: '16px', border: '1px solid #efeade' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Rider</span>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{memberName.split(' ')[0]}</span>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>
+                    {isGuest && guestName.trim() ? `${guestName.trim()} (Tamu)` : memberName.split(' ')[0]}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Date</span>
                   <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{DAYS_FULL[new Date(`${selectedSlot.slot_date}T00:00:00`).getDay()]}, {new Date(`${selectedSlot.slot_date}T00:00:00`).getDate()} {MONTHS_SHORT[new Date(`${selectedSlot.slot_date}T00:00:00`).getMonth()]}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Time</span>
                   <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{selectedSlot.start_time.slice(0, 5)} — {selectedSlot.end_time.slice(0, 5)} WITA</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Durasi Sesi</span>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#b08d4b' }}>60 Menit</span>
                 </div>
 
                 {withPhotographer && (
@@ -607,41 +711,141 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                 )}
               </div>
 
+              {/* ── Guest Rider Toggle & Form ── */}
               <button
                 type="button"
                 role="switch"
-                aria-checked={withPhotographer}
-                onClick={() => {
-                  setWithPhotographer(v => {
-                    const next = !v;
-                    if (!next) {
-                      setReceiptFile(null);
-                      setReceiptPreview(null);
-                    }
-                    return next;
-                  });
-                }}
+                aria-checked={isGuest}
+                onClick={() => setIsGuest(v => !v)}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left',
-                  padding: '14px 16px', marginBottom: withPhotographer ? '14px' : '20px', borderRadius: '16px', cursor: 'pointer',
-                  background: withPhotographer ? '#f1f6ef' : '#fff',
-                  border: `1.5px solid ${withPhotographer ? '#7c9a75' : '#e6e1d4'}`,
+                  padding: '14px 16px', marginBottom: isGuest ? '12px' : '14px', borderRadius: '16px', cursor: 'pointer',
+                  background: isGuest ? '#f5f7fa' : '#fff',
+                  border: `1.5px solid ${isGuest ? '#4b6cb7' : '#e6e1d4'}`,
                   transition: 'all 0.2s ease',
                 }}
               >
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: withPhotographer ? '#7c9a75' : '#f5f7f5', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                  <Camera size={20} color={withPhotographer ? '#fff' : 'var(--ink)'} strokeWidth={1.8} />
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: isGuest ? '#4b6cb7' : '#f5f7f5', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                  <UserIcon size={20} color={isGuest ? '#fff' : 'var(--ink)'} strokeWidth={1.8} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>Tambah Fotografer</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>Pesan untuk Orang Lain / Tamu</div>
                   <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
-                    {formatRp(PHOTOGRAPHER_PRICE)}/Sesi · transfer bank & upload bukti
+                    Gunakan kuota Anda untuk anak, kerabat, atau rekan
                   </div>
                 </div>
-                <div style={{ width: '44px', height: '26px', borderRadius: '13px', background: withPhotographer ? '#7c9a75' : '#d9d5c8', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
-                  <div style={{ position: 'absolute', top: '3px', left: withPhotographer ? '21px' : '3px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                <div style={{ width: '44px', height: '26px', borderRadius: '13px', background: isGuest ? '#4b6cb7' : '#d9d5c8', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
+                  <div style={{ position: 'absolute', top: '3px', left: isGuest ? '21px' : '3px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
                 </div>
               </button>
+
+              {isGuest && (
+                <div style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '16px',
+                  padding: '14px 16px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)' }}>Identitas Rider Tamu</div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Nama Lengkap *</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: Muhammad Raihan"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      style={{
+                        width: '100%', height: '40px', borderRadius: '10px', border: '1px solid #cbd5e1',
+                        padding: '0 12px', fontSize: '13px', color: 'var(--ink)', background: '#fff'
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>Usia (th)</label>
+                      <input
+                        type="number"
+                        placeholder="Contoh: 18"
+                        value={guestAge}
+                        onChange={(e) => setGuestAge(e.target.value)}
+                        style={{
+                          width: '100%', height: '40px', borderRadius: '10px', border: '1px solid #cbd5e1',
+                          padding: '0 8px', fontSize: '13px', color: 'var(--ink)', background: '#fff'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>BB (kg)</label>
+                      <input
+                        type="number"
+                        placeholder="Contoh: 60"
+                        value={guestWeight}
+                        onChange={(e) => setGuestWeight(e.target.value)}
+                        style={{
+                          width: '100%', height: '40px', borderRadius: '10px', border: '1px solid #cbd5e1',
+                          padding: '0 8px', fontSize: '13px', color: 'var(--ink)', background: '#fff'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>TB (cm)</label>
+                      <input
+                        type="number"
+                        placeholder="Contoh: 170"
+                        value={guestHeight}
+                        onChange={(e) => setGuestHeight(e.target.value)}
+                        style={{
+                          width: '100%', height: '40px', borderRadius: '10px', border: '1px solid #cbd5e1',
+                          padding: '0 8px', fontSize: '13px', color: 'var(--ink)', background: '#fff'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Photographer Toggle (Weekend only & if enabled) ── */}
+              {canOfferPhotographer && (
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={withPhotographer}
+                  onClick={() => {
+                    setWithPhotographer(v => {
+                      const next = !v;
+                      if (!next) {
+                        setReceiptFile(null);
+                        setReceiptPreview(null);
+                      }
+                      return next;
+                    });
+                  }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left',
+                    padding: '14px 16px', marginBottom: withPhotographer ? '14px' : '20px', borderRadius: '16px', cursor: 'pointer',
+                    background: withPhotographer ? '#f1f6ef' : '#fff',
+                    border: `1.5px solid ${withPhotographer ? '#7c9a75' : '#e6e1d4'}`,
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: withPhotographer ? '#7c9a75' : '#f5f7f5', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                    <Camera size={20} color={withPhotographer ? '#fff' : 'var(--ink)'} strokeWidth={1.8} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>Tambah Fotografer (Weekend)</div>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                      {formatRp(PHOTOGRAPHER_PRICE)}/Sesi · transfer bank & upload bukti
+                    </div>
+                  </div>
+                  <div style={{ width: '44px', height: '26px', borderRadius: '13px', background: withPhotographer ? '#7c9a75' : '#d9d5c8', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
+                    <div style={{ position: 'absolute', top: '3px', left: withPhotographer ? '21px' : '3px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                  </div>
+                </button>
+              )}
 
               {/* Transfer Details & Proof Upload when photographer is enabled */}
               {withPhotographer && (
@@ -803,6 +1007,10 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                   </label>
                 </div>
               )}
+
+              <div style={{ fontSize: '11px', color: 'var(--muted)', textAlign: 'center', marginBottom: '16px', lineHeight: 1.4 }}>
+                Batas pembatalan gratis: Maksimal <b>{cancellationHours} jam</b> sebelum jadwal sesi.
+              </div>
 
               <SlideToConfirm loading={loading} onConfirm={handleBook} resetKey={sliderResetKey} />
             </motion.div>

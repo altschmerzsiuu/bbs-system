@@ -137,7 +137,7 @@ export function RenewModal({ plans, activeMembership }: { plans: any[], activeMe
 
                       {activeMembership ? (
                         <a
-                          href={`/request?type=membership`}
+                          href={`/request?type=membership&planId=${plan.id}`}
                           style={{ textDecoration: 'none', display: 'block', marginTop: '24px' }}
                         >
                           <button style={{ width: '100%', padding: '16px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
@@ -145,7 +145,7 @@ export function RenewModal({ plans, activeMembership }: { plans: any[], activeMe
                           </button>
                         </a>
                       ) : (
-                        <a href="/request?type=membership" style={{ textDecoration: 'none', display: 'block', marginTop: '24px' }}>
+                        <a href={`/request?type=membership&planId=${plan.id}`} style={{ textDecoration: 'none', display: 'block', marginTop: '24px' }}>
                           <button style={{ width: '100%', padding: '16px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
                             Join {plan.name}
                           </button>

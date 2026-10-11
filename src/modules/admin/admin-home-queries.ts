@@ -10,6 +10,7 @@ export interface PendingRequestSummary {
   booking: number;
   reschedule: number;
   membership: number;
+  riding: number;
   total: number;
 }
 
@@ -22,13 +23,30 @@ export interface UpcomingSession {
   names: string; // e.g. "Keisha, Sarah"
   status: 'Ready' | 'Upcoming' | 'Needs Horse' | 'Completed';
   rawTime: string;
+  ridersList?: Array<{
+    id: string;
+    name: string;
+    init: string;
+    avatarUrl?: string | null;
+    horseId?: string | null;
+    horseName?: string | null;
+    attendanceStatus: string;
+  }>;
 }
 
 export interface CurrentSession {
   id: string;
   timeRange: string;
   arena: string;
-  riders: Array<{ init: string; name: string; id: string; attendanceStatus: string }>;
+  riders: Array<{
+    init: string;
+    name: string;
+    id: string;
+    attendanceStatus: string;
+    avatarUrl?: string | null;
+    horseId?: string | null;
+    horseName?: string | null;
+  }>;
   progressPercent: number;
   elapsedText: string;
   remainingText: string;
@@ -51,13 +69,16 @@ export async function getAdminHomeData(db: any) {
   const [
     { data: slots },
     { count: membershipReqCount },
+    { count: pendingBookingsCount },
+    { count: pendingRescheduleCount },
     { count: ridingReqCount },
+    { data: pendingBookingsList },
     expiringRes
   ] = await Promise.all([
     db.from('session_slots')
       .select(`
         id, slot_date, start_time, end_time, capacity,
-        bookings!bookings_slot_id_fkey(id, status, booking_participants(id, participant_status, attendance_records(status), member_id, members(user_id, users(full_name))))
+        bookings!bookings_slot_id_fkey(id, status, booking_participants(id, participant_status, horse_id, horses(name), attendance_records(status), member_id, members(user_id, users(full_name, avatar_url))))
       `)
       .gte('slot_date', today)
       .order('slot_date', { ascending: true })
@@ -65,15 +86,34 @@ export async function getAdminHomeData(db: any) {
       
     db.from('membership_applications').select('*', { count: 'exact', head: true }).in('status', ['PENDING_REVIEW', 'PAYMENT_SUBMITTED']),
     
-    db.from('riding_requests').select('*', { count: 'exact', head: true }).eq('status', 'UNDER_REVIEW'),
+    db.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'PENDING'),
     
-    // 4. Fetch expiring memberships for alerts
+    db.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'RESCHEDULE_REQUESTED'),
+
+    db.from('riding_requests').select('*', { count: 'exact', head: true }).eq('status', 'UNDER_REVIEW'),
+
+    db.from('bookings')
+      .select(`
+        id, status, notes, created_at,
+        session_slots!bookings_slot_id_fkey(id, slot_date, start_time, end_time),
+        booking_participants(
+          id, participant_type,
+          members(full_name, phone),
+          casual_customers(full_name, phone)
+        )
+      `)
+      .eq('status', 'PENDING')
+      .order('created_at', { ascending: false })
+      .limit(5),
+
+    // Fetch expiring memberships for alerts
     db.from('memberships')
       .select('id, end_date, members(user_id, users(full_name)), packages(name)')
       .eq('status', 'ACTIVE')
       .lte('end_date', (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0]; })())
       .gte('end_date', today)
   ]);
+
 
   // Compute stats
   let totalSessions = 0;
@@ -93,7 +133,15 @@ export async function getAdminHomeData(db: any) {
       
       let slotRiders = 0;
       const riderNames: string[] = [];
-      const riderInitials: Array<{ init: string; name: string; id: string; attendanceStatus: string }> = [];
+      const riderInitials: Array<{
+        init: string;
+        name: string;
+        id: string;
+        attendanceStatus: string;
+        avatarUrl?: string | null;
+        horseId?: string | null;
+        horseName?: string | null;
+      }> = [];
       
       const validBookings = (slot.bookings as any[])?.filter(b => 
         ['CONFIRMED', 'PENDING', 'COMPLETED', 'NO_SHOW'].includes(b.status)
@@ -103,13 +151,19 @@ export async function getAdminHomeData(db: any) {
         slotRiders += participants.length;
         
         for (const p of participants) {
-          const name = p.members?.users?.full_name || p.full_name || 'Rider';
+          const memberObj = Array.isArray(p.members) ? p.members[0] : p.members;
+          const userObj = Array.isArray(memberObj?.users) ? memberObj?.users[0] : memberObj?.users;
+          const name = userObj?.full_name || memberObj?.full_name || p.full_name || 'Rider';
+          const avatarUrl = userObj?.avatar_url || null;
           riderNames.push(name);
           riderInitials.push({ 
             init: name.substring(0, 2).toUpperCase(), 
             name, 
             id: p.id,
-            attendanceStatus: p.attendance_records?.[0]?.status || 'NOT_CHECKED_IN'
+            attendanceStatus: p.attendance_records?.[0]?.status || 'NOT_CHECKED_IN',
+            avatarUrl,
+            horseId: p.horse_id || null,
+            horseName: p.horses?.name || null
           });
         }
       }
@@ -126,8 +180,8 @@ export async function getAdminHomeData(db: any) {
       const [year, month, day] = slot.slot_date.split('-').map(Number);
       
       const startTime = new Date(year, month - 1, day, startH, startM, 0, 0);
-      // Hardcode business logic: a riding session is exactly 45 minutes
-      const sessionDurationMs = 45 * 60000;
+      // Riding session is 60 minutes
+      const sessionDurationMs = 60 * 60000;
       const sessionEndTime = new Date(startTime.getTime() + sessionDurationMs);
       
       if (now >= startTime && now <= sessionEndTime) {
@@ -151,7 +205,7 @@ export async function getAdminHomeData(db: any) {
             id: slot.id,
             time: slot.start_time.substring(0, 5),
             rawTime: `${slot.slot_date}T${slot.start_time}`,
-            duration: 45, // Riding sessions are always 45 minutes by business rule
+            duration: 60, // Standardized 60 minutes
             riders: slotRiders,
             arena: 'Arena 01',
             names: riderNames.length > 0 ? riderNames.join(' · ') : 'Empty slot',
@@ -175,7 +229,7 @@ export async function getAdminHomeData(db: any) {
       const [startH, startM] = slot.start_time.split(':').map(Number);
       const [year, month, day] = slot.slot_date.split('-').map(Number);
       const startTime = new Date(year, month - 1, day, startH, startM, 0, 0);
-      const sessionDurationMs = 45 * 60000;
+      const sessionDurationMs = 60 * 60000;
       const sessionEndTime = new Date(startTime.getTime() + sessionDurationMs);
       
       if (now > sessionEndTime) {
@@ -185,11 +239,34 @@ export async function getAdminHomeData(db: any) {
         
         let slotRiders = 0;
         const riderNames: string[] = [];
+        const ridersList: Array<{
+          id: string;
+          name: string;
+          init: string;
+          avatarUrl?: string | null;
+          horseId?: string | null;
+          horseName?: string | null;
+          attendanceStatus: string;
+        }> = [];
+
         for (const b of validBookings) {
           const participants = b.booking_participants || [];
           slotRiders += participants.length;
           for (const p of participants) {
-            riderNames.push(p.members?.users?.full_name || p.full_name || 'Rider');
+            const memberObj = Array.isArray(p.members) ? p.members[0] : p.members;
+            const userObj = Array.isArray(memberObj?.users) ? memberObj?.users[0] : memberObj?.users;
+            const name = userObj?.full_name || memberObj?.full_name || p.full_name || 'Rider';
+            const avatarUrl = userObj?.avatar_url || null;
+            riderNames.push(name);
+            ridersList.push({
+              id: p.id,
+              name,
+              init: name.substring(0, 2).toUpperCase(),
+              avatarUrl,
+              horseId: p.horse_id || null,
+              horseName: p.horses?.name || null,
+              attendanceStatus: p.attendance_records?.[0]?.status || 'NOT_CHECKED_IN'
+            });
           }
         }
         
@@ -198,11 +275,12 @@ export async function getAdminHomeData(db: any) {
             id: slot.id,
             time: slot.start_time.substring(0, 5),
             rawTime: `${slot.slot_date}T${slot.start_time}`,
-            duration: 45,
+            duration: 60,
             riders: slotRiders,
             arena: 'Arena 01',
             names: riderNames.length > 0 ? riderNames.join(' · ') : 'Empty slot',
-            status: 'Completed'
+            status: 'Completed',
+            ridersList
           });
         }
       }
@@ -215,11 +293,13 @@ export async function getAdminHomeData(db: any) {
   const spotsLeft = totalCapacity - totalRiders;
 
   const pending: PendingRequestSummary = {
-    booking: ridingReqCount || 0,
-    reschedule: 0, // Mocked for now as per instructions
+    booking: pendingBookingsCount || 0,
+    reschedule: pendingRescheduleCount || 0,
     membership: membershipReqCount || 0,
-    total: (ridingReqCount || 0) + (membershipReqCount || 0)
+    riding: ridingReqCount || 0,
+    total: (pendingBookingsCount || 0) + (pendingRescheduleCount || 0) + (membershipReqCount || 0) + (ridingReqCount || 0)
   };
+
   
   const nextWeek = new Date();
   nextWeek.setDate(now.getDate() + 7);
@@ -261,6 +341,7 @@ export async function getAdminHomeData(db: any) {
   return {
     stats: { sessions: totalSessions, riders: totalRiders, spotsLeft },
     pending,
+    pendingBookingsList: pendingBookingsList || [],
     upcoming,
     currentSession,
     pastSessions,
@@ -268,3 +349,4 @@ export async function getAdminHomeData(db: any) {
     alerts
   };
 }
+

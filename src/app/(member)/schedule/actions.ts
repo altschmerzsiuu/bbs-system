@@ -13,9 +13,23 @@ export type ActionResult = { ok: true; bookingId: string } | { ok: false; code: 
  * Tidak ada aturan bisnis di komponen: eligibility, window, kapasitas dan
  * kredit semuanya divalidasi di dalam transaksi database (Section 64.22).
  */
+import { sendDirectPushNotification } from '@/lib/notifications/direct-fcm';
+
+export type SubmitBookingOptions = {
+  hasPhotographer?: boolean;
+  receiptUrl?: string;
+  participants?: string;
+  guestInfo?: {
+    fullName: string;
+    age?: string | number;
+    weightKg?: string | number;
+    heightCm?: string | number;
+  };
+};
+
 export async function submitBooking(
-  slotId: string, 
-  participantsOrOptions?: string | { hasPhotographer?: boolean; receiptUrl?: string; participants?: string }, 
+  slotId: string,
+  participantsOrOptions?: string | SubmitBookingOptions,
   withPhotographer?: boolean
 ): Promise<ActionResult> {
   const actor = await requireActor(['MEMBER'], true);
@@ -25,6 +39,7 @@ export async function submitBooking(
     let parsedParticipants: ({ type: 'MEMBER'; memberId: string } | { type: 'CASUAL'; fullName: string; phone: string })[] = [{ type: 'MEMBER', memberId: actor.memberId! }];
     let hasPhoto = Boolean(withPhotographer);
     let receiptUrl: string | undefined;
+    let guestInfo: SubmitBookingOptions['guestInfo'] | undefined;
 
     if (typeof participantsOrOptions === 'string') {
       try {
@@ -39,6 +54,9 @@ export async function submitBooking(
       if (participantsOrOptions.receiptUrl) {
         receiptUrl = participantsOrOptions.receiptUrl;
       }
+      if (participantsOrOptions.guestInfo) {
+        guestInfo = participantsOrOptions.guestInfo;
+      }
       if (participantsOrOptions.participants) {
         try {
           parsedParticipants = JSON.parse(participantsOrOptions.participants);
@@ -48,21 +66,39 @@ export async function submitBooking(
       }
     }
 
-    const notes = hasPhoto 
-      ? `📸 Include Fotografer (+Rp 200.000)${receiptUrl ? ` [Bukti: ${receiptUrl}]` : ''}` 
-      : undefined;
+    const noteParts: string[] = [];
+    if (hasPhoto) {
+      noteParts.push(`Include Fotografer (+Rp 200.000)${receiptUrl ? ` [Bukti: ${receiptUrl}]` : ''}`);
+    }
+    if (guestInfo && guestInfo.fullName.trim()) {
+      noteParts.push(`Rider Tamu: ${guestInfo.fullName.trim()} (Usia: ${guestInfo.age || '-'}th, BB: ${guestInfo.weightKg || '-'}kg, TB: ${guestInfo.heightCm || '-'}cm)`);
+    }
 
-    const bookingId = await service.createMemberBooking(actor, { 
-      slotId, 
+    const notes = noteParts.length > 0 ? noteParts.join(' • ') : undefined;
+
+    const bookingId = await service.createMemberBooking(actor, {
+      slotId,
       participants: parsedParticipants,
       notes
     });
+
+    // Send instant FCM push notification to all admins
+    sendDirectPushNotification({
+      toAdmins: true,
+      title: 'Booking Baru Menunggu Approval 🏇',
+      body: `Booking sesi berkuda baru telah diajukan${guestInfo?.fullName ? ` untuk ${guestInfo.fullName}` : ''}. Silakan tinjau dan konfirmasi.`,
+      url: '/admin',
+      notificationType: 'NEW_BOOKING_REQUEST',
+      data: { booking_id: bookingId }
+    }).catch(err => console.error('[submitBooking] Push error:', err));
+
     revalidateBookingPaths();
     return { ok: true, bookingId };
   } catch (error) {
     return { ok: false, ...toClientError(error) };
   }
 }
+
 
 export async function uploadPhotographerReceiptAction(formData: FormData): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
   try {
@@ -113,7 +149,7 @@ export async function lookupMemberByEmail(email: string): Promise<LookupResult> 
   if (!member) {
     return { ok: false, message: 'Member tidak ditemukan. Pastikan email sudah benar.' };
   }
-  
+
   if (member.id === actor.memberId) {
     return { ok: false, message: 'Anda tidak perlu menambahkan email sendiri.' };
   }
