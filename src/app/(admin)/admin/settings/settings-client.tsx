@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save, Trash2, Pencil, Check, X } from 'lucide-react';
+import { ChevronLeft, Plus, Clock, Calendar, Tag, Headphones, MessageCircle, Crown, Save, Trash2, Pencil, Check, X, MoreVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { addHorse, toggleHorseStatus, updateSiteSettings, updateAfternoonEndTime, deleteHorse, updateHorse } from './actions';
 import { AlertToast } from '@/components/ui/alert-toast';
@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 export function SettingsClient({ initialHorses, initialSettings, initialSchedules }: { initialHorses: any[], initialSettings: any, initialSchedules: any[] }) {
   const [horses, setHorses] = useState(initialHorses);
   const [schedules, setSchedules] = useState(initialSchedules);
-  
+
   const afternoonSchedule = initialSchedules.find(s => s.block === 'AFTERNOON');
   const [afternoonEndTime, setAfternoonEndTime] = useState(afternoonSchedule ? afternoonSchedule.end_time.slice(0, 5) : '18:00');
   const [newHorseName, setNewHorseName] = useState('');
@@ -21,20 +21,34 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
   const [editingHorseId, setEditingHorseId] = useState<string | null>(null);
   const [editingHorseName, setEditingHorseName] = useState('');
   const [savingHorseId, setSavingHorseId] = useState<string | null>(null);
+  const [openHorseMenuId, setOpenHorseMenuId] = useState<string | null>(null);
   const router = useRouter();
+
+  // Close dropdowns & horse menus when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.dropdown-container')) {
+        setOpenDropdown(null);
+      }
+      if (!target.closest('.horse-menu-container')) {
+        setOpenHorseMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Local settings state
   const [rescheduleHours, setRescheduleHours] = useState(initialSettings?.reschedule_hours?.toString() || '24');
   const [maxWeeklyBookings, setMaxWeeklyBookings] = useState(initialSettings?.max_weekly_bookings?.toString() || '2');
-  
+
   const formatPrice = (val: string) => {
     const num = val.replace(/[^0-9]/g, '');
     return num ? parseInt(num, 10).toLocaleString('id-ID') : '';
   };
 
   const [waNumber, setWaNumber] = useState(initialSettings?.admin_whatsapp || '812 3194 014');
-
-
 
   const handleAddHorse = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,21 +89,25 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
   };
 
   const handleSaveEditHorse = async (id: string) => {
-    if (!editingHorseName.trim()) {
+    const trimmed = editingHorseName.trim();
+    if (!trimmed) {
       toast.custom((t) => <AlertToast title="Nama kosong" description="Nama kuda tidak boleh kosong." variant="destructive" onDismiss={() => toast.dismiss(t)} />);
       return;
     }
-    setSavingHorseId(id);
-    const res = await updateHorse(id, editingHorseName.trim());
-    if (res.ok) {
-      setHorses(horses.map(h => h.id === id ? { ...h, name: editingHorseName.trim() } : h));
-      setEditingHorseId(null);
-      toast.custom((t) => <AlertToast title="Berhasil" description="Nama kuda berhasil diperbarui." onDismiss={() => toast.dismiss(t)} />);
-      router.refresh();
-    } else {
+    const previousHorses = [...horses];
+    // Immediate optimistic update (0ms delay)
+    setHorses(horses.map(h => h.id === id ? { ...h, name: trimmed } : h));
+    setEditingHorseId(null);
+    setOpenHorseMenuId(null);
+    toast.custom((t) => <AlertToast title="Berhasil" description="Nama kuda berhasil diperbarui." onDismiss={() => toast.dismiss(t)} />);
+
+    const res = await updateHorse(id, trimmed);
+    if (!res.ok) {
+      setHorses(previousHorses);
       toast.custom((t) => <AlertToast title="Gagal" description={res.message || 'Gagal mengubah nama'} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+    } else {
+      router.refresh();
     }
-    setSavingHorseId(null);
   };
 
   const handleDeleteHorse = async (id: string, name: string) => {
@@ -134,23 +152,23 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
         <button onClick={() => window.history.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <ChevronLeft size={20} strokeWidth={2} />
         </button>
-        <h1 style={{ font: '24px var(--font-display)', margin: 0, color: 'var(--ink)' }}>Setting Kandang</h1>
+        <h1 style={{ font: '24px var(--font-display)', margin: 0, color: 'var(--ink)' }}>Pengaturan Kandang</h1>
       </div>
 
       <div style={{ padding: '24px' }}>
         <h2 style={{ font: '24px var(--font-display)', margin: '0 0 16px', color: 'var(--ink)' }}>Manajemen Kuda</h2>
-        
+
         <form onSubmit={handleAddHorse} style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-          <input 
-            type="text" 
-            placeholder="Nama Kuda Baru..." 
+          <input
+            type="text"
+            placeholder="Nama Kuda Baru..."
             value={newHorseName}
             onChange={(e) => setNewHorseName(e.target.value)}
             style={{ flex: 1, padding: '14px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)', fontSize: '15px', outline: 'none', background: '#fff' }}
           />
-          <button 
+          <button
             disabled={loading}
-            type="submit" 
+            type="submit"
             style={{ width: '48px', height: '48px', background: '#4a5d23', color: '#fff', borderRadius: '12px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
             <Plus size={20} />
           </button>
@@ -164,7 +182,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 <div style={{ flex: 1, minWidth: 0, marginRight: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ width: '36px', height: '36px', background: '#fff5e6', color: '#b45309', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5" /><path d="M9 11v-1" /></svg>
                     </div>
 
                     {isEditing ? (
@@ -247,69 +265,134 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 </div>
 
                 {!isEditing && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                    {/* Tombol Edit Nama */}
+                  <div className="horse-menu-container" style={{ position: 'relative', flexShrink: 0 }}>
                     <button
                       type="button"
-                      title="Edit Nama Kuda"
-                      onClick={() => handleStartEditHorse(horse)}
+                      title="Opsi Kuda"
+                      onClick={() => setOpenHorseMenuId(openHorseMenuId === horse.id ? null : horse.id)}
                       style={{
-                        padding: '7px 10px',
-                        borderRadius: '8px',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '10px',
                         border: '1px solid rgba(0,0,0,0.08)',
-                        background: '#FAF8F5',
+                        background: openHorseMenuId === horse.id ? '#FAF8F5' : '#fff',
                         color: 'var(--ink)',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <Pencil size={13} />
-                      <span>Edit</span>
-                    </button>
-
-                    {/* Tombol Istirahatkan / Aktifkan */}
-                    <button 
-                      type="button"
-                      onClick={() => handleToggleStatus(horse.id, horse.status)}
-                      style={{
-                        padding: '7px 12px',
-                        borderRadius: '8px',
-                        border: horse.status === 'ACTIVE' ? '1px solid rgba(0,0,0,0.1)' : 'none',
-                        background: horse.status === 'ACTIVE' ? '#fff' : '#4a5d23',
-                        color: horse.status === 'ACTIVE' ? 'var(--ink)' : '#fff',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {horse.status === 'ACTIVE' ? 'Istirahatkan' : 'Aktifkan'}
-                    </button>
-
-                    {/* Tombol Hapus */}
-                    <button
-                      type="button"
-                      title="Hapus Kuda"
-                      onClick={() => handleDeleteHorse(horse.id, horse.name)}
-                      style={{
-                        padding: '7px 10px',
-                        borderRadius: '8px',
-                        border: '1px solid #fee2e2',
-                        background: '#fff',
-                        color: '#b91c1c',
-                        fontSize: '12px',
-                        fontWeight: 600,
+                        justifyContent: 'center',
                         cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                        transition: 'background 0.15s'
                       }}
                     >
-                      <Trash2 size={14} />
+                      <MoreVertical size={16} />
                     </button>
+
+                    {openHorseMenuId === horse.id && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 6px)',
+                          right: 0,
+                          background: '#fff',
+                          borderRadius: '14px',
+                          boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+                          border: '1px solid rgba(0,0,0,0.06)',
+                          overflow: 'hidden',
+                          zIndex: 100,
+                          minWidth: '160px',
+                          padding: '6px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '2px',
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenHorseMenuId(null);
+                            handleStartEditHorse(horse);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '10px 12px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--ink)',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            width: '100%',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF8F5')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <Pencil size={14} color="var(--muted)" />
+                          <span>Edit Nama</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenHorseMenuId(null);
+                            handleToggleStatus(horse.id, horse.status);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '10px 12px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            background: 'transparent',
+                            color: horse.status === 'ACTIVE' ? 'var(--ink)' : '#4a5d23',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            width: '100%',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#FAF8F5')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <Clock size={14} color={horse.status === 'ACTIVE' ? 'var(--muted)' : '#4a5d23'} />
+                          <span>{horse.status === 'ACTIVE' ? 'Istirahatkan' : 'Aktifkan'}</span>
+                        </button>
+
+                        <div style={{ height: '1px', background: 'rgba(0,0,0,0.05)', margin: '4px 0' }} />
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenHorseMenuId(null);
+                            handleDeleteHorse(horse.id, horse.name);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '10px 12px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            background: 'transparent',
+                            color: '#b91c1c',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            width: '100%',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#fee2e2')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <Trash2 size={14} color="#b91c1c" />
+                          <span>Hapus Kuda</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -317,7 +400,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
           })}
           {horses.length === 0 && (
             <div style={{ textAlign: 'center', padding: '32px', color: 'var(--muted)', fontSize: '14px', background: '#fff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-              Belum ada kuda yang terdaftar.<br/>Tambahkan kuda di atas.
+              Belum ada kuda yang terdaftar.<br />Tambahkan kuda di atas.
             </div>
           )}
         </div>
@@ -332,7 +415,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
               <Clock size={14} /> Operasional
             </div>
           </div>
-          
+
           <div style={{ background: '#fff', borderRadius: '16px', marginBottom: '32px' }}>
             {/* Batas Waktu Reschedule */}
             <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
@@ -343,8 +426,8 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Batas Waktu Reschedule (Jam)</div>
                 <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Batas minimum sebelum sesi dimulai.</div>
               </div>
-              <div style={{ position: 'relative' }}>
-                <button 
+              <div className="dropdown-container" style={{ position: 'relative' }}>
+                <button
                   onClick={() => setOpenDropdown(openDropdown === 'reschedule' ? null : 'reschedule')}
                   style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
                 >
@@ -354,8 +437,8 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 {openDropdown === 'reschedule' && (
                   <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '120px' }}>
                     {['12', '24', '48'].map(val => (
-                      <div 
-                        key={val} 
+                      <div
+                        key={val}
                         onClick={() => { setRescheduleHours(val); setOpenDropdown(null); }}
                         style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: rescheduleHours === val ? '#f4f4f5' : '#fff', color: rescheduleHours === val ? 'var(--ink)' : 'var(--muted)' }}
                       >
@@ -366,7 +449,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 )}
               </div>
             </div>
-            
+
             {/* Jam Tutup Sesi Akhir */}
             <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
               <div style={{ width: '44px', height: '44px', background: '#edf2eb', color: '#4a5d23', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px', flexShrink: 0 }}>
@@ -376,8 +459,8 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Jam Tutup Kandang (Sesi Terakhir)</div>
                 <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Tentukan jam operasional buka sampai malam (misal 21:00).</div>
               </div>
-              <div style={{ position: 'relative' }}>
-                <button 
+              <div className="dropdown-container" style={{ position: 'relative' }}>
+                <button
                   onClick={() => setOpenDropdown(openDropdown === 'endTime' ? null : 'endTime')}
                   style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
                 >
@@ -387,10 +470,10 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 {openDropdown === 'endTime' && (
                   <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '120px' }}>
                     {['18:00', '19:00', '20:00', '21:00', '22:00'].map(val => (
-                      <div 
-                        key={val} 
-                        onClick={async () => { 
-                          setAfternoonEndTime(val); 
+                      <div
+                        key={val}
+                        onClick={async () => {
+                          setAfternoonEndTime(val);
                           setOpenDropdown(null);
                           const res = await updateAfternoonEndTime(val + ':00');
                           if (res.ok) {
@@ -418,8 +501,8 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Maksimal Booking per Minggu</div>
                 <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Batas sesi per minggu untuk member reguler (Silver & Gold bebas tanpa batas).</div>
               </div>
-              <div style={{ position: 'relative' }}>
-                <button 
+              <div className="dropdown-container" style={{ position: 'relative' }}>
+                <button
                   type="button"
                   onClick={() => setOpenDropdown(openDropdown === 'maxWeekly' ? null : 'maxWeekly')}
                   style={{ background: '#f4f4f5', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', outline: 'none', color: 'var(--ink)', cursor: 'pointer', minWidth: '100px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
@@ -431,14 +514,14 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                   <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', zIndex: 100, minWidth: '140px' }}>
                     {[
                       { label: '1 Sesi / Minggu', val: '1' },
-                      { label: '2 Sesi (Standar)', val: '2' },
+                      { label: '2 Sesi / Minggu', val: '2' },
                       { label: '3 Sesi / Minggu', val: '3' },
                       { label: '4 Sesi / Minggu', val: '4' },
                       { label: '5 Sesi / Minggu', val: '5' },
                       { label: 'Bebas (Tanpa Batas)', val: '999' }
                     ].map(item => (
-                      <div 
-                        key={item.val} 
+                      <div
+                        key={item.val}
                         onClick={() => { setMaxWeeklyBookings(item.val); setOpenDropdown(null); }}
                         style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.03)', background: maxWeeklyBookings === item.val ? '#f4f4f5' : '#fff', color: maxWeeklyBookings === item.val ? 'var(--ink)' : 'var(--muted)' }}
                       >
@@ -462,13 +545,13 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
               <Headphones size={14} /> Bantuan
             </div>
           </div>
-          
+
           <div style={{ background: '#fff', borderRadius: '16px' }}>
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                 <div style={{ width: '44px', height: '44px', background: '#458553', color: '#fff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px', flexShrink: 0 }}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
                   </svg>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -522,7 +605,7 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
       )}
 
       <div style={{ padding: '24px', paddingTop: 0, paddingBottom: '48px' }}>
-        <button 
+        <button
           onClick={handleSaveSettings}
           disabled={savingSettings}
           style={{ width: '100%', padding: '16px', background: '#4a5d23', color: '#fff', borderRadius: '16px', fontSize: '15px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(74, 93, 35, 0.2)', opacity: savingSettings ? 0.7 : 1 }}

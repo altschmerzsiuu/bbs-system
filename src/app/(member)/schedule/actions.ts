@@ -2,7 +2,7 @@
 
 import { revalidateBookingPaths } from '@/lib/cache';
 import { BookingService } from '@/modules/bookings/booking-service';
-import { createServerClient } from '@/infrastructure/supabase-server';
+import { createServerClient, createServiceRoleClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 import { toClientError } from '@/domain/shared/errors';
 
@@ -15,7 +15,7 @@ export type ActionResult = { ok: true; bookingId: string } | { ok: false; code: 
  */
 export async function submitBooking(
   slotId: string, 
-  participantsOrOptions?: string | { hasPhotographer?: boolean; participants?: string }, 
+  participantsOrOptions?: string | { hasPhotographer?: boolean; receiptUrl?: string; participants?: string }, 
   withPhotographer?: boolean
 ): Promise<ActionResult> {
   const actor = await requireActor(['MEMBER'], true);
@@ -24,6 +24,7 @@ export async function submitBooking(
   try {
     let parsedParticipants: ({ type: 'MEMBER'; memberId: string } | { type: 'CASUAL'; fullName: string; phone: string })[] = [{ type: 'MEMBER', memberId: actor.memberId! }];
     let hasPhoto = Boolean(withPhotographer);
+    let receiptUrl: string | undefined;
 
     if (typeof participantsOrOptions === 'string') {
       try {
@@ -35,6 +36,9 @@ export async function submitBooking(
       if (typeof participantsOrOptions.hasPhotographer === 'boolean') {
         hasPhoto = participantsOrOptions.hasPhotographer;
       }
+      if (participantsOrOptions.receiptUrl) {
+        receiptUrl = participantsOrOptions.receiptUrl;
+      }
       if (participantsOrOptions.participants) {
         try {
           parsedParticipants = JSON.parse(participantsOrOptions.participants);
@@ -44,7 +48,9 @@ export async function submitBooking(
       }
     }
 
-    const notes = hasPhoto ? '📸 Include Fotografer (+Rp 200.000)' : undefined;
+    const notes = hasPhoto 
+      ? `📸 Include Fotografer (+Rp 200.000)${receiptUrl ? ` [Bukti: ${receiptUrl}]` : ''}` 
+      : undefined;
 
     const bookingId = await service.createMemberBooking(actor, { 
       slotId, 
@@ -55,6 +61,40 @@ export async function submitBooking(
     return { ok: true, bookingId };
   } catch (error) {
     return { ok: false, ...toClientError(error) };
+  }
+}
+
+export async function uploadPhotographerReceiptAction(formData: FormData): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
+  try {
+    const actor = await requireActor(['MEMBER'], true);
+    const file = formData.get('receipt') as File;
+    if (!file) {
+      return { ok: false, message: 'File bukti transfer tidak ditemukan.' };
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      return { ok: false, message: 'Ukuran file maksimal 5MB.' };
+    }
+
+    const db = createServiceRoleClient();
+    const ext = file.name.split('.').pop() || 'jpg';
+    const fileName = `photographer-${actor.userId}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await db.storage
+      .from('payment_proofs')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      console.error('[uploadPhotographerReceiptAction]', uploadError);
+      return { ok: false, message: uploadError.message };
+    }
+
+    const { data: { publicUrl } } = db.storage.from('payment_proofs').getPublicUrl(fileName);
+    return { ok: true, url: publicUrl };
+  } catch (error) {
+    const clientErr = toClientError(error);
+    return { ok: false, message: clientErr.message };
   }
 }
 

@@ -439,9 +439,11 @@ export async function getAdminSchedule(
       /*
        * Existing session_slots row.
        */
-      const bookings = existingSlot.bookings ?? [];
+      const activeBookings = (existingSlot.bookings ?? []).filter(
+        (booking: any) => !['MEMBER_CANCELLED', 'BBS_CANCELLED', 'REJECTED', 'EXPIRED'].includes(booking.status)
+      );
 
-      const participants = bookings.flatMap((booking: any) =>
+      const participants = activeBookings.flatMap((booking: any) =>
         (booking.booking_participants ?? []).map(
           (participant: any) => ({
             id: participant.id,
@@ -465,7 +467,7 @@ export async function getAdminSchedule(
         )
       );
 
-      const bookingWithParticipants = bookings.find(
+      const bookingWithParticipants = activeBookings.find(
         (booking: any) =>
           (booking.booking_participants ?? []).length > 0
       );

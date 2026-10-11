@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ChevronLeft, MoreHorizontal, Check, Loader2, X, Share2 } from 'lucide-react';
+import { ChevronLeft, MoreHorizontal, Check, Loader2, X, Share2, Camera, Eye } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { approveBookingAction, rejectBookingAction, resolveAttendanceAction, multiToggleSlotAction, assignHorseAction } from '../actions';
@@ -16,6 +16,33 @@ import type {
 interface AdminSessionDetailClientProps {
     session: AdminSessionDetail;
     horses: any[];
+}
+
+function getBookingStatusBadge(status: string) {
+    switch (status) {
+        case 'CONFIRMED':
+            return { label: 'Terkonfirmasi', bg: '#DCFCE7', text: '#15803D' };
+        case 'PENDING':
+            return { label: 'Menunggu', bg: 'var(--warning-light)', text: 'var(--warning-dark)' };
+        case 'MEMBER_CANCELLED':
+            return { label: 'Dibatalkan', bg: '#FEE2E2', text: '#B91C1C' };
+        case 'BBS_CANCELLED':
+            return { label: 'Dibatalkan Admin', bg: '#FEE2E2', text: '#B91C1C' };
+        case 'REJECTED':
+            return { label: 'Ditolak', bg: '#FEE2E2', text: '#B91C1C' };
+        case 'COMPLETED':
+            return { label: 'Selesai', bg: '#E0E7FF', text: '#4338CA' };
+        case 'NO_SHOW':
+            return { label: 'Tidak Hadir', bg: '#F3F4F6', text: '#6B7280' };
+        default:
+            return { label: status, bg: 'rgba(0,0,0,0.05)', text: 'var(--ink)' };
+    }
+}
+
+function extractReceiptUrl(notes: string | null | undefined): string | null {
+    if (!notes) return null;
+    const match = notes.match(/https?:\/\/[^\s\]\)]+/i);
+    return match ? match[0] : null;
 }
 
 function getDayName(date: string) {
@@ -183,14 +210,14 @@ function ParticipantRow({
                             ? 'Member'
                             : 'Casual'}
                     </span>
-                    <div 
+                    <div
                         onClick={(e) => { e.stopPropagation(); onOpenHorsePicker(); }}
-                        style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '6px', 
-                            padding: '4px 8px', 
-                            borderRadius: '100px', 
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 8px',
+                            borderRadius: '100px',
                             background: participant.horseName ? 'rgba(0,0,0,0.04)' : 'transparent',
                             border: participant.horseName ? 'none' : '1px dashed var(--muted)',
                             cursor: 'pointer',
@@ -198,7 +225,7 @@ function ParticipantRow({
                             fontWeight: 600,
                             color: participant.horseName ? 'var(--ink)' : 'var(--muted)',
                         }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5" /><path d="M9 11v-1" /></svg>
                         {participant.horseName || 'Pilih Kuda'}
                     </div>
                 </div>
@@ -226,7 +253,7 @@ function ParticipantRow({
 
             {isMenuOpen && (
                 <>
-                    <div 
+                    <div
                         onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
                         style={{
                             position: 'fixed',
@@ -248,23 +275,23 @@ function ParticipantRow({
                             minWidth: '160px',
                         }}
                     >
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
-                        style={{
-                            width: '100%',
-                            textAlign: 'left',
-                            padding: '12px 16px',
-                            background: 'transparent',
-                            border: 'none',
-                            borderBottom: '1px solid rgba(0,0,0,0.05)',
-                            fontSize: '14px',
-                            color: 'var(--danger)',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        Batalkan Booking (Coming Soon)
-                    </button>
-                </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
+                            style={{
+                                width: '100%',
+                                textAlign: 'left',
+                                padding: '12px 16px',
+                                background: 'transparent',
+                                border: 'none',
+                                borderBottom: '1px solid rgba(0,0,0,0.05)',
+                                fontSize: '14px',
+                                color: 'var(--danger)',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Batalkan Booking
+                        </button>
+                    </div>
                 </>
             )}
         </div>
@@ -279,9 +306,9 @@ export default function AdminSessionDetailClient({
 
     const [openMenuParticipantId, setOpenMenuParticipantId] = useState<string | null>(null);
     const [rejectModalBookingId, setRejectModalBookingId] = useState<string | null>(null);
-    
+
     const [isSessionMenuOpen, setIsSessionMenuOpen] = useState(false);
-    
+
     const [horsePickerParticipantId, setHorsePickerParticipantId] = useState<string | null>(null);
     const [isAssigningHorse, setIsAssigningHorse] = useState(false);
     const [pendingHorseId, setPendingHorseId] = useState<string | null | undefined>(undefined); // undefined = not chosen yet
@@ -307,9 +334,10 @@ export default function AdminSessionDetailClient({
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [isSavingAttendance, setIsSavingAttendance] = useState(false);
     const [approvingBookingId, setApprovingBookingId] = useState<string | null>(null);
+    const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
 
     const participants = session.bookings
-        .filter(booking => booking.status !== 'MEMBER_CANCELLED' && booking.status !== 'BBS_CANCELLED')
+        .filter(booking => !['MEMBER_CANCELLED', 'BBS_CANCELLED', 'REJECTED', 'EXPIRED'].includes(booking.status))
         .flatMap((booking) => booking.participants);
 
     const handleMarkAttendance = async (status: 'ATTENDED' | 'NO_SHOW') => {
@@ -321,7 +349,7 @@ export default function AdminSessionDetailClient({
                 status,
                 creditAction: status === 'NO_SHOW' ? 'CONSUMED' : undefined
             }));
-            
+
             for (const update of updates) {
                 await resolveAttendanceAction(update.bookingParticipantId, update.status, update.creditAction as any);
             }
@@ -342,10 +370,10 @@ export default function AdminSessionDetailClient({
                 date: session.date,
                 startTime: session.startTime,
                 endTime: session.endTime,
-                capacity: 2, 
+                capacity: 2,
                 closedReason: session.isOpen ? 'Ditutup oleh Admin' : null
             }];
-            
+
             const res = await multiToggleSlotAction(payload, !session.isOpen);
             if (res.ok) {
                 setIsSessionMenuOpen(false);
@@ -508,159 +536,244 @@ export default function AdminSessionDetailClient({
                 </div>
 
                 <div>
-                    {session.bookings.length === 0 ? (
-                        <div
-                            style={{
-                                padding: '18px 0',
-                                textAlign: 'center',
-                                color: 'var(--muted)',
-                                fontSize: '13px',
-                            }}
-                        >
-                            Belum ada booking untuk sesi ini.
-                        </div>
-                    ) : (
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                            }}
-                        >
-                            {session.bookings.map((booking, index) => {
-                                const isPending = booking.status === 'PENDING';
+                    {(() => {
+                        const activeBookings = session.bookings.filter(b => !['MEMBER_CANCELLED', 'BBS_CANCELLED', 'REJECTED', 'EXPIRED'].includes(b.status));
+                        const cancelledBookings = session.bookings.filter(b => ['MEMBER_CANCELLED', 'BBS_CANCELLED', 'REJECTED', 'EXPIRED'].includes(b.status));
 
-                                return (
+                        return (
+                            <>
+                                {activeBookings.length === 0 ? (
                                     <div
-                                        key={booking.id}
                                         style={{
-                                            borderBottom:
-                                                index < session.bookings.length - 1
-                                                    ? '1px solid rgba(0,0,0,0.06)'
-                                                    : 'none',
-                                            paddingTop: index === 0 ? '8px' : '16px',
-                                            paddingBottom:
-                                                index < session.bookings.length - 1 ? '16px' : '0',
+                                            padding: '24px 16px',
+                                            textAlign: 'center',
+                                            color: 'var(--muted)',
+                                            fontSize: '13px',
+                                            background: '#FAF8F5',
+                                            borderRadius: '14px',
+                                            border: '1px dashed #E2DCD0',
                                         }}
                                     >
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                marginBottom: '12px',
-                                            }}
-                                        >
-                                            <span style={{ fontSize: '13px', fontWeight: 600 }}>
-                                                Booking #{index + 1}
-                                            </span>
-
-                                            <span
-                                                style={{
-                                                    fontSize: '11px',
-                                                    fontWeight: 700,
-                                                    color: isPending ? 'var(--warning-dark)' : 'var(--ink)',
-                                                    padding: '2px 6px',
-                                                    background: isPending ? 'var(--warning-light)' : 'rgba(0,0,0,0.05)',
-                                                    borderRadius: '4px',
-                                                }}
-                                            >
-                                                {booking.status}
-                                            </span>
-                                        </div>
-
-                                        {booking.notes && (
-                                            <div
-                                                style={{
-                                                    background: booking.notes.includes('Fotografer') ? '#FEF3C7' : '#F4F4F5',
-                                                    border: `1px solid ${booking.notes.includes('Fotografer') ? '#FDE68A' : '#E4E4E7'}`,
-                                                    borderRadius: '10px',
-                                                    padding: '8px 12px',
-                                                    marginBottom: '12px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '8px',
-                                                    fontSize: '12px',
-                                                    color: booking.notes.includes('Fotografer') ? '#92400E' : 'var(--ink)',
-                                                    fontWeight: 600,
-                                                }}
-                                            >
-                                                <span>{booking.notes}</span>
-                                            </div>
-                                        )}
-
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '4px',
-                                            }}
-                                        >
-                                            {booking.participants.map((p) => (
-                                                <ParticipantRow
-                                                    key={p.id}
-                                                    participant={p}
-                                                    isMenuOpen={openMenuParticipantId === p.id}
-                                                    onToggleMenu={() => setOpenMenuParticipantId(openMenuParticipantId === p.id ? null : p.id)}
-                                                    isSelected={selectedUsers.includes(p.id)}
-                                                    onToggleSelection={() => setSelectedUsers(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])}
-                                                    onOpenHorsePicker={() => setHorsePickerParticipantId(p.id)}
-                                                />
-                                            ))}
-                                        </div>
-
-                                        {isPending && (
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    gap: '8px',
-                                                    marginTop: '16px',
-                                                }}
-                                            >
-                                                <button
-                                                    onClick={() => setRejectModalBookingId(booking.id)}
-                                                    style={{
-                                                        flex: 1,
-                                                        background: 'rgba(239,68,68,0.1)',
-                                                        color: '#ef4444',
-                                                        padding: '12px',
-                                                        fontSize: '14px',
-                                                        fontWeight: 600,
-                                                        border: 'none',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                    }}
-                                                >
-                                                    Tolak
-                                                </button>
-                                                <button
-                                                    onClick={() => handleApproveBooking(booking.id)}
-                                                    disabled={approvingBookingId === booking.id || isRejecting}
-                                                    style={{
-                                                        flex: 1,
-                                                        background: 'var(--green)',
-                                                        color: '#fff',
-                                                        padding: '12px',
-                                                        fontSize: '14px',
-                                                        fontWeight: 600,
-                                                        border: 'none',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        gap: '6px',
-                                                    }}
-                                                >
-                                                    {approvingBookingId === booking.id && <Loader2 size={16} className="spin" />}
-                                                    Terima
-                                                </button>
-                                            </div>
-                                        )}
+                                        Belum ada rider aktif di sesi ini. Slot tersedia untuk dibooking.
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                                ) : (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                        }}
+                                    >
+                                        {activeBookings.map((booking, index) => {
+                                            const isPending = booking.status === 'PENDING';
+                                            const statusBadge = getBookingStatusBadge(booking.status);
+                                            const receiptUrl = extractReceiptUrl(booking.notes);
+
+                                            return (
+                                                <div
+                                                    key={booking.id}
+                                                    style={{
+                                                        borderBottom:
+                                                            index < activeBookings.length - 1
+                                                                ? '1px solid rgba(0,0,0,0.06)'
+                                                                : 'none',
+                                                        paddingTop: index === 0 ? '8px' : '16px',
+                                                        paddingBottom:
+                                                            index < activeBookings.length - 1 ? '16px' : '0',
+                                                    }}
+                                                >
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            marginBottom: '12px',
+                                                        }}
+                                                    >
+                                                        <span style={{ fontSize: '13px', fontWeight: 600 }}>
+                                                            Booking #{index + 1}
+                                                        </span>
+
+                                                        <span
+                                                            style={{
+                                                                fontSize: '11px',
+                                                                fontWeight: 700,
+                                                                color: statusBadge.text,
+                                                                padding: '3px 8px',
+                                                                background: statusBadge.bg,
+                                                                borderRadius: '100px',
+                                                            }}
+                                                        >
+                                                            {statusBadge.label}
+                                                        </span>
+                                                    </div>
+
+                                                    {booking.notes && (
+                                                        <div
+                                                            style={{
+                                                                background: booking.notes.includes('Fotografer') ? '#FEF3C7' : '#F4F4F5',
+                                                                border: `1px solid ${booking.notes.includes('Fotografer') ? '#FDE68A' : '#E4E4E7'}`,
+                                                                borderRadius: '10px',
+                                                                padding: '10px 12px',
+                                                                marginBottom: '12px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                                gap: '8px',
+                                                                fontSize: '12px',
+                                                                color: booking.notes.includes('Fotografer') ? '#92400E' : 'var(--ink)',
+                                                                fontWeight: 600,
+                                                                flexWrap: 'wrap',
+                                                            }}
+                                                        >
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <Camera size={15} strokeWidth={2} />
+                                                                <span>{booking.notes.split('[Bukti:')[0].trim()}</span>
+                                                            </div>
+
+                                                            {receiptUrl && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setPreviewReceiptUrl(receiptUrl)}
+                                                                    style={{
+                                                                        background: '#92400E',
+                                                                        color: '#FFF',
+                                                                        border: 'none',
+                                                                        borderRadius: '6px',
+                                                                        padding: '4px 10px',
+                                                                        fontSize: '11px',
+                                                                        fontWeight: 700,
+                                                                        cursor: 'pointer',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: '4px',
+                                                                    }}
+                                                                >
+                                                                    <Eye size={12} />
+                                                                    <span>Lihat Bukti Transfer</span>
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: '4px',
+                                                        }}
+                                                    >
+                                                        {booking.participants.map((p) => (
+                                                            <ParticipantRow
+                                                                key={p.id}
+                                                                participant={p}
+                                                                isMenuOpen={openMenuParticipantId === p.id}
+                                                                onToggleMenu={() => setOpenMenuParticipantId(openMenuParticipantId === p.id ? null : p.id)}
+                                                                isSelected={selectedUsers.includes(p.id)}
+                                                                onToggleSelection={() => setSelectedUsers(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])}
+                                                                onOpenHorsePicker={() => setHorsePickerParticipantId(p.id)}
+                                                            />
+                                                        ))}
+                                                    </div>
+
+                                                    {isPending && (
+                                                        <div
+                                                            style={{
+                                                                display: 'flex',
+                                                                gap: '8px',
+                                                                marginTop: '16px',
+                                                            }}
+                                                        >
+                                                            <button
+                                                                onClick={() => setRejectModalBookingId(booking.id)}
+                                                                style={{
+                                                                    flex: 1,
+                                                                    background: 'rgba(239,68,68,0.1)',
+                                                                    color: '#ef4444',
+                                                                    padding: '12px',
+                                                                    fontSize: '14px',
+                                                                    fontWeight: 600,
+                                                                    border: 'none',
+                                                                    borderRadius: '8px',
+                                                                    cursor: 'pointer',
+                                                                }}
+                                                            >
+                                                                Tolak
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleApproveBooking(booking.id)}
+                                                                disabled={approvingBookingId === booking.id || isRejecting}
+                                                                style={{
+                                                                    flex: 1,
+                                                                    background: 'var(--green)',
+                                                                    color: '#fff',
+                                                                    padding: '12px',
+                                                                    fontSize: '14px',
+                                                                    fontWeight: 600,
+                                                                    border: 'none',
+                                                                    borderRadius: '8px',
+                                                                    cursor: 'pointer',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: '6px',
+                                                                }}
+                                                            >
+                                                                {approvingBookingId === booking.id && <Loader2 size={16} className="spin" />}
+                                                                Terima
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* Riwayat Pembatalan */}
+                                {cancelledBookings.length > 0 && (
+                                    <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            Riwayat Pembatalan ({cancelledBookings.length})
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            {cancelledBookings.map((booking, idx) => {
+                                                const statusBadge = getBookingStatusBadge(booking.status);
+                                                return (
+                                                    <div key={booking.id} style={{ background: '#FAF8F5', borderRadius: '12px', padding: '12px 14px', border: '1px solid #ECE7DE' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                                            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>
+                                                                Booking #{idx + 1}
+                                                            </span>
+                                                            <span style={{ fontSize: '11px', fontWeight: 700, color: statusBadge.text, background: statusBadge.bg, padding: '2px 8px', borderRadius: '100px' }}>
+                                                                {statusBadge.label}
+                                                            </span>
+                                                        </div>
+                                                        {booking.cancellationReason && (
+                                                            <div style={{ fontSize: '11px', color: '#B91C1C', marginBottom: '6px' }}>
+                                                                Alasan: {booking.cancellationReason}
+                                                            </div>
+                                                        )}
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                            {booking.participants.map(p => (
+                                                                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.65 }}>
+                                                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#EAE6DC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>
+                                                                        {p.name.charAt(0)}
+                                                                    </div>
+                                                                    <span style={{ fontSize: '13px', color: 'var(--muted)', textDecoration: 'line-through' }}>
+                                                                        {p.name}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             </section>
 
@@ -746,7 +859,7 @@ export default function AdminSessionDetailClient({
             </section>
 
             {rejectModalBookingId && (
-                <div onClick={(e) => { if(e.target === e.currentTarget) setRejectModalBookingId(null); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '16px' }}>
+                <div onClick={(e) => { if (e.target === e.currentTarget) setRejectModalBookingId(null); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '16px' }}>
                     <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '400px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                         <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600 }}>Tolak booking</h3>
                         <label style={{ display: 'block', fontSize: '13px', color: 'var(--muted)', marginBottom: '8px' }}>Alasan penolakan</label>
@@ -781,16 +894,16 @@ export default function AdminSessionDetailClient({
             )}
 
             {isSessionMenuOpen && (
-                <div onClick={(e) => { if(e.target === e.currentTarget) setIsSessionMenuOpen(false); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                <div onClick={(e) => { if (e.target === e.currentTarget) setIsSessionMenuOpen(false); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                     <div style={{ background: '#FFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '24px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Opsi Sesi</h2>
                             <button onClick={() => setIsSessionMenuOpen(false)} style={{ padding: '8px', background: '#F5F5F5', borderRadius: '50%', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <button 
+                            <button
                                 onClick={handleToggleSessionStatus}
-                                disabled={isClosingSession} 
+                                disabled={isClosingSession}
                                 style={{ padding: '16px', borderRadius: '16px', background: session.isOpen ? '#FFF0F0' : '#F0F7F1', color: session.isOpen ? '#D32F2F' : '#24723C', fontSize: '15px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '12px', opacity: isClosingSession ? 0.5 : 1, border: 'none', cursor: 'pointer' }}
                             >
                                 {isClosingSession ? <Loader2 size={18} className="spin" /> : null}
@@ -802,7 +915,7 @@ export default function AdminSessionDetailClient({
             )}
 
             {horsePickerParticipantId && (
-                <div onClick={(e) => { if(e.target === e.currentTarget && !isAssigningHorse) { setHorsePickerParticipantId(null); setPendingHorseId(undefined); } }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                <div onClick={(e) => { if (e.target === e.currentTarget && !isAssigningHorse) { setHorsePickerParticipantId(null); setPendingHorseId(undefined); } }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                     <div style={{ background: '#FFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '28px 24px', paddingBottom: 'max(env(safe-area-inset-bottom, 24px), 32px)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                             <div>
@@ -833,7 +946,7 @@ export default function AdminSessionDetailClient({
                                             border: isSelected ? '2px solid var(--ink)' : '2px solid transparent',
                                             transition: 'all 0.15s ease',
                                         }}>
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={isSelected ? '#fff' : 'var(--ink)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.9 }}><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5"/><path d="M9 11v-1"/></svg>
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={isSelected ? '#fff' : 'var(--ink)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.9 }}><path d="M12.5 22H18v-3l-2-2v-3l1-2V8c0-1-1-1.5-2-1V5c0-1-1-1.5-2-1H9c-1 0-2 1-2 2v2c0 .5-.5 1-1 1H5l-1 2 2 3v3l-2 2v3h6.5" /><path d="M9 11v-1" /></svg>
                                         </div>
                                         <span style={{ fontSize: '12px', fontWeight: isSelected ? 700 : 600, color: isSelected ? 'var(--ink)' : 'var(--muted)' }}>{horse.name}</span>
                                     </button>
@@ -881,23 +994,23 @@ export default function AdminSessionDetailClient({
             )}
 
             {selectedUsers.length > 0 && (
-                <div style={{ 
-                    position: 'fixed', 
-                    bottom: '12px', 
-                    left: '50%', 
+                <div style={{
+                    position: 'fixed',
+                    bottom: '12px',
+                    left: '50%',
                     transform: 'translateX(-50%)',
-                    width: 'calc(100% - 24px)', 
+                    width: 'calc(100% - 24px)',
                     maxWidth: '456px',
                     height: '72px',
-                    background: '#161618', 
-                    borderRadius: '28px', 
-                    padding: '0 6px 0 20px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between', 
-                    zIndex: 100, 
-                    boxShadow: '0 18px 40px rgba(0,0,0,0.4)', 
-                    color: '#FFF' 
+                    background: '#161618',
+                    borderRadius: '28px',
+                    padding: '0 6px 0 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    zIndex: 100,
+                    boxShadow: '0 18px 40px rgba(0,0,0,0.4)',
+                    color: '#FFF'
                 }}>
                     <div style={{ fontSize: '15px', fontWeight: 600 }}>
                         {selectedUsers.length} Rider
@@ -909,6 +1022,66 @@ export default function AdminSessionDetailClient({
                         <button onClick={() => handleMarkAttendance('NO_SHOW')} disabled={isSavingAttendance} style={{ background: 'rgba(255,255,255,0.1)', color: '#FFF', height: '48px', padding: '0 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
                             Tidak Hadir
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Lightbox Bukti Transfer */}
+            {previewReceiptUrl && (
+                <div
+                    onClick={() => setPreviewReceiptUrl(null)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 1000,
+                        background: 'rgba(0,0,0,0.75)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px',
+                        backdropFilter: 'blur(4px)',
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: '#fff',
+                            borderRadius: '20px',
+                            maxWidth: '480px',
+                            width: '100%',
+                            maxHeight: '90vh',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                            <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>Bukti Transfer Fotografer</span>
+                            <button
+                                onClick={() => setPreviewReceiptUrl(null)}
+                                style={{ background: '#f4f4f5', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div style={{ padding: '16px', overflowY: 'auto', display: 'flex', justifyContent: 'center', background: '#faf8f5' }}>
+                            <img
+                                src={previewReceiptUrl}
+                                alt="Bukti Transfer"
+                                style={{ maxWidth: '100%', maxHeight: '65vh', objectFit: 'contain', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.08)' }}
+                            />
+                        </div>
+                        <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                            <a
+                                href={previewReceiptUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', textDecoration: 'underline' }}
+                            >
+                                Buka di tab baru
+                            </a>
+                        </div>
                     </div>
                 </div>
             )}

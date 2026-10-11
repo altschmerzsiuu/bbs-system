@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHorizontal, X, Bell, Calendar, Camera, Check } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, MapPin, User as UserIcon, MoreHorizontal, X, Bell, Calendar, Camera, Check, Copy, UploadCloud, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
-import { submitBooking } from './actions';
+import { submitBooking, uploadPhotographerReceiptAction } from './actions';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createClient } from '@/infrastructure/supabase-browser';
 
@@ -16,12 +16,18 @@ const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'Ju
 const PHOTOGRAPHER_PRICE = 200000;
 const formatRp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
 
-const SlideToConfirm = ({ onConfirm, loading }: { onConfirm: () => void, loading: boolean }) => {
+const SlideToConfirm = ({ onConfirm, loading, resetKey }: { onConfirm: () => void, loading: boolean, resetKey?: number }) => {
   const [position, setPosition] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const startX = useRef(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setPosition(0);
+    }
+  }, [loading, resetKey]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (loading) return;
@@ -108,7 +114,9 @@ const SlideToConfirm = ({ onConfirm, loading }: { onConfirm: () => void, loading
         }}
       >
         {loading ? (
-          <span style={{ fontSize: '15px', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>Confirming...</span>
+          <span style={{ fontSize: '15px', fontWeight: 700, animation: 'pulse 1.5s infinite', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Loader2 size={18} className="spin" /> Confirming...
+          </span>
         ) : (
           <ArrowRight size={24} />
         )}
@@ -146,9 +154,18 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [withPhotographer, setWithPhotographer] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [copiedRekening, setCopiedRekening] = useState(false);
+  const [sliderResetKey, setSliderResetKey] = useState(0);
 
-  React.useEffect(() => {
-    if (!isConfirmModalOpen) setWithPhotographer(false);
+  useEffect(() => {
+    if (!isConfirmModalOpen) {
+      setWithPhotographer(false);
+      setReceiptFile(null);
+      setReceiptPreview(null);
+      setCopiedRekening(false);
+    }
   }, [isConfirmModalOpen]);
 
   const [isPassModalOpen, setIsPassModalOpen] = useState(false);
@@ -158,7 +175,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
   const [loading, setLoading] = useState(false);
 
   // Background auto-refresh for near real-time updates using Supabase Realtime
-  React.useEffect(() => {
+  useEffect(() => {
     const supabase = createClient();
     const channel = supabase.channel('member_schedule_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
@@ -193,41 +210,97 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
 
   const handleBook = async () => {
     if (!selectedSlot) return;
-    setLoading(true);
 
-    let res: any;
-    if (selectedSlot.id.startsWith('mock-')) {
-      // Simulate network delay for mock slots
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      res = { ok: true, bookingId: 'bbs-mock-new' };
-    } else {
-      res = await submitBooking(selectedSlot.id, { hasPhotographer: withPhotographer });
-    }
-
-    setLoading(false);
-    if (res.ok) {
-      setBookedPassData({
-        id: ('bookingId' in res) ? res.bookingId : 'mock-id',
-        date: selectedSlot.slot_date,
-        startTime: selectedSlot.start_time,
-        endTime: selectedSlot.end_time,
-        status: 'PENDING',
-        hasPhotographer: withPhotographer
-      });
-      setIsConfirmModalOpen(false);
-      setIsPassModalOpen(true);
-      setSelectedSlot(null);
-    } else {
-      const errMsg = res.message || 'Booking failed. Please try again.';
+    if (withPhotographer && !receiptFile && !selectedSlot.id.startsWith('mock-')) {
       toast.custom((t) => (
         <AlertToast
-          title="Booking Gagal"
-          description={errMsg}
+          title="Bukti Transfer Belum Ada"
+          description="Silakan unggah foto/screenshot bukti transfer fotografer terlebih dahulu."
           variant="destructive"
           onDismiss={() => toast.dismiss(t)}
         />
       ));
-      setIsConfirmModalOpen(false);
+      setSliderResetKey(k => k + 1);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      let receiptUrl: string | undefined;
+
+      if (withPhotographer && receiptFile) {
+        const formData = new FormData();
+        formData.append('receipt', receiptFile);
+        const uploadRes = await uploadPhotographerReceiptAction(formData);
+        if (!uploadRes.ok) {
+          toast.custom((t) => (
+            <AlertToast
+              title="Gagal Upload Bukti"
+              description={uploadRes.message || 'Gagal mengunggah bukti transfer.'}
+              variant="destructive"
+              onDismiss={() => toast.dismiss(t)}
+            />
+          ));
+          setLoading(false);
+          setSliderResetKey(k => k + 1);
+          return;
+        }
+        receiptUrl = uploadRes.url;
+      }
+
+      let res: any;
+      if (selectedSlot.id.startsWith('mock-')) {
+        // Simulate network delay for mock slots
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        res = { ok: true, bookingId: 'bbs-mock-new' };
+      } else {
+        res = await submitBooking(selectedSlot.id, { 
+          hasPhotographer: withPhotographer,
+          receiptUrl 
+        });
+      }
+
+      setLoading(false);
+      if (res.ok) {
+        setBookedPassData({
+          id: ('bookingId' in res) ? res.bookingId : 'mock-id',
+          date: selectedSlot.slot_date,
+          startTime: selectedSlot.start_time,
+          endTime: selectedSlot.end_time,
+          status: 'PENDING',
+          hasPhotographer: withPhotographer
+        });
+        setIsConfirmModalOpen(false);
+        setIsPassModalOpen(true);
+        setSelectedSlot(null);
+        setWithPhotographer(false);
+        setReceiptFile(null);
+        setReceiptPreview(null);
+      } else {
+        const errMsg = res.message || 'Booking failed. Please try again.';
+        toast.custom((t) => (
+          <AlertToast
+            title="Booking Gagal"
+            description={errMsg}
+            variant="destructive"
+            onDismiss={() => toast.dismiss(t)}
+          />
+        ));
+        setSliderResetKey(k => k + 1);
+        setIsConfirmModalOpen(false);
+      }
+    } catch (err: any) {
+      setLoading(false);
+      setSliderResetKey(k => k + 1);
+      toast.custom((t) => (
+        <AlertToast
+          title="Booking Gagal"
+          description={err.message || 'Terjadi kesalahan sistem.'}
+          variant="destructive"
+          onDismiss={() => toast.dismiss(t)}
+        />
+      ));
     }
   };
 
@@ -495,7 +568,14 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                 }
               }}
               onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
-              style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '16px 24px 40px', position: 'relative' }}
+              style={{
+                background: '#fff',
+                borderRadius: '32px 32px 0 0',
+                padding: '16px 24px 40px',
+                position: 'relative',
+                maxHeight: '90vh',
+                overflowY: 'auto'
+              }}
             >
               {/* Drag Handle Indicator */}
               <div style={{ width: '40px', height: '4px', background: '#e0e0e0', borderRadius: '2px', margin: '0 auto 24px' }} />
@@ -505,7 +585,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                 Are you sure you want to book this session?
               </p>
 
-              <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', marginBottom: '24px', border: '1px solid #efeade' }}>
+              <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', marginBottom: '16px', border: '1px solid #efeade' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Rider</span>
                   <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{memberName.split(' ')[0]}</span>
@@ -520,9 +600,9 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                 </div>
 
                 {withPhotographer && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed #e2dcd0' }}>
                     <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Fotografer</span>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{formatRp(PHOTOGRAPHER_PRICE)}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#4f6b49' }}>+ {formatRp(PHOTOGRAPHER_PRICE)}</span>
                   </div>
                 )}
               </div>
@@ -531,21 +611,31 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                 type="button"
                 role="switch"
                 aria-checked={withPhotographer}
-                onClick={() => setWithPhotographer(v => !v)}
+                onClick={() => {
+                  setWithPhotographer(v => {
+                    const next = !v;
+                    if (!next) {
+                      setReceiptFile(null);
+                      setReceiptPreview(null);
+                    }
+                    return next;
+                  });
+                }}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left',
-                  padding: '14px 16px', marginBottom: '20px', borderRadius: '16px', cursor: 'pointer',
+                  padding: '14px 16px', marginBottom: withPhotographer ? '14px' : '20px', borderRadius: '16px', cursor: 'pointer',
                   background: withPhotographer ? '#f1f6ef' : '#fff',
-                  border: `1px solid ${withPhotographer ? '#7c9a75' : '#e6e1d4'}`,
+                  border: `1.5px solid ${withPhotographer ? '#7c9a75' : '#e6e1d4'}`,
+                  transition: 'all 0.2s ease',
                 }}
               >
                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: withPhotographer ? '#7c9a75' : '#f5f7f5', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
                   <Camera size={20} color={withPhotographer ? '#fff' : 'var(--ink)'} strokeWidth={1.8} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>Tambah fotografer</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>Tambah Fotografer</div>
                   <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
-                    {formatRp(PHOTOGRAPHER_PRICE)} per sesi · dibayar terpisah di lokasi
+                    {formatRp(PHOTOGRAPHER_PRICE)}/Sesi · transfer bank & upload bukti
                   </div>
                 </div>
                 <div style={{ width: '44px', height: '26px', borderRadius: '13px', background: withPhotographer ? '#7c9a75' : '#d9d5c8', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
@@ -553,7 +643,168 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                 </div>
               </button>
 
-              <SlideToConfirm loading={loading} onConfirm={handleBook} />
+              {/* Transfer Details & Proof Upload when photographer is enabled */}
+              {withPhotographer && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                  {/* Rekening Info Card */}
+                  <div style={{
+                    background: '#FAF8F5',
+                    border: '1px solid #ECE7DC',
+                    borderRadius: '16px',
+                    padding: '14px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--ink)', letterSpacing: '0.4px' }}>
+                        TRANSFER BANK BCA
+                      </span>
+                      <span style={{ fontSize: '10px', background: 'rgba(216, 188, 128, 0.22)', color: '#8C6E2D', padding: '2px 8px', borderRadius: '100px', fontWeight: 800 }}>
+                        OFFICIAL BBS
+                      </span>
+                    </div>
+
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#FFFFFF',
+                      border: '1px solid #ECE7DC',
+                      padding: '10px 14px',
+                      borderRadius: '12px'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Nomor Rekening</div>
+                        <span style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '1px', fontFamily: 'monospace', color: 'var(--ink)' }}>
+                          1490011867027
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText('1490011867027');
+                          setCopiedRekening(true);
+                          setTimeout(() => setCopiedRekening(false), 2000);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          background: copiedRekening ? '#15803D' : 'var(--ink)',
+                          color: '#FFF',
+                          border: 'none',
+                          height: '34px',
+                          padding: '0 12px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {copiedRekening ? <Check size={13} /> : <Copy size={13} />}
+                        <span>{copiedRekening ? 'Tersalin' : 'Salin'}</span>
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                      <span style={{ color: 'var(--muted)' }}>A/N <b style={{ color: 'var(--ink)', fontWeight: 700 }}>PT BERKAH BERKUDA SEJAHTERA</b></span>
+                      <span style={{ fontWeight: 800, color: '#8C6E2D', fontSize: '13px' }}>Rp 200.000</span>
+                    </div>
+                  </div>
+
+                  {/* Upload Dropzone */}
+                  <label style={{
+                    display: 'block',
+                    background: '#FAF8F5',
+                    border: receiptFile ? '1.5px solid #7c9a75' : '1.5px dashed #D5CEBE',
+                    borderRadius: '16px',
+                    padding: '14px 16px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.2s ease, background 0.2s ease',
+                    position: 'relative'
+                  }}>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        if (f.size > 5 * 1024 * 1024) {
+                          toast.error('Ukuran foto maksimal 5MB');
+                          return;
+                        }
+                        setReceiptFile(f);
+                        const url = URL.createObjectURL(f);
+                        setReceiptPreview(url);
+                      }}
+                      style={{ display: 'none' }}
+                    />
+
+                    {!receiptFile ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#F0EBE1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <UploadCloud size={18} color="var(--ink)" />
+                        </div>
+                        <div style={{ textAlign: 'left' }}>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
+                            Upload Bukti Transfer
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
+                            Ketuk untuk unggah screenshot transfer (Maks. 5MB)
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                          {receiptPreview && (
+                            <div style={{ width: '38px', height: '38px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ECE7DC', flexShrink: 0 }}>
+                              <img src={receiptPreview} alt="Receipt preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                          )}
+                          <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                            <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--ink)', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '180px' }}>
+                              {receiptFile.name}
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#15803D', fontWeight: 600, marginTop: '2px' }}>
+                              {(receiptFile.size / 1024).toFixed(0)} KB · Bukti Siap
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setReceiptFile(null);
+                            setReceiptPreview(null);
+                          }}
+                          style={{
+                            width: '30px',
+                            height: '30px',
+                            borderRadius: '8px',
+                            background: '#FEE2E2',
+                            border: 'none',
+                            color: '#DC2626',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              )}
+
+              <SlideToConfirm loading={loading} onConfirm={handleBook} resetKey={sliderResetKey} />
             </motion.div>
           </motion.div>
         )}
