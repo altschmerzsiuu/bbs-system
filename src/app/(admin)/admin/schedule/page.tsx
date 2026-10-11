@@ -14,7 +14,7 @@ export default async function AdminSchedulePage({
 }: AdminSchedulePageProps) {
   const params = await searchParams;
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
   const date = params.date ?? today;
 
   let slots: AdminScheduleSlot[] = [];

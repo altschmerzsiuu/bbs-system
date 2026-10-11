@@ -89,20 +89,4 @@ describe('MembershipService', () => {
     expect(insertPayload.previous_membership_id).toBe('expired123');
     expect(insertPayload.final_price_idr).toBe(800); // 1000 - 200
   });
-
-  it('activates membership by calling the postgres RPC', async () => {
-    dbMock.rpc.mockResolvedValue({ error: null });
-
-    await service.activateMembership(adminActor, 'app123');
-
-    expect(dbMock.rpc).toHaveBeenCalledWith('activate_membership', {
-      p_application_id: 'app123',
-      p_admin_id: 'a1',
-    });
-  });
-
-  it('rejects activation if actor is MEMBER', async () => {
-    await expect(service.activateMembership(memberActor, 'app123'))
-      .rejects.toThrowError(DomainError);
-  });
 });

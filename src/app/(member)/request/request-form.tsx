@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { submitRequest } from './actions';
 import { ArrowRight, Info, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { AlertToast } from '@/components/ui/alert-toast';
 
 type MemberData = {
   full_name?: string;
@@ -54,11 +56,6 @@ export default function RequestForm({
     if (requestType === 'MEMBERSHIP_APPLICATION' && selectedPlan) {
       formData.set('planId', selectedPlan);
     }
-    
-    if ((requestType === 'CASUAL_RIDE' || requestType === 'JOY_RIDE') && selectedDate && selectedTime) {
-      formData.set('preferredDate', selectedDate);
-      formData.set('preferredTime', selectedTime);
-    }
 
     try {
       const result = await submitRequest(formData);
@@ -66,7 +63,12 @@ export default function RequestForm({
         setError(result.error);
         setIsSubmitting(false);
       } else if (result?.success) {
-        router.push(`/request/success?id=${result.requestId}&type=${result.requestType}`);
+        toast.custom((t) => <AlertToast title="Berhasil" description="Request berhasil terkirim." onDismiss={() => toast.dismiss(t)} />);
+        if (requestType === 'MEMBERSHIP_APPLICATION') {
+          router.push('/membership');
+        } else {
+          router.push('/home');
+        }
       }
     } catch (err) {
       setError('Terjadi kesalahan. Silakan coba lagi.');
@@ -235,15 +237,15 @@ export default function RequestForm({
         </section>
 
         {/* 4. Contextual UI */}
+        {requestType === 'MEMBERSHIP_APPLICATION' && (
         <section>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--ink)', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700 }}>4</div>
             <h2 style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-sans)', margin: 0, color: 'var(--ink)' }}>
-              {requestType === 'MEMBERSHIP_APPLICATION' ? 'Choose your membership' : 'Choose your preferred slot'}
+              Choose your membership
             </h2>
           </div>
           
-          {requestType === 'MEMBERSHIP_APPLICATION' ? (
             <div style={{ display: 'grid', gap: '12px' }}>
               {plans.map(plan => {
                 const isSelected = selectedPlan === plan.id;
@@ -275,62 +277,8 @@ export default function RequestForm({
                 );
               })}
             </div>
-          ) : (
-            <div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={labelStyle}>Select Date</label>
-                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', WebkitOverflowScrolling: 'touch' }}>
-                  {availableDates.map(date => (
-                    <div
-                      key={date}
-                      onClick={() => { setSelectedDate(date); setSelectedTime(null); }}
-                      style={{
-                        padding: '12px 16px', borderRadius: '12px', minWidth: 'max-content',
-                        border: `1px solid ${selectedDate === date ? 'var(--gold)' : '#e0dfda'}`,
-                        background: selectedDate === date ? '#fbf8f1' : 'var(--white)',
-                        color: selectedDate === date ? 'var(--ink)' : 'var(--muted)',
-                        fontWeight: selectedDate === date ? 600 : 400,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {new Date(date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {selectedDate && (
-                <div>
-                  <label style={labelStyle}>Select Time</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {clientAvailableTimes.map(timeObj => {
-                      const isSelected = selectedTime === timeObj.value;
-                      const isDisabled = timeObj.disabled;
-                      
-                      return (
-                        <div
-                          key={timeObj.value}
-                          onClick={() => { if (!isDisabled) setSelectedTime(timeObj.value); }}
-                          style={{
-                            padding: '10px 16px', borderRadius: '12px',
-                            border: `1px solid ${isSelected ? 'var(--gold)' : '#e0dfda'}`,
-                            background: isSelected ? '#fbf8f1' : (isDisabled ? '#f5f5f5' : 'var(--white)'),
-                            color: isSelected ? 'var(--ink)' : (isDisabled ? '#d0cfca' : 'var(--muted)'),
-                            fontWeight: isSelected ? 600 : 400,
-                            cursor: isDisabled ? 'not-allowed' : 'pointer',
-                            opacity: isDisabled ? 0.6 : 1
-                          }}
-                        >
-                          {timeObj.value.slice(0, 5)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </section>
+        )}
 
         {error && (
           <div style={{ background: '#fce8e8', color: 'var(--red)', padding: '16px', borderRadius: '16px', fontSize: '14px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>

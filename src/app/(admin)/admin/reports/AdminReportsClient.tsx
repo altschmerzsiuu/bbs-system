@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, TrendingUp } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Download } from 'lucide-react';
+import { toast } from 'sonner';
+import { AlertToast } from '@/components/ui/alert-toast';
 
 type ReportData = {
   weekStats: { total: number; attended: number; noShow: number; cancelled: number; attendanceRate: number };
@@ -24,6 +26,76 @@ export default function AdminReportsClient({ data }: { data: ReportData }) {
 
   const maxBar = Math.max(...data.weekBreakdown.map(w => w.count), 1);
 
+  const exportToJPG = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 700;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Background
+    ctx.fillStyle = '#1C1C1E';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Title
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillText('BBS · Rangkuman Laporan', 60, 80);
+
+    // Subtitle
+    ctx.fillStyle = '#BDBDBD';
+    ctx.font = '400 22px sans-serif';
+    ctx.fillText(activeTab === 'week' ? `Minggu Ini (${periodLabel})` : `Bulan Ini (${periodLabel})`, 60, 120);
+
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(60, 150, 680, 2);
+
+    // Main Stats
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 42px sans-serif';
+    ctx.fillText(`${stats.total} Sesi Berjalan`, 60, 220);
+
+    ctx.fillStyle = '#81C784';
+    ctx.font = '600 24px sans-serif';
+    ctx.fillText(`✅ ${stats.attended} Hadir`, 60, 270);
+
+    ctx.fillStyle = '#E57373';
+    ctx.fillText(`❌ ${stats.noShow} No-Show`, 260, 270);
+    ctx.fillText(`🚫 ${stats.cancelled} Batal`, 460, 270);
+
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(60, 310, 680, 2);
+
+    // Other Details
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 26px sans-serif';
+    ctx.fillText('Rincian Aktivitas', 60, 370);
+
+    ctx.fillStyle = '#BDBDBD';
+    ctx.font = '400 22px sans-serif';
+    ctx.fillText(`Tingkat Kehadiran: ${stats.attendanceRate}%`, 60, 420);
+    ctx.fillText(`Total Member Terdaftar: ${data.totalMembers}`, 60, 460);
+    ctx.fillText(`Total Kuda Aktif: ${data.totalHorses}`, 60, 500);
+
+    if (data.topHorse) {
+      ctx.fillText(`Kuda Paling Sering Dipakai: ${data.topHorse.name} (${data.topHorse.count} sesi)`, 60, 540);
+    }
+
+    ctx.fillStyle = '#555555';
+    ctx.font = '16px sans-serif';
+    ctx.fillText('BBS Riding Club', 60, 650);
+
+    // Trigger download
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `BBS-Laporan-${activeTab}-${new Date().getTime()}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.custom((t) => <AlertToast title="Berhasil" description="Laporan berhasil diunduh sebagai JPG." onDismiss={() => toast.dismiss(t)} />);
+  };
+
   return (
     <section className="screen active" data-page="reports">
       {/* Appbar */}
@@ -38,7 +110,13 @@ export default function AdminReportsClient({ data }: { data: ReportData }) {
           <div style={{ fontSize: '15px', fontWeight: 700 }}>Laporan</div>
           <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Ringkasan performa stable</div>
         </div>
-        <div style={{ width: 36 }} />
+        <button
+          onClick={exportToJPG}
+          style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: 'none', background: 'var(--ink)', color: '#fff', cursor: 'pointer' }}
+          title="Download JPG"
+        >
+          <Download size={16} />
+        </button>
       </div>
 
       {/* Tabs */}

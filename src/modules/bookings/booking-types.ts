@@ -67,6 +67,15 @@ export interface MemberHomeViewModel {
         sharedWith: string[];
     } | null;
 
+    upcomingBookings?: {
+        id: string;
+        date: string;
+        startTime: string;
+        endTime: string;
+        status: BookingStatus;
+        sharedWith: string[];
+    }[];
+
     upcomingCount: number;
     unreadNotifications: number;
     recentRides?: {
@@ -81,6 +90,12 @@ export interface MemberHomeViewModel {
         status: string;
         preferredDate: string | null;
         preferredTime: string | null;
+    } | null;
+
+    activationNotification?: {
+        id: string;
+        title: string;
+        body: string;
     } | null;
 }
 

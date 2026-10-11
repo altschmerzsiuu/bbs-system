@@ -63,7 +63,7 @@ export async function getAdminHomeData(db: any) {
       .order('slot_date', { ascending: true })
       .order('start_time', { ascending: true }),
       
-    db.from('membership_applications').select('*', { count: 'exact', head: true }).eq('status', 'PENDING_REVIEW'),
+    db.from('membership_applications').select('*', { count: 'exact', head: true }).in('status', ['PENDING_REVIEW', 'PAYMENT_SUBMITTED']),
     
     db.from('riding_requests').select('*', { count: 'exact', head: true }).eq('status', 'UNDER_REVIEW'),
     
@@ -81,8 +81,10 @@ export async function getAdminHomeData(db: any) {
   let totalCapacity = 0;
   
   const upcoming: UpcomingSession[] = [];
+  // Adjust 'now' to match local facility time (WITA / Asia/Makassar)
+  const localTimeStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Makassar' });
+  const now = new Date(localTimeStr);
   
-  const now = new Date();
   let currentSession: CurrentSession | null = null;
   
   if (slots) {

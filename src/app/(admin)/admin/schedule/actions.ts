@@ -95,11 +95,26 @@ export async function rejectRidingRequestAction(requestId: string) {
     const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
     
+    const { data: request } = await db.from('riding_requests').select('member_id').eq('id', requestId).single();
+
     const { error } = await db.from('riding_requests').update({ status: 'REJECTED' }).eq('id', requestId);
 
     if (error) {
       console.error(error);
       return { ok: false, message: error.message };
+    }
+    
+    if (request?.member_id) {
+      await db.from('notification_outbox').insert({
+        event_type: 'BOOKING_REJECTED',
+        aggregate_type: 'request',
+        aggregate_id: requestId,
+        recipient_user_id: request.member_id,
+        channel: 'FCM',
+        payload: {
+          request_id: requestId,
+        }
+      });
     }
     
     revalidateBookingPaths();

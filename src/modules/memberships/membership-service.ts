@@ -32,7 +32,7 @@ export class MembershipService {
    * Submit an application for a membership plan. 
    * Handles both new applications and renewals depending on if the member has ANY historical membership.
    */
-  async submitApplication(actor: ActorContext, input: SubmitApplicationInput): Promise<string> {
+  async submitApplication(actor: ActorContext, input: SubmitApplicationInput): Promise<{ id: string; humanId: string }> {
     if (!actor.memberId) throw new DomainError('FORBIDDEN');
 
     // 1. Check if user already has a pending or approved application (App layer check - DB index is the real guard)
@@ -73,10 +73,18 @@ export class MembershipService {
     const discount = isRenewal ? plan.extension_discount_idr : 0;
     const finalPrice = basePrice - discount;
 
-    // 4. Create the application
+    // 4. Generate Human ID for Membership
+    const today = new Date();
+    const prefix = `BBS-MEM-${String(today.getDate()).padStart(2, '0')}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getFullYear()).slice(-2)}`;
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    const humanId = `${prefix}-${suffix}`;
+
+    // 5. Create the application
+    const initialStatus = isRenewal ? 'APPROVED' : 'PENDING_REVIEW';
     const { data: newApp, error: insertErr } = await this.db
       .from('membership_applications')
       .insert({
+        human_id: humanId,
         member_id: actor.memberId,
         requested_plan_id: plan.id,
         previous_membership_id: latestMembership ? latestMembership.id : null,
@@ -84,13 +92,13 @@ export class MembershipService {
         base_price_idr: basePrice,
         discount_idr: discount,
         final_price_idr: finalPrice,
-        status: 'PENDING_REVIEW'
+        status: initialStatus
       })
       .select('id')
       .single();
 
     this.rethrow(insertErr);
-    return newApp.id;
+    return { id: newApp.id, humanId };
   }
 
   /**
@@ -108,37 +116,6 @@ export class MembershipService {
     this.rethrow(error);
   }
 
-  /**
-   * Admin confirms payment received. It transitions to 'PAYMENT_CONFIRMED'.
-   */
-  async confirmPayment(actor: ActorContext, applicationId: string): Promise<void> {
-    if (actor.role !== 'ADMIN') throw new DomainError('FORBIDDEN');
-
-    const { error } = await this.db
-      .from('membership_applications')
-      .update({ status: 'PAYMENT_CONFIRMED', updated_at: new Date().toISOString() })
-      .eq('id', applicationId)
-      .eq('status', 'APPROVED');
-
-    this.rethrow(error);
-  }
-
-  /**
-   * Admin activates membership. 
-   * - Calls Postgres RPC for atomic creation, ledger initialization, and status transition.
-   * - Preserves existing active memberships (early renewal).
-   */
-  async activateMembership(actor: ActorContext, applicationId: string): Promise<void> {
-    if (actor.role !== 'ADMIN') throw new DomainError('FORBIDDEN');
-
-    const { error } = await this.db.rpc('activate_membership', {
-      p_application_id: applicationId,
-      p_admin_id: actor.userId,
-    });
-
-    this.rethrow(error);
-  }
-
   async rejectApplication(actor: ActorContext, applicationId: string): Promise<void> {
     if (actor.role !== 'ADMIN') throw new DomainError('FORBIDDEN');
 
@@ -147,6 +124,86 @@ export class MembershipService {
       .update({ status: 'REJECTED', updated_at: new Date().toISOString() })
       .eq('id', applicationId)
       .in('status', ['PENDING_REVIEW', 'APPROVED']);
+
+    this.rethrow(error);
+  }
+
+  /**
+   * Member uploads a receipt.
+   */
+  async submitPaymentReceipt(
+    actor: ActorContext,
+    applicationId: string,
+    receiptPath: string,
+    receiptFilename: string,
+    paymentMethod: string
+  ): Promise<void> {
+    if (!actor.memberId) throw new DomainError('FORBIDDEN');
+
+    const { error } = await this.db
+      .from('membership_applications')
+      .update({
+        status: 'PAYMENT_SUBMITTED',
+        receipt_path: receiptPath,
+        receipt_filename: receiptFilename,
+        receipt_uploaded_at: new Date().toISOString(),
+        payment_method: paymentMethod,
+        rejection_reason: null, // Clear any previous rejection
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', applicationId)
+      .eq('member_id', actor.memberId)
+      .eq('status', 'APPROVED');
+
+    this.rethrow(error);
+  }
+
+  /**
+   * Admin rejects a submitted payment.
+   */
+  async rejectPayment(actor: ActorContext, applicationId: string, reason: string): Promise<void> {
+    if (actor.role !== 'ADMIN') throw new DomainError('FORBIDDEN');
+    if (!reason || reason.trim() === '') throw new DomainError('INVALID_APPLICATION_STATUS');
+
+    // 1. Update application back to APPROVED
+    const { data: app, error: updateErr } = await this.db
+      .from('membership_applications')
+      .update({
+        status: 'APPROVED',
+        rejection_reason: reason,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', applicationId)
+      .eq('status', 'PAYMENT_SUBMITTED')
+      .select('members(user_id)')
+      .single();
+
+    this.rethrow(updateErr);
+
+    if (app) {
+      // 2. Notify member
+      await this.db.from('notification_outbox').insert({
+        event_type: 'PAYMENT_REJECTED',
+        aggregate_type: 'membership_application',
+        aggregate_id: applicationId,
+        recipient_user_id: Array.isArray(app.members) ? app.members[0].user_id : (app.members as any).user_id,
+        channel: 'FCM',
+        payload: { reason }
+      });
+    }
+  }
+
+  /**
+   * Admin confirms payment and activates in one atomic transaction (via RPC).
+   */
+  async confirmAndActivateMembership(actor: ActorContext, applicationId: string): Promise<void> {
+    if (actor.role !== 'ADMIN') throw new DomainError('FORBIDDEN');
+
+    // The RPC confirm_and_activate_membership does everything atomically.
+    const { error } = await this.db.rpc('confirm_and_activate_membership', {
+      p_application_id: applicationId,
+      p_admin_id: actor.userId,
+    });
 
     this.rethrow(error);
   }

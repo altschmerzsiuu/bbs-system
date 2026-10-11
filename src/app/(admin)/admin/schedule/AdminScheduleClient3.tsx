@@ -9,6 +9,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, Check, Download, MoreHorizontal
 import SessionSlot from '@/components/admin/SessionSlot';
 import { getScheduleRecapAction, multiToggleSlotAction } from './actions';
 import type { AdminScheduleSlot } from '@/modules/bookings/booking-types';
+import { createClient } from '@/infrastructure/supabase-browser';
 
 const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
@@ -93,12 +94,21 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
         setSelectedDate(new Date(initialDate));
     }, [initialSlots, initialDate]);
 
-    // Background auto-refresh for near real-time updates
+    // Background auto-refresh for near real-time updates using Supabase Realtime
     useEffect(() => {
-        const interval = setInterval(() => {
-            router.refresh();
-        }, 60000); // 60 seconds
-        return () => clearInterval(interval);
+        const supabase = createClient();
+        const channel = supabase.channel('admin_schedule_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+                router.refresh();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'session_slots' }, () => {
+                router.refresh();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [router]);
 
     const [activeChip, setActiveChip] = useState('Semua');
@@ -341,7 +351,7 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
     const activeSessions = slots.filter(s => s.booking && s.booking.participants.length > 0).length;
     const emptySlotCount = slots.filter(s => s.isOpen && (!s.booking || s.booking.participants.length === 0)).length;
     const closedCount = slots.filter(s => !s.isOpen).length;
-    const todayKey = new Date().toLocaleDateString('en-CA');
+    const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
     const currentKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
     const isHistory = currentKey < todayKey;
     const selectedSlotIsClosed = selectedSlots.length > 0 && (() => {
@@ -621,7 +631,6 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}><b style={{ fontSize: '18px' }}>Opsi jadwal</b><button onClick={() => setIsMenuOpen(false)} aria-label="Tutup menu" style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F4F4F2', display: 'grid', placeItems: 'center' }}><X size={16} /></button></div>
                         <button onClick={() => { setIsMenuOpen(false); handleShareSchedule(); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '15px', borderRadius: '15px', background: '#181817', color: '#FFF', textAlign: 'left', fontSize: '14px', fontWeight: 700 }}><Share2 size={18} /> Bagikan Rekap Hari Ini</button>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                            <button onClick={() => { setIsMenuOpen(false); handleDownloadRecap('week'); }} style={{ flex: 1, padding: '13px 10px', borderRadius: '15px', background: '#F4F4F2', fontSize: '12px', fontWeight: 700 }}><Download size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Rekap Minggu Ini</button>
                             <button onClick={() => { setIsMenuOpen(false); handleDownloadRecap('month'); }} style={{ flex: 1, padding: '13px 10px', borderRadius: '15px', background: '#F4F4F2', fontSize: '12px', fontWeight: 700 }}><Download size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Rekap Bulan Ini</button>
                         </div>
                     </div>

@@ -36,7 +36,8 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
     memberRes, 
     activeMembershipData, 
     expiredMembershipRes, 
-    notifRes, 
+    notifRes,
+    activationNotifRes,
     appRes, 
     bookingRes, 
     recentRidesRes, 
@@ -52,6 +53,13 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
       .limit(1)
       .maybeSingle(),
     db.from('notifications').select('id', { count: 'exact', head: true }).is('read_at', null),
+    db.from('notifications')
+      .select('id, title, body, data')
+      .eq('event_type', 'MEMBERSHIP_ACTIVATED')
+      .is('read_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
     db.from('membership_applications')
       .select('id, status, application_type, final_price_idr, membership_plans(name)')
       .eq('member_id', memberId)
@@ -86,7 +94,7 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
     db.from('riding_requests')
       .select('id, request_type, status, preferred_date, preferred_time_start')
       .eq('member_id', memberId)
-      .in('status', ['PENDING', 'APPROVED', 'FAILED', 'REJECTED'])
+      .in('status', ['UNDER_REVIEW'])
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -142,13 +150,20 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
     resolvedState = "EXPIRED"; // S7
   }
   
-  const now = new Date();
+  const localTimeStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Makassar' });
+  const now = new Date(localTimeStr);
   const validUpcomingBookings = bookings.filter((b: any) => {
     const slot = b.bookings.session_slots;
     const [year, month, day] = slot.slot_date.split('-').map(Number);
     const [endH, endM] = slot.end_time.split(':').map(Number);
     const endTime = new Date(year, month - 1, day, endH, endM, 0, 0);
     return endTime > now;
+  }).sort((a: any, b: any) => {
+    const slotA = a.bookings.session_slots;
+    const slotB = b.bookings.session_slots;
+    const dateA = new Date(`${slotA.slot_date}T${slotA.start_time}`);
+    const dateB = new Date(`${slotB.slot_date}T${slotB.start_time}`);
+    return dateA.getTime() - dateB.getTime();
   });
 
   const first = validUpcomingBookings[0]?.bookings;
@@ -178,6 +193,16 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
           .filter((n: string | undefined): n is string => Boolean(n) && n !== memberRes.data?.full_name),
       }
       : null,
+    upcomingBookings: validUpcomingBookings.map((b: any) => ({
+      id: b.bookings.id,
+      date: b.bookings.session_slots.slot_date,
+      startTime: b.bookings.session_slots.start_time.slice(0, 5),
+      endTime: b.bookings.session_slots.end_time.slice(0, 5),
+      status: b.bookings.status,
+      sharedWith: (b.bookings.booking_participants ?? [])
+        .map((p: any) => p.members?.full_name ?? p.casual_customers?.full_name)
+        .filter((n: string | undefined): n is string => Boolean(n) && n !== memberRes.data?.full_name),
+    })),
     upcomingCount: validUpcomingBookings.length,
     unreadNotifications: notifRes.count ?? 0,
     recentRides: recentRidesData.map((r: any) => ({
@@ -191,6 +216,11 @@ export async function getMemberHome(memberId: string): Promise<MemberHomeViewMod
       status: ridingRequestRes.data.status,
       preferredDate: ridingRequestRes.data.preferred_date,
       preferredTime: ridingRequestRes.data.preferred_time_start
+    } : null,
+    activationNotification: activationNotifRes.data ? {
+      id: activationNotifRes.data.id,
+      title: activationNotifRes.data.title,
+      body: activationNotifRes.data.body,
     } : null,
   };
 }
@@ -695,8 +725,8 @@ export async function ensureSlotsForDateRange(startDate: string, endDate: string
 export async function getPendingRequests() {
   const db = await createServerClient();
   const [riding, membership] = await Promise.all([
-    db.from('riding_requests').select('id, request_type, status, created_at, member_id, height_cm, weight_kg, shoe_size, members(full_name, phone, users(email, avatar_url))').eq('status', 'UNDER_REVIEW').order('created_at', { ascending: false }),
-    db.from('membership_applications').select('id, status, created_at, plan_id, member_id, members(full_name, phone, users(email, avatar_url)), membership_plans(name)').eq('status', 'PENDING').order('created_at', { ascending: false })
+    db.from('riding_requests').select('id, request_type, status, created_at, member_id, height_cm, weight_kg, shoe_size, members(full_name, phone, date_of_birth, domicile, users(email, avatar_url))').eq('status', 'UNDER_REVIEW').order('created_at', { ascending: false }),
+    db.from('membership_applications').select('id, status, application_type, created_at, requested_plan_id, final_price_idr, receipt_path, receipt_filename, rejection_reason, member_id, members(full_name, phone, users(email, avatar_url)), membership_plans(name)').in('status', ['PENDING_REVIEW', 'PAYMENT_SUBMITTED']).order('created_at', { ascending: false })
   ]);
 
   const ridingMapped = (riding.data || []).map(r => {
@@ -715,7 +745,9 @@ export async function getPendingRequests() {
       planName: null,
       heightCm: r.height_cm,
       weightKg: r.weight_kg,
-      shoeSize: r.shoe_size
+      shoeSize: r.shoe_size,
+      dateOfBirth: mem?.date_of_birth || null,
+      domicile: mem?.domicile || null
     };
   });
 
@@ -726,6 +758,7 @@ export async function getPendingRequests() {
       id: r.id,
       category: 'membership',
       type: 'MEMBERSHIP_APPLICATION',
+      applicationType: r.application_type,
       status: r.status,
       createdAt: r.created_at,
       memberId: r.member_id,
@@ -733,7 +766,11 @@ export async function getPendingRequests() {
       memberPhone: mem?.phone || '',
       memberEmail: ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.email || '',
       memberAvatarUrl: ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.avatar_url || '',
-      planName: plan?.name || 'Unknown Plan'
+      planName: plan?.name || 'Unknown Plan',
+      finalPriceIdr: r.final_price_idr,
+      receiptPath: r.receipt_path,
+      receiptFilename: r.receipt_filename,
+      rejectionReason: r.rejection_reason
     };
   });
 

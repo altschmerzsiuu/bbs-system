@@ -9,6 +9,36 @@ describe('BookingService', () => {
   beforeEach(() => {
     dbMock = {
       rpc: vi.fn(),
+      from: vi.fn((table: string) => {
+        if (table === 'session_slots') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => {
+                const queryResult = Promise.resolve({
+                  data: [{ id: '11111111-1111-1111-1111-111111111111' }],
+                  error: null,
+                });
+                (queryResult as any).single = vi.fn().mockResolvedValue({
+                  data: { slot_date: '2026-10-10' },
+                  error: null,
+                });
+                return queryResult;
+              }),
+            })),
+          };
+        }
+        if (table === 'booking_participants') {
+          const builder: any = {
+            then: (resolve: any) => resolve({ data: [], error: null }),
+            catch: (reject: any) => reject,
+          };
+          builder.in = vi.fn(() => builder);
+          return {
+            select: vi.fn(() => builder),
+          };
+        }
+        return {};
+      }),
     };
     service = new BookingService(dbMock as any);
   });

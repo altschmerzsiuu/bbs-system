@@ -146,13 +146,6 @@ export function SettingsClient({ initialHorses, initialSettings, initialSchedule
                 >
                   {horse.status === 'ACTIVE' ? 'Istirahatkan' : 'Aktifkan'}
                 </button>
-                <button 
-                  onClick={() => handleDeleteHorse(horse.id, horse.name)}
-                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: '#fff', color: 'var(--red)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  title="Hapus Kuda"
-                >
-                  <Trash2 size={16} />
-                </button>
               </div>
             </div>
           ))}

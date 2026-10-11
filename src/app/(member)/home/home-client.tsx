@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Bell, ArrowRight, Calendar, Ticket, CreditCard, ChevronLeft, MapPin, User as UserIcon, Award, HelpCircle, X } from 'lucide-react';
+import { Bell, ArrowRight, Calendar, Ticket, CreditCard, ChevronLeft, MapPin, User as UserIcon, Award, HelpCircle, X, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
 import Image from 'next/image';
 import { TearableTicket } from '@/components/ui/tearable-ticket';
 import { useRouter } from 'next/navigation';
 import { cancelBookingAction } from '../bookings/actions';
+import { createClient } from '@/infrastructure/supabase-browser';
+import { markNotificationAsRead } from './actions';
 
 const DAYS_FULL = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -26,14 +28,44 @@ function fmtDate(iso: string) {
 
 export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { data: any, avatarUrl?: string, adminWa?: string }) {
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const firstName = data.memberName.split(' ')[0];
   const tier = data.membership?.plan ?? 'Basic';
   const isGold = tier.toUpperCase().includes('GOLD');
   const isSilver = tier.toUpperCase().includes('SILVER');
 
-  const nextBooking = data.nextBooking;
+  const upcomingBookings = data.upcomingBookings || (data.nextBooking ? [data.nextBooking] : []);
+
+  useEffect(() => {
+    if (upcomingBookings.length <= 1) return;
+    const interval = setInterval(() => {
+      if (scrollRef.current) {
+        const total = upcomingBookings.length;
+        const nextSlide = (currentSlide + 1) % total;
+        const width = scrollRef.current.clientWidth;
+        scrollRef.current.scrollTo({
+          left: nextSlide * width,
+          behavior: 'smooth'
+        });
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [currentSlide, upcomingBookings.length]);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const width = scrollRef.current.clientWidth;
+      const left = scrollRef.current.scrollLeft;
+      const index = Math.round(left / width);
+      if (index !== currentSlide) {
+        setCurrentSlide(index);
+      }
+    }
+  };
 
   const cardGradient = isGold
     ? 'linear-gradient(135deg, #eaddbd 0%, #d0b070 100%)'
@@ -48,8 +80,53 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
     setGreeting(hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening');
   }, []);
 
+  React.useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel('member_home_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'riding_requests', filter: `member_id=eq.${data.memberId}` }, (payload) => {
+        if (payload.eventType === 'UPDATE' && payload.new.status === 'REJECTED') {
+          toast.custom((t) => <AlertToast variant="destructive" title="Request Ditolak" description="Maaf, request jadwal Anda tidak dapat dipenuhi Admin." onDismiss={() => toast.dismiss(t)} />);
+        }
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        router.refresh();
+      })
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router, data.memberId]);
+
   return (
     <div suppressHydrationWarning style={{ position: 'relative', minHeight: '100vh', background: 'var(--paper)' }}>
+      {/* ── Activation Notification Popup ── */}
+      {data.activationNotification && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
+          <div style={{ position: 'relative', background: '#fff', borderRadius: '24px', padding: '32px 24px', width: '100%', maxWidth: '360px', boxShadow: '0 24px 48px rgba(0,0,0,0.2)', textAlign: 'center' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, #f3e9d2, #d1a85b)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <Award size={32} color="#5a4214" />
+            </div>
+            <h2 style={{ fontSize: '24px', fontFamily: 'var(--font-display)', color: 'var(--ink)', marginBottom: '12px', lineHeight: 1.2 }}>
+              {data.activationNotification.title}
+            </h2>
+            <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '32px' }}>
+              {data.activationNotification.body}
+            </p>
+            <button
+              onClick={async () => {
+                await markNotificationAsRead(data.activationNotification.id);
+              }}
+              style={{ width: '100%', padding: '16px', background: 'var(--ink)', color: '#fff', borderRadius: '100px', border: 'none', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}
+            >
+              OK, Mengerti
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 24px 12px' }}>
@@ -103,65 +180,90 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
 
       {/* ── Next Ride Card ── */}
       <div style={{ padding: '0 24px' }}>
-        {nextBooking ? (
-          <div>
-            <div
-              style={{
-                background: cardGradient,
-                borderRadius: '24px',
-                padding: '24px',
-                position: 'relative',
-                overflow: 'hidden',
-                color: 'var(--ink)',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.06)'
-              }}
-            >
-              {/* Overlay horse image (subtle) */}
-              <div style={{ position: 'absolute', right: '-20%', bottom: 0, height: '120%', width: '70%', opacity: 0.15, mixBlendMode: 'multiply', pointerEvents: 'none' }}>
-                <Image src="/images/horse-8.jpg" width={300} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'left' }} alt="" priority />
-              </div>
-
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                  <div>
-                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink)', opacity: 0.8, marginBottom: '8px' }}>
-                      YOUR NEXT SESSION
-                    </div>
-                    <div style={{ fontSize: '16px', fontWeight: 600, opacity: 0.9 }}>
-                      {fmtDate(nextBooking.date).shortLabel}
-                    </div>
-                  </div>
-                  <div style={{ background: '#7c9a75', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
-                    {nextBooking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : nextBooking.status}
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-                  <div style={{ font: '52px/0.95 var(--font-display)', display: 'flex', flexDirection: 'column' }}>
-                    <span>{nextBooking.startTime.slice(0, 5)} —</span>
-                    <span>{(() => {
-                      const [sh, sm] = nextBooking.startTime.split(':').map(Number);
-                      const endMins = sh * 60 + sm + 45;
-                      const eh = Math.floor(endMins / 60).toString().padStart(2, '0');
-                      const em = (endMins % 60).toString().padStart(2, '0');
-                      return `${eh}:${em}`;
-                    })()}</span>
-                  </div>
-
-                  {/* Arrow Button */}
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--ink)', color: 'var(--white)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 16px rgba(0,0,0,0.15)', flexShrink: 0, marginBottom: '4px' }}
-                  >
-                    <ArrowRight size={24} strokeWidth={2} />
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '11px', color: '#5f5542', fontWeight: 600, fontStyle: 'italic' }}>
-                  * Cancel/reschedule 24 hours before your session starts.
-                </div>
-              </div>
+        {upcomingBookings.length > 0 ? (
+          <div
+            style={{
+              background: cardGradient,
+              borderRadius: '24px',
+              padding: '24px 0',
+              position: 'relative',
+              overflow: 'hidden',
+              color: 'var(--ink)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.06)'
+            }}
+          >
+            {/* Overlay horse image (subtle) */}
+            <div style={{ position: 'absolute', right: '-20%', bottom: 0, height: '120%', width: '70%', opacity: 0.15, mixBlendMode: 'multiply', pointerEvents: 'none' }}>
+              <Image src="/images/horse-8.jpg" width={300} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'left' }} alt="" priority />
             </div>
+
+            <div 
+              ref={scrollRef}
+              onScroll={handleScroll}
+              style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {upcomingBookings.map((booking: any, index: number) => (
+                <div key={booking.id} style={{ flexShrink: 0, width: '100%', padding: '0 24px', scrollSnapAlign: 'center', position: 'relative', zIndex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div>
+                      <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink)', opacity: 0.8, marginBottom: '8px' }}>
+                        {upcomingBookings.length > 1 ? `SESSION ${index + 1}/${upcomingBookings.length}` : 'YOUR NEXT SESSION'}
+                      </div>
+                      <div style={{ fontSize: '16px', fontWeight: 600, opacity: 0.9 }}>
+                        {fmtDate(booking.date).shortLabel}
+                      </div>
+                    </div>
+                    <div style={{ background: '#7c9a75', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+                      {booking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : booking.status}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
+                    <div style={{ font: '52px/0.95 var(--font-display)', display: 'flex', flexDirection: 'column' }}>
+                      <span>{booking.startTime.slice(0, 5)} —</span>
+                      <span>{(() => {
+                        const [sh, sm] = booking.startTime.split(':').map(Number);
+                        const endMins = sh * 60 + sm + 45;
+                        const eh = Math.floor(endMins / 60).toString().padStart(2, '0');
+                        const em = (endMins % 60).toString().padStart(2, '0');
+                        return `${eh}:${em}`;
+                      })()}</span>
+                    </div>
+
+                    {/* Arrow Button */}
+                    <button
+                      onClick={() => setSelectedBooking(booking)}
+                      style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--ink)', color: 'var(--white)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 16px rgba(0,0,0,0.15)', flexShrink: 0, marginBottom: '4px' }}
+                    >
+                      <ArrowRight size={24} strokeWidth={2} />
+                    </button>
+                  </div>
+
+                  <div style={{ fontSize: '11px', color: '#5f5542', fontWeight: 600, fontStyle: 'italic', marginBottom: '8px' }}>
+                    * Cancel/reschedule 24 hours before your session starts.
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Dots Indicator */}
+            {upcomingBookings.length > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', position: 'relative', zIndex: 1, marginTop: '8px' }}>
+                {upcomingBookings.map((_: any, idx: number) => (
+                  <div
+                    key={idx}
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      background: idx === currentSlide ? 'var(--ink)' : 'var(--ink)',
+                      opacity: idx === currentSlide ? 0.9 : 0.2,
+                      transition: 'opacity 0.3s'
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ) : data.pendingRideRequest ? (
           <div>
@@ -184,30 +286,40 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                   <div>
-                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink)', opacity: 0.8, marginBottom: '8px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink)', opacity: 0.8, marginBottom: data.pendingRideRequest.preferredDate ? '8px' : '0' }}>
                       YOUR REQUEST
                     </div>
-                    <div style={{ fontSize: '16px', fontWeight: 600, opacity: 0.9 }}>
-                      {data.pendingRideRequest.preferredDate ? fmtDate(data.pendingRideRequest.preferredDate).shortLabel : 'Flexible Date'}
-                    </div>
+                    {data.pendingRideRequest.preferredDate && (
+                      <div style={{ fontSize: '16px', fontWeight: 600, opacity: 0.9 }}>
+                        {fmtDate(data.pendingRideRequest.preferredDate).shortLabel}
+                      </div>
+                    )}
                   </div>
                   <div style={{ background: data.pendingRideRequest.status === 'CONFIRMED' ? '#7c9a75' : data.pendingRideRequest.status === 'FAILED' || data.pendingRideRequest.status === 'REJECTED' ? 'var(--red)' : '#f0cf65', color: data.pendingRideRequest.status === 'CONFIRMED' || data.pendingRideRequest.status === 'FAILED' || data.pendingRideRequest.status === 'REJECTED' ? '#fff' : '#5a4214', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
-                    {data.pendingRideRequest.status}
+                    {data.pendingRideRequest.status === 'UNDER_REVIEW' ? 'UNDER REVIEW' : data.pendingRideRequest.status}
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-                  <div style={{ font: '32px/1 var(--font-display)', display: 'flex', flexDirection: 'column' }}>
-                    <span>{data.pendingRideRequest.preferredTime ? data.pendingRideRequest.preferredTime.slice(0, 5) : 'Time TBA'}</span>
-                    <span style={{ fontSize: '14px', fontFamily: 'var(--font-sans)', fontWeight: 600, opacity: 0.7, marginTop: '8px' }}>Waiting for Admin Approval</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ font: '32px/1 var(--font-display)', color: 'var(--ink)' }}>
+                      {data.pendingRideRequest.preferredTime ? data.pendingRideRequest.preferredTime.slice(0, 5) : 'To Be Announced'}
+                    </span>
+                    <span style={{ fontSize: '14px', fontFamily: 'var(--font-sans)', fontWeight: 600, color: 'var(--ink)', opacity: 0.7, marginTop: '8px' }}>
+                      Waiting for Confirmation
+                    </span>
                   </div>
                 </div>
 
-                {data.pendingRideRequest.status !== 'UNDER_REVIEW' && data.pendingRideRequest.status !== 'CONFIRMED' && (
-                  <Link href="/request?type=ride" style={{ display: 'inline-block', fontSize: '12px', fontWeight: 700, padding: '8px 16px', background: 'var(--ink)', color: 'var(--white)', borderRadius: '100px', textDecoration: 'none' }}>
-                    Book New Session
-                  </Link>
-                )}
+                <button 
+                  onClick={() => {
+                    const msg = encodeURIComponent(`Halo Admin BBS, saya ${firstName} ingin menanyakan status riding request saya.`);
+                    window.open(`https://api.whatsapp.com/send?phone=${adminWa.replace(/\D/g, '')}&text=${msg}`, '_blank');
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '12px', background: 'transparent', color: 'var(--ink)', border: '2px solid rgba(0,0,0,0.1)', borderRadius: '100px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', textDecoration: 'none', transition: 'all 0.2s' }}
+                >
+                  <MessageCircle size={16} /> Hubungi Admin
+                </button>
               </div>
             </div>
           </div>
@@ -270,12 +382,12 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
       </div>
 
       {/* ── Riding Pass Modal ── */}
-      {isModalOpen && nextBooking && (
+      {selectedBooking && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', background: 'var(--white)', overflowY: 'auto' }}>
 
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px' }}>
-            <button onClick={() => setIsModalOpen(false)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--paper)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}>
+            <button onClick={() => setSelectedBooking(null)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--paper)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}>
               <ChevronLeft size={20} strokeWidth={2} />
             </button>
           </div>
@@ -296,20 +408,20 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
                         <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '1px' }}>Borneo Berkuda Stable</div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '7px' }}>
-                        <span style={{ background: 'var(--green)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '5px 11px', borderRadius: '12px', letterSpacing: '0.4px' }}>{nextBooking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : nextBooking.status}</span>
-                        <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase' }}>PASS #{nextBooking.id.substring(0, 8).toUpperCase()}</span>
+                        <span style={{ background: 'var(--green)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '5px 11px', borderRadius: '12px', letterSpacing: '0.4px' }}>{selectedBooking.status === 'RESCHEDULE_REQUESTED' ? 'MENUNGGU RESCHEDULE' : selectedBooking.status}</span>
+                        <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase' }}>PASS #{selectedBooking.id.substring(0, 8).toUpperCase()}</span>
                       </div>
                     </div>
                     <div style={{ marginTop: '20px' }}>
                       <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '3px' }}>
-                        {DAYS_FULL[new Date(`${nextBooking.date}T00:00:00`).getDay()]}
+                        {DAYS_FULL[new Date(`${selectedBooking.date}T00:00:00`).getDay()]}
                       </div>
                       <div style={{ fontSize: '14px', fontWeight: 700, borderBottom: '1px solid #e2dcd0', paddingBottom: '4px', display: 'inline-block', marginBottom: '20px' }}>
-                        {new Date(`${nextBooking.date}T00:00:00`).getDate()} {MONTHS_FULL[new Date(`${nextBooking.date}T00:00:00`).getMonth()].toUpperCase()} {new Date(`${nextBooking.date}T00:00:00`).getFullYear()}
+                        {new Date(`${selectedBooking.date}T00:00:00`).getDate()} {MONTHS_FULL[new Date(`${selectedBooking.date}T00:00:00`).getMonth()].toUpperCase()} {new Date(`${selectedBooking.date}T00:00:00`).getFullYear()}
                       </div>
                       <div style={{ font: '44px/1 var(--font-display)', marginBottom: '22px' }}>
-                        {nextBooking.startTime.slice(0, 5)} — {(() => {
-                          const [sh, sm] = nextBooking.startTime.split(':').map(Number);
+                        {selectedBooking.startTime.slice(0, 5)} — {(() => {
+                          const [sh, sm] = selectedBooking.startTime.split(':').map(Number);
                           const endMins = sh * 60 + sm + 45;
                           const eh = Math.floor(endMins / 60).toString().padStart(2, '0');
                           const em = (endMins % 60).toString().padStart(2, '0');
@@ -344,9 +456,9 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
                 className="primary"
                 style={{ flex: 1, height: '52px', fontSize: '14px', fontWeight: 700 }}
                 onClick={() => {
-                  const dateObj = new Date(`${nextBooking.date}T00:00:00`);
+                  const dateObj = new Date(`${selectedBooking.date}T00:00:00`);
                   const dateStr = `${dateObj.getDate()} ${MONTHS_FULL[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
-                  const timeStr = nextBooking.startTime.slice(0, 5);
+                  const timeStr = selectedBooking.startTime.slice(0, 5);
                   const msg = encodeURIComponent(`Halo admin, saya ingin reschedule jadwal saya pada ${dateStr}, jam ${timeStr}.`);
                   window.open(`https://wa.me/${adminWa.replace(/^0/, '62').replace(/\D/g, '')}?text=${msg}`, '_blank');
                 }}
@@ -377,10 +489,10 @@ export function HomeClient({ data, avatarUrl, adminWa = '6281234567890' }: { dat
                         <button
                           onClick={async () => {
                             toast.dismiss(t);
-                            const res = await cancelBookingAction(nextBooking.id, true);
+                            const res = await cancelBookingAction(selectedBooking.id, true);
                             if (res.ok) {
                               toast.custom((t2) => <AlertToast title="Berhasil" description="Sesi berhasil dibatalkan." onDismiss={() => toast.dismiss(t2)} />);
-                              setIsModalOpen(false);
+                              setSelectedBooking(null);
                               router.refresh();
                             } else {
                               toast.custom((t2) => <AlertToast title="Gagal" description={res.message || 'Terjadi kesalahan.'} variant="destructive" onDismiss={() => toast.dismiss(t2)} />);

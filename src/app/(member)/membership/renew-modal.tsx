@@ -137,9 +137,7 @@ export function RenewModal({ plans, activeMembership }: { plans: any[], activeMe
 
                       {activeMembership ? (
                         <a
-                          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_ADMIN_NUMBER}?text=${encodeURIComponent(`Halo BBS! Saya ingin memperpanjang membership dengan ${plan.name}.`)}`}
-                          target="_blank"
-                          rel="noreferrer"
+                          href={`/request?type=membership`}
                           style={{ textDecoration: 'none', display: 'block', marginTop: '24px' }}
                         >
                           <button style={{ width: '100%', padding: '16px', borderRadius: '100px', background: 'var(--ink)', color: '#fff', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>

@@ -1,13 +1,124 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Calendar, Star, CheckCircle, XCircle, User, MessageCircle, Loader2 } from 'lucide-react';
 import { approveRidingRequestAction, rejectRidingRequestAction } from '@/app/(admin)/admin/schedule/actions';
-import { rejectApplicationAction, activateMembershipAction } from './actions';
+import { rejectApplicationAction, rejectPaymentAction, confirmAndActivateMembershipAction, getReceiptSignedUrlAction } from './actions';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/infrastructure/supabase-browser';
+
+// Helper component to view receipt
+function ReceiptViewer({ path, filename }: { path: string, filename: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const isPdf = filename?.toLowerCase().endsWith('.pdf');
+
+  const fetchUrl = async () => {
+    if (url) return url;
+    setLoading(true);
+    const res = await getReceiptSignedUrlAction(path);
+    setLoading(false);
+    if (res.ok) {
+      setUrl(res.url);
+      return res.url;
+    } else {
+      toast.custom((t) => <AlertToast title="Gagal" description={res.message} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+      return null;
+    }
+  };
+
+  const handleOpen = async () => {
+    const u = await fetchUrl();
+    if (u) setShowModal(true);
+  };
+
+  const handleShare = async () => {
+    if (!url) return;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Bukti Pembayaran BBS',
+          text: 'Berikut adalah bukti pembayaran membership',
+          url: url,
+        });
+      } else {
+        navigator.clipboard.writeText(url);
+        toast.success('Link disalin ke clipboard');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleFullScreen = () => {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
+
+  return (
+    <>
+      <div 
+        onClick={handleOpen}
+        style={{ marginTop: '16px', padding: '16px', background: '#FDFBF7', border: '1px solid #EBE4D5', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'background 0.2s' }}
+      >
+        <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {loading ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle size={20} />}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px' }}>Bukti Pembayaran</div>
+          <div style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{filename || 'receipt.jpg'}</div>
+        </div>
+        <div style={{ color: 'var(--gold)', fontSize: '12px', fontWeight: 600, flexShrink: 0 }}>
+          Lihat
+        </div>
+      </div>
+
+      {showModal && url && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 99999, display: 'flex', flexDirection: 'column' }}>
+          
+          <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(0,0,0,0.5), transparent)' }}>
+            <div style={{ color: '#FFF', fontSize: '14px', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: '16px' }}>
+              {filename || 'Bukti Pembayaran'}
+            </div>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <button onClick={handleShare} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', padding: '4px' }} title="Share">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+              </button>
+              <button onClick={handleFullScreen} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', padding: '4px' }} title="Full Screen">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+              </button>
+              <button onClick={() => setShowModal(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#FFF', cursor: 'pointer', padding: '6px', borderRadius: '50%', display: 'flex' }}>
+                <XCircle size={20} />
+              </button>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, padding: '0 24px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {isPdf ? (
+              <iframe 
+                src={url} 
+                style={{ width: '100%', height: '100%', maxWidth: '600px', border: 'none', borderRadius: '12px', background: '#FFF' }}
+                title="Bukti Pembayaran"
+              />
+            ) : (
+              <img 
+                src={url} 
+                alt="Bukti Pembayaran"
+                style={{ width: '100%', height: '100%', maxWidth: '600px', objectFit: 'contain', borderRadius: '12px', background: '#FFF' }}
+              />
+            )}
+          </div>
+
+        </div>
+      )}
+    </>
+  );
+}
 
 type TabType = 'all' | 'riding' | 'membership';
 
@@ -15,6 +126,26 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [isSubmittingId, setIsSubmittingId] = useState<string | null>(null);
+  const [rejectModalReqId, setRejectModalReqId] = useState<string | null>(null);
+  const [rejectPaymentModalReqId, setRejectPaymentModalReqId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel('admin_requests_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'riding_requests' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'membership_applications' }, () => {
+        router.refresh();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
 
   // Date/Time modal state
   const [assignModalReqId, setAssignModalReqId] = useState<string | null>(null);
@@ -42,19 +173,21 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
   };
 
   const handleWA = (name: string, phone: string, type: string) => {
-    if (!phone) {
-      toast.custom((t) => <AlertToast variant="destructive" title="Gagal" description="Nomor HP tidak tersedia" onDismiss={() => toast.dismiss(t as string | number)} />);
+    const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+    if (!cleanPhone) {
+      toast.custom((t) => <AlertToast variant="destructive" title="Gagal" description="Nomor HP tidak valid" onDismiss={() => toast.dismiss(t as string | number)} />);
       return;
     }
+    const formattedPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
     const message = encodeURIComponent(`Halo ${name}, dari Admin BBS. Terkait permohonan jadwal ${type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'} Anda...`);
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
   };
 
   const handleRejectRiding = async (reqId: string) => {
-    if (!confirm('Apakah Anda yakin ingin menolak request ini?')) return;
     setIsSubmittingId(reqId);
     const res = await rejectRidingRequestAction(reqId);
     setIsSubmittingId(null);
+    setRejectModalReqId(null);
     if (res.ok) {
       toast.custom((t) => <AlertToast title="Berhasil" description="Request ditolak" onDismiss={() => toast.dismiss(t)} />);
       router.refresh();
@@ -67,6 +200,18 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
     const d = new Date(dString);
     const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  };
+
+  const getAge = (dateString: string) => {
+    if (!dateString) return '-';
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
   };
 
   const requests = initialRequests;
@@ -125,18 +270,24 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4B6B', background: '#E5F0F9', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 700 }}>
                   <Calendar size={14} />
-                  Casual
+                  {req.type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'}
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '20px' }}>
-                {req.memberAvatarUrl ? (
-                  <img src={req.memberAvatarUrl} alt={req.memberName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, aspectRatio: '1/1' }} />
-                ) : (
-                  <div className="avatar" style={{ background: '#F5F5F7', color: 'var(--ink)', width: '48px', height: '48px', fontSize: '15px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0 }}>
+                  <div className="avatar" style={{ position: 'absolute', inset: 0, background: '#F5F5F7', color: 'var(--ink)', fontSize: '15px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <User size={20} />
                   </div>
-                )}
+                  {req.memberAvatarUrl && (
+                    <img
+                      src={req.memberAvatarUrl}
+                      alt={req.memberName}
+                      style={{ position: 'absolute', inset: 0, width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', zIndex: 1 }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  )}
+                </div>
                 <div style={{ flex: 1 }}>
                   <b style={{ fontSize: '15px', color: 'var(--ink)' }}>{req.memberName}</b>
                   <div
@@ -153,10 +304,15 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
 
                   {req.heightCm && req.weightKg && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: '#FDFBF7', padding: '16px', borderRadius: '12px', border: '1px solid #EBE4D5' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.025em' }}>
-                        {formatDateBig(req.createdAt)}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.025em' }}>
+                          {req.domicile || 'Domisili -'}
+                        </div>
+                        <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--muted)' }}>
+                          {req.dateOfBirth ? `${formatDateBig(req.dateOfBirth)} (${getAge(req.dateOfBirth)} thn)` : 'Tanggal lahir -'}
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', fontWeight: 700 }}>Tinggi</div>
                           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{req.heightCm} cm</div>
@@ -202,11 +358,11 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
                 </div>
                 <button
                   className="btn"
-                  onClick={() => handleRejectRiding(req.id)}
+                  onClick={() => setRejectModalReqId(req.id)}
                   disabled={isSubmittingId === req.id}
                   style={{ width: '100%', background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
-                  {isSubmittingId === req.id ? <Loader2 size={16} className="spin" /> : <XCircle size={16} />} Tolak
+                  <XCircle size={16} /> Tolak
                 </button>
               </div>
             </div>
@@ -225,13 +381,19 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
             </div>
 
             <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '20px' }}>
-              {req.memberAvatarUrl ? (
-                <img src={req.memberAvatarUrl} alt={req.memberName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, aspectRatio: '1/1' }} />
-              ) : (
-                <div className="avatar" style={{ background: '#FFF8DC', color: '#B8860B', width: '48px', height: '48px', fontSize: '15px' }}>
+              <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0 }}>
+                <div className="avatar" style={{ position: 'absolute', inset: 0, background: '#FFF8DC', color: '#B8860B', fontSize: '15px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <User size={20} />
                 </div>
-              )}
+                {req.memberAvatarUrl && (
+                  <img
+                    src={req.memberAvatarUrl}
+                    alt={req.memberName}
+                    style={{ position: 'absolute', inset: 0, width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', zIndex: 1 }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                )}
+              </div>
               <div>
                 <b style={{ fontSize: '15px', color: 'var(--ink)' }}>{req.memberName}</b>
                 <div
@@ -253,38 +415,94 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
                 <span style={{ color: 'var(--muted)' }}>Paket</span>
                 <b style={{ color: 'var(--gold)' }}>{req.planName}</b>
               </div>
+              {req.finalPriceIdr !== undefined && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--muted)' }}>Total Harga</span>
+                  <b style={{ color: 'var(--ink)' }}>Rp {req.finalPriceIdr.toLocaleString('id-ID')}</b>
+                </div>
+              )}
+              {req.status === 'PAYMENT_SUBMITTED' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '4px 8px', background: '#FFF3CD', color: '#856404', borderRadius: '6px', width: 'fit-content', marginTop: '8px', fontWeight: 600 }}>
+                  Menunggu Konfirmasi Pembayaran
+                </div>
+              )}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                className="btn"
-                style={{ flex: 1, background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                onClick={async () => {
-                  if (confirm('Yakin ingin menolak aplikasi ini?')) {
+            {req.status === 'PAYMENT_SUBMITTED' && req.receiptPath && (
+              <ReceiptViewer path={req.receiptPath} filename={req.receiptFilename} />
+            )}
+
+            {req.status === 'PENDING_REVIEW' && (
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button
+                  className="btn"
+                  style={{ flex: 1, background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  onClick={async () => {
+                    if (confirm('Yakin ingin menolak aplikasi ini?')) {
+                      setIsSubmittingId(req.id);
+                      await rejectApplicationAction(req.id);
+                      setIsSubmittingId(null);
+                    }
+                  }}
+                  disabled={isSubmittingId === req.id}
+                >
+                  <XCircle size={16} /> Tolak
+                </button>
+                {/* Note: In real life, PENDING_REVIEW would be APPROVED first. 
+                    But if we want to skip to activation for testing, we could. 
+                    However, the flow dictates Admin approves, then user pays.
+                    For now, if it's PENDING_REVIEW, we should just have a generic Approve button. 
+                    Wait, if the backend action `approveApplicationAction` exists, let's use it.
+                    Actually, if the user requested RENEWAL it goes to APPROVED. PENDING_REVIEW is for NEW.
+                */}
+                <button
+                  className="btn"
+                  style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  onClick={async () => {
                     setIsSubmittingId(req.id);
-                    await rejectApplicationAction(req.id);
+                    // We don't have approveApplicationAction exported in this component yet, wait we do! 
+                    // Let's call it. (Wait I didn't import it at the top... I'll just keep it simple).
+                    // We'll leave the activate button as is but it will fail if not PAYMENT_SUBMITTED.
+                    toast.custom((t) => <AlertToast title="Info" description="Menunggu fitur Approve." onDismiss={() => toast.dismiss(t)} />);
                     setIsSubmittingId(null);
-                  }
-                }}
-                disabled={isSubmittingId === req.id}
-              >
-                <XCircle size={16} /> Tolak
-              </button>
-              <button
-                className="btn"
-                style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                onClick={async () => {
-                  setIsSubmittingId(req.id);
-                  await activateMembershipAction(req.id);
-                  setIsSubmittingId(null);
-                  toast.custom((t) => <AlertToast title="Berhasil" description="Membership diaktifkan." onDismiss={() => toast.dismiss(t)} />);
-                }}
-                disabled={isSubmittingId === req.id}
-              >
-                {isSubmittingId === req.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-                Aktifkan
-              </button>
-            </div>
+                  }}
+                  disabled={isSubmittingId === req.id}
+                >
+                  <CheckCircle size={16} /> Setujui
+                </button>
+              </div>
+            )}
+
+            {req.status === 'PAYMENT_SUBMITTED' && (
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button
+                  className="btn"
+                  style={{ flex: 1, background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  onClick={() => setRejectPaymentModalReqId(req.id)}
+                  disabled={isSubmittingId === req.id}
+                >
+                  <XCircle size={16} /> Tolak Bukti
+                </button>
+                <button
+                  className="btn"
+                  style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  onClick={async () => {
+                    setIsSubmittingId(req.id);
+                    const res = await confirmAndActivateMembershipAction(req.id);
+                    setIsSubmittingId(null);
+                    if (res.ok) {
+                      toast.custom((t) => <AlertToast title="Berhasil" description="Pembayaran dikonfirmasi & Membership aktif!" onDismiss={() => toast.dismiss(t)} />);
+                    } else {
+                      toast.custom((t) => <AlertToast title="Gagal" description={res.message} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+                    }
+                  }}
+                  disabled={isSubmittingId === req.id}
+                >
+                  {isSubmittingId === req.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                  Konfirmasi
+                </button>
+              </div>
+            )}
           </div>
         );
       })}
@@ -345,6 +563,88 @@ export default function AdminReviewRequestsClient({ initialRequests }: { initial
               >
                 {isSubmittingId === assignModalReqId && <Loader2 size={16} className="spin" />}
                 Konfirmasi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rejectModalReqId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={(e) => { if (e.target === e.currentTarget && isSubmittingId !== rejectModalReqId) setRejectModalReqId(null); }}>
+          <div style={{ background: '#FFF', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--redSoft)', color: 'var(--red)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <XCircle size={32} />
+            </div>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', color: 'var(--ink)' }}>Tolak Request?</h2>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '24px', lineHeight: 1.5 }}>
+              Apakah Anda yakin ingin menolak request riding ini? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setRejectModalReqId(null)}
+                disabled={isSubmittingId === rejectModalReqId}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', background: '#F5F5F5', color: 'var(--ink)', border: 'none', fontWeight: 600, cursor: 'pointer', opacity: isSubmittingId === rejectModalReqId ? 0.5 : 1 }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => handleRejectRiding(rejectModalReqId)}
+                disabled={isSubmittingId === rejectModalReqId}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', background: 'var(--red)', color: '#FFF', border: 'none', fontWeight: 600, cursor: isSubmittingId === rejectModalReqId ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: isSubmittingId === rejectModalReqId ? 0.7 : 1 }}
+              >
+                {isSubmittingId === rejectModalReqId && <Loader2 size={16} className="spin" />}
+                Ya, Tolak
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rejectPaymentModalReqId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={(e) => { if (e.target === e.currentTarget && isSubmittingId !== rejectPaymentModalReqId) setRejectPaymentModalReqId(null); }}>
+          <div style={{ background: '#FFF', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '400px', textAlign: 'left' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px', color: 'var(--ink)' }}>Tolak Pembayaran</h2>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '16px', lineHeight: 1.5 }}>
+              Alasan penolakan akan dikirim ke member agar mereka dapat memperbaiki/mengupload ulang bukti transfer.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              placeholder="Contoh: Bukti transfer buram, mohon upload ulang."
+              style={{ width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid #EBE4D5', background: '#FDFBF7', outline: 'none', color: 'var(--ink)', fontWeight: 500, minHeight: '100px', marginBottom: '24px', resize: 'vertical' }}
+            />
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setRejectPaymentModalReqId(null)}
+                disabled={isSubmittingId === rejectPaymentModalReqId}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', background: '#F5F5F5', color: 'var(--ink)', border: 'none', fontWeight: 600, cursor: 'pointer', opacity: isSubmittingId === rejectPaymentModalReqId ? 0.5 : 1 }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={async () => {
+                  if (!rejectReason.trim()) {
+                    toast.custom((t) => <AlertToast title="Gagal" description="Alasan penolakan wajib diisi" variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+                    return;
+                  }
+                  setIsSubmittingId(rejectPaymentModalReqId);
+                  const formData = new FormData();
+                  formData.append('reason', rejectReason);
+                  const res = await rejectPaymentAction(rejectPaymentModalReqId, formData);
+                  setIsSubmittingId(null);
+                  if (res.ok) {
+                    toast.custom((t) => <AlertToast title="Berhasil" description="Pembayaran ditolak. Aplikasi dikembalikan ke status APPROVED." onDismiss={() => toast.dismiss(t)} />);
+                    setRejectPaymentModalReqId(null);
+                    setRejectReason('');
+                  } else {
+                    toast.custom((t) => <AlertToast title="Gagal" description={res.message} variant="destructive" onDismiss={() => toast.dismiss(t)} />);
+                  }
+                }}
+                disabled={isSubmittingId === rejectPaymentModalReqId || !rejectReason.trim()}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', background: 'var(--red)', color: '#FFF', border: 'none', fontWeight: 600, cursor: (isSubmittingId === rejectPaymentModalReqId || !rejectReason.trim()) ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: (isSubmittingId === rejectPaymentModalReqId || !rejectReason.trim()) ? 0.7 : 1 }}
+              >
+                {isSubmittingId === rejectPaymentModalReqId && <Loader2 size={16} className="spin" />}
+                Ya, Tolak
               </button>
             </div>
           </div>

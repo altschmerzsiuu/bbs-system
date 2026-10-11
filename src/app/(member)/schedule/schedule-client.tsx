@@ -9,6 +9,7 @@ import { AlertToast } from '@/components/ui/alert-toast';
 import { submitBooking } from './actions';
 import { cancelBookingAction } from '../bookings/actions';
 import { AnimatePresence, motion } from 'framer-motion';
+import { createClient } from '@/infrastructure/supabase-browser';
 
 const DAYS_FULL = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -148,6 +149,23 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
 
   const [loading, setLoading] = useState(false);
 
+  // Background auto-refresh for near real-time updates using Supabase Realtime
+  React.useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase.channel('member_schedule_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        router.refresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_slots' }, () => {
+        router.refresh();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
+
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const currentTime = now.toTimeString().slice(0, 8);
@@ -193,11 +211,11 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
     } else {
       const errMsg = res.message || 'Booking failed. Please try again.';
       toast.custom((t) => (
-        <AlertToast 
-          title="Booking Gagal" 
-          description={errMsg} 
-          variant="destructive" 
-          onDismiss={() => toast.dismiss(t)} 
+        <AlertToast
+          title="Booking Gagal"
+          description={errMsg}
+          variant="destructive"
+          onDismiss={() => toast.dismiss(t)}
         />
       ));
       setIsConfirmModalOpen(false);
@@ -392,7 +410,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', marginTop: '16px' }}>
               <h3 style={{ margin: 0, font: '16px var(--font-display)', color: 'var(--ink)' }}>Evening</h3>
-              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>18:00+</span>
+              <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>18:00 - 22:00</span>
             </div>
             {eveningSlots.map(slot => {
               const isSelected = selectedSlot?.id === slot.id;
@@ -443,57 +461,57 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
 
       {/* ── Confirm Modal ── */}
       <AnimatePresence>
-      {isConfirmModalOpen && selectedSlot && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setIsConfirmModalOpen(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.4)' }}
-        >
+        {isConfirmModalOpen && selectedSlot && (
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            drag="y"
-            dragConstraints={{ top: 0 }}
-            dragElastic={0.05}
-            onDragEnd={(e, info) => {
-              if (info.offset.y > 100 || info.velocity.y > 500) {
-                setIsConfirmModalOpen(false);
-              }
-            }}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
-            style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '16px 24px 40px', position: 'relative' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsConfirmModalOpen(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.4)' }}
           >
-            {/* Drag Handle Indicator */}
-            <div style={{ width: '40px', height: '4px', background: '#e0e0e0', borderRadius: '2px', margin: '0 auto 24px' }} />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              drag="y"
+              dragConstraints={{ top: 0 }}
+              dragElastic={0.05}
+              onDragEnd={(e, info) => {
+                if (info.offset.y > 100 || info.velocity.y > 500) {
+                  setIsConfirmModalOpen(false);
+                }
+              }}
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+              style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '16px 24px 40px', position: 'relative' }}
+            >
+              {/* Drag Handle Indicator */}
+              <div style={{ width: '40px', height: '4px', background: '#e0e0e0', borderRadius: '2px', margin: '0 auto 24px' }} />
 
-            <h2 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0', color: 'var(--ink)', textAlign: 'center' }}>Confirm Booking</h2>
-            <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 24px', textAlign: 'center' }}>
-              Are you sure you want to book this session?
-            </p>
+              <h2 style={{ font: '28px var(--font-display)', margin: '0 0 8px 0', color: 'var(--ink)', textAlign: 'center' }}>Confirm Booking</h2>
+              <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 24px', textAlign: 'center' }}>
+                Are you sure you want to book this session?
+              </p>
 
-            <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', marginBottom: '24px', border: '1px solid #efeade' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Rider</span>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{memberName.split(' ')[0]}</span>
+              <div style={{ background: '#f9f6ef', borderRadius: '16px', padding: '20px', marginBottom: '24px', border: '1px solid #efeade' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Rider</span>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{memberName.split(' ')[0]}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Date</span>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{DAYS_FULL[new Date(`${selectedSlot.slot_date}T00:00:00`).getDay()]}, {new Date(`${selectedSlot.slot_date}T00:00:00`).getDate()} {MONTHS_SHORT[new Date(`${selectedSlot.slot_date}T00:00:00`).getMonth()]}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Time</span>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{selectedSlot.start_time.slice(0, 5)} — {selectedSlot.end_time.slice(0, 5)} WITA</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Date</span>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{DAYS_FULL[new Date(`${selectedSlot.slot_date}T00:00:00`).getDay()]}, {new Date(`${selectedSlot.slot_date}T00:00:00`).getDate()} {MONTHS_SHORT[new Date(`${selectedSlot.slot_date}T00:00:00`).getMonth()]}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Time</span>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>{selectedSlot.start_time.slice(0, 5)} — {selectedSlot.end_time.slice(0, 5)} WITA</span>
-              </div>
-            </div>
 
-            <SlideToConfirm loading={loading} onConfirm={handleBook} />
+              <SlideToConfirm loading={loading} onConfirm={handleBook} />
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
       </AnimatePresence>
 
       {/* ── Riding Pass Modal ── */}
@@ -632,7 +650,7 @@ export function ScheduleClient({ initialSlots, memberName = 'Rider', adminWa = '
                 Cancel Session
               </button>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
               <button onClick={() => router.push('/home')} className="primary" style={{ width: '100%', height: '56px', fontSize: '15px', background: 'var(--paper)', color: 'var(--ink)' }}>
                 Back to Home

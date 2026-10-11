@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getPendingRequests } from '@/modules/bookings/booking-queries';
 import AdminReviewRequestsClient from './AdminReviewRequestsClient';
 
