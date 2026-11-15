@@ -200,25 +200,32 @@ export default function LoginPage() {
               <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
             </div>
 
-            {/* 2. Clearly Secondary Action: Direct Link to /ride */}
+            {/* 2. Clean Secondary Action Card/Button (Zero Highlight Color) */}
             <Link
               href="/ride"
               className="bbs-btn-secondary"
               style={{
                 width: '100%',
+                boxSizing: 'border-box',
+                minHeight: '54px',
+                padding: '0 18px',
                 justifyContent: 'space-between',
-                border: '1.5px solid var(--gold-accent)',
-                background: 'var(--surface-subtle)',
+                border: '1.5px solid var(--border-strong)',
+                background: 'var(--surface)',
+                color: 'var(--ink)',
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-                <Calendar size={18} strokeWidth={2} color="var(--gold-accent)" />
-                <span>Pesan Fun Ride / Casual</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                <Calendar size={18} strokeWidth={2} color="var(--ink)" />
+                <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
+                  Pesan Fun Ride / Casual
+                </span>
               </span>
-              <ArrowRight size={18} strokeWidth={2} color="var(--gold-ink)" />
+              <ArrowRight size={18} strokeWidth={2} color="var(--ink)" />
             </Link>
 
-            {/* 3. Tertiary Action: Visually Distinct Clickable Link for Ticket Check */}
+            {/* 3. Tertiary Action: Clean Underlined Link (No Highlight Color) */}
             <div
               style={{
                 display: 'flex',
@@ -227,32 +234,28 @@ export default function LoginPage() {
                 gap: '6px',
                 minHeight: '44px',
                 flexWrap: 'wrap',
-                marginTop: '2px',
               }}
             >
               <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>
-                Sudah pesan tiket?
+                Sudah pesan?
               </span>
               <Link
                 href="/ride?tab=check"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: '999px',
-                  background: 'var(--gold-soft)',
-                  border: '1px solid var(--gold-accent)',
-                  color: 'var(--gold-ink)',
+                  gap: '5px',
+                  padding: '6px 4px',
+                  color: 'var(--ink)',
                   fontSize: '13px',
                   fontWeight: 800,
                   textDecoration: 'underline',
-                  textUnderlineOffset: '3px',
+                  textUnderlineOffset: '4px',
+                  textDecorationThickness: '1.5px',
                 }}
               >
-                <Ticket size={14} strokeWidth={2} color="var(--gold-ink)" />
+                <Ticket size={15} strokeWidth={2} color="var(--ink)" />
                 <span>Cek Status & E-Ticket Saya</span>
-                <ArrowRight size={14} strokeWidth={2} color="var(--gold-ink)" />
               </Link>
             </div>
           </div>
