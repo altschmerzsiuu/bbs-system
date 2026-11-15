@@ -7,6 +7,7 @@ import { withSerwist } from "@serwist/turbopack";
 const nextConfig = {
   reactStrictMode: true,
   turbopack: {},
+  allowedDevOrigins: ['192.168.1.29', '192.168.*.*', 'localhost'],
   images: {
     // Allowed external domains for Next.js Image component
     remotePatterns: [

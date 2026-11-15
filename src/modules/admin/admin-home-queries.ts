@@ -78,7 +78,7 @@ export async function getAdminHomeData(db: any) {
     db.from('session_slots')
       .select(`
         id, slot_date, start_time, end_time, capacity,
-        bookings!bookings_slot_id_fkey(id, status, booking_participants(id, participant_status, horse_id, horses(name), attendance_records(status), member_id, members(user_id, users(full_name, avatar_url))))
+        bookings!bookings_slot_id_fkey(id, status, booking_participants(id, participant_status, horse_id, horses(name), attendance_records(status), member_id, members(user_id, full_name, users(full_name, avatar_url)), casual_customers(full_name)))
       `)
       .gte('slot_date', today)
       .order('slot_date', { ascending: true })
@@ -152,8 +152,9 @@ export async function getAdminHomeData(db: any) {
         
         for (const p of participants) {
           const memberObj = Array.isArray(p.members) ? p.members[0] : p.members;
+          const casualObj = Array.isArray(p.casual_customers) ? p.casual_customers[0] : p.casual_customers;
           const userObj = Array.isArray(memberObj?.users) ? memberObj?.users[0] : memberObj?.users;
-          const name = userObj?.full_name || memberObj?.full_name || p.full_name || 'Rider';
+          const name = userObj?.full_name || memberObj?.full_name || casualObj?.full_name || p.full_name || 'Rider';
           const avatarUrl = userObj?.avatar_url || null;
           riderNames.push(name);
           riderInitials.push({ 

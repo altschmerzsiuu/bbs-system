@@ -4,9 +4,23 @@ import { createServerClient as createSSRClient } from '@supabase/ssr';
 import { createServiceRoleClient } from '@/infrastructure/supabase-server';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const requestUrl = new URL(request.url);
+  const { searchParams } = requestUrl;
+
+  // Hanya izinkan override host di mode development untuk akses LAN lokal (localhost / 192.168.x.x).
+  // Di production tetap gunakan requestUrl.origin asli agar kebal terhadap Host Header Injection.
+  let origin = requestUrl.origin;
+  if (process.env.NODE_ENV === 'development') {
+    const hostHeader = request.headers.get('host') ?? '';
+    if (/^(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3})(:\d+)?$/.test(hostHeader)) {
+      origin = `${requestUrl.protocol}//${hostHeader}`;
+    }
+  }
+
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/home';
+  const rawNext = searchParams.get('next') ?? '/home';
+  // Cegah Open Redirect vulnerability (hanya izinkan relative path internal)
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/home';
 
   console.log('[auth/callback] Triggered with code:', code ? 'present' : 'missing', 'next:', next);
 

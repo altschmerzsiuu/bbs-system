@@ -326,7 +326,8 @@ export async function getAdminSchedule(
         request_type,
         status,
         preferred_time_start,
-        members ( full_name )
+        members ( full_name ),
+        casual_customers ( full_name )
       `)
       .eq('preferred_date', date)
       .eq('status', 'UNDER_REVIEW')
@@ -373,7 +374,7 @@ export async function getAdminSchedule(
     }
     requestMap.get(timeKey)!.push({
       id: req.id,
-      memberName: req.members?.full_name || 'Unknown',
+      memberName: req.members?.full_name || req.casual_customers?.full_name || 'Tamu Casual',
       type: req.request_type,
       status: req.status
     });
@@ -696,18 +697,19 @@ export async function getAdminSessionDetail(
   // Fetch pending riding requests for this slot
   const { data: reqData } = await db
     .from('riding_requests')
-    .select('id, request_type, status, member_id, members(full_name, phone)')
+    .select('id, request_type, status, member_id, casual_customer_id, members(full_name, phone), casual_customers(full_name, phone)')
     .eq('preferred_date', slot.slot_date)
     .eq('preferred_time_start', slot.start_time)
     .eq('status', 'UNDER_REVIEW');
 
   const pendingRequests = (reqData ?? []).map(r => {
     const mem = Array.isArray(r.members) ? r.members[0] : r.members;
+    const casual = Array.isArray((r as any).casual_customers) ? (r as any).casual_customers[0] : (r as any).casual_customers;
     return {
       id: r.id,
       memberId: r.member_id,
-      memberName: mem?.full_name || 'Unknown',
-      memberPhone: mem?.phone || '',
+      memberName: mem?.full_name || casual?.full_name || 'Tamu Casual',
+      memberPhone: mem?.phone || casual?.phone || '',
       type: r.request_type,
       status: r.status
     };
@@ -806,8 +808,20 @@ export async function ensureSlotsForDateRange(startDate: string, endDate: string
 
 export async function getPendingRequests() {
   const db = await createServerClient();
-  const [riding, membership, bookings] = await Promise.all([
-    db.from('riding_requests').select('id, request_type, status, created_at, member_id, height_cm, weight_kg, shoe_size, members(full_name, phone, date_of_birth, domicile, users(email, avatar_url))').eq('status', 'UNDER_REVIEW').order('created_at', { ascending: false }),
+  const [ridingExt, membership, bookings, rideProductsRes] = await Promise.all([
+    db
+      .from('riding_requests')
+      .select(`
+        id, human_id, public_token, request_type, status, created_at,
+        preferred_date, preferred_time_start,
+        member_id, casual_customer_id,
+        height_cm, weight_kg, shoe_size,
+        waiver_accepted_at, guardian_name, guardian_phone,
+        members(full_name, phone, date_of_birth, domicile, users(email, avatar_url)),
+        casual_customers(id, full_name, phone, email, notes, date_of_birth, domicile)
+      `)
+      .eq('status', 'UNDER_REVIEW')
+      .order('created_at', { ascending: false }),
     db.from('membership_applications').select('id, status, application_type, created_at, requested_plan_id, final_price_idr, receipt_path, receipt_filename, rejection_reason, member_id, members(full_name, phone, users(email, avatar_url)), membership_plans(name)').in('status', ['PENDING_REVIEW', 'PAYMENT_SUBMITTED']).order('created_at', { ascending: false }),
     db.from('bookings').select(`
       id, status, notes, created_at, created_by,
@@ -818,12 +832,36 @@ export async function getPendingRequests() {
         members(id, full_name, phone, date_of_birth, domicile, users(email, avatar_url)),
         casual_customers(id, full_name, phone)
       )
-    `).in('status', ['PENDING', 'RESCHEDULE_REQUESTED']).order('created_at', { ascending: false })
+    `).in('status', ['PENDING', 'RESCHEDULE_REQUESTED']).order('created_at', { ascending: false }),
+    db.from('ride_products').select('code, name, price_idr').eq('is_active', true)
   ]);
+
+  let riding = ridingExt as any;
+  if (riding.error) {
+    // Fallback if migration 0053 columns are not yet pushed to remote DB
+    riding = await db
+      .from('riding_requests')
+      .select(`
+        id, human_id, request_type, status, created_at,
+        preferred_date, preferred_time_start,
+        member_id, casual_customer_id,
+        height_cm, weight_kg, shoe_size,
+        members(full_name, phone, date_of_birth, domicile, users(email, avatar_url)),
+        casual_customers(id, full_name, phone, email, notes)
+      `)
+      .eq('status', 'UNDER_REVIEW')
+      .order('created_at', { ascending: false });
+  }
 
   if (bookings.error) console.error('[getPendingRequests] bookings error:', bookings.error);
   if (riding.error) console.error('[getPendingRequests] riding error:', riding.error);
   if (membership.error) console.error('[getPendingRequests] membership error:', membership.error);
+
+  const rideProducts = rideProductsRes?.data || [];
+  const priceMap = new Map<string, number>();
+  for (const prod of rideProducts as any[]) {
+    priceMap.set(prod.code, Number(prod.price_idr) || 0);
+  }
 
   const bookingsMapped = (bookings.data || []).map((b: any) => {
     const slot = Array.isArray(b.session_slots) ? b.session_slots[0] : b.session_slots;
@@ -875,25 +913,58 @@ export async function getPendingRequests() {
     };
   });
 
-  const ridingMapped = (riding.data || []).map(r => {
+  const ridingMapped = (riding.data || []).map((r: any) => {
     const mem = Array.isArray(r.members) ? r.members[0] : r.members;
+    const casual = Array.isArray(r.casual_customers) ? r.casual_customers[0] : r.casual_customers;
+    const isGuest = Boolean(r.casual_customer_id && !r.member_id);
+
+    // Parse domicile / DOB from casual.notes if extended columns are null
+    let parsedDomicile: string | null = null;
+    let parsedDob: string | null = null;
+    let parsedGuardian: string | null = null;
+    if (casual?.notes) {
+      const domMatch = String(casual.notes).match(/Domisili:\s*([^•]+)/i);
+      if (domMatch?.[1]) parsedDomicile = domMatch[1].trim();
+      const dobMatch = String(casual.notes).match(/Tgl Lahir:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
+      if (dobMatch?.[1]) parsedDob = dobMatch[1].trim();
+      const guardMatch = String(casual.notes).match(/Wali:\s*([^•]+)/i);
+      if (guardMatch?.[1]) parsedGuardian = guardMatch[1].trim();
+    }
+
+    const defaultPriceIdr =
+      priceMap.get(r.request_type) ?? (r.request_type === 'JOY_RIDE' ? 150000 : 250000);
+
     return {
       id: r.id,
+      humanId: r.human_id || null,
+      publicToken: r.public_token || r.id,
       category: 'riding',
       type: r.request_type,
       status: r.status,
       createdAt: r.created_at,
+      isGuest,
       memberId: r.member_id,
-      memberName: mem?.full_name || 'Unknown',
-      memberPhone: mem?.phone || '',
-      memberEmail: ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.email || '',
-      memberAvatarUrl: ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.avatar_url || '',
+      casualCustomerId: r.casual_customer_id || null,
+      memberName: mem?.full_name || casual?.full_name || 'Tamu Casual',
+      memberPhone: mem?.phone || casual?.phone || '',
+      memberEmail:
+        ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.email ||
+        casual?.email ||
+        '',
+      memberAvatarUrl:
+        ((Array.isArray(mem?.users) ? mem?.users[0] : mem?.users) as any)?.avatar_url || '',
       planName: null,
+      preferredDate: r.preferred_date || null,
+      preferredTime: r.preferred_time_start ? String(r.preferred_time_start).slice(0, 5) : null,
       heightCm: r.height_cm,
       weightKg: r.weight_kg,
       shoeSize: r.shoe_size,
-      dateOfBirth: mem?.date_of_birth || null,
-      domicile: mem?.domicile || null
+      dateOfBirth: mem?.date_of_birth || casual?.date_of_birth || parsedDob || null,
+      domicile: mem?.domicile || casual?.domicile || parsedDomicile || null,
+      guardianName: r.guardian_name || parsedGuardian || null,
+      guardianPhone: r.guardian_phone || null,
+      waiverAcceptedAt: r.waiver_accepted_at || null,
+      defaultPriceIdr,
     };
   });
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 import { resolveAttendanceAction, assignHorseAction } from './actions';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, QrCode } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function GroomerDashboardPage() {

@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/infrastructure/supabase-browser';
 import Image from 'next/image';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
+import { Calendar, Ticket } from 'lucide-react';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -111,6 +113,56 @@ export default function LoginPage() {
               </svg>
               {loading ? 'Connecting...' : 'Continue with Google'}
             </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '2px 0' }}>
+              <div style={{ flex: 1, height: '1px', background: '#EBE4D5' }} />
+              <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                Tamu / Non-Member
+              </span>
+              <div style={{ flex: 1, height: '1px', background: '#EBE4D5' }} />
+            </div>
+
+            <Link
+              href="/ride"
+              style={{
+                width: '100%',
+                height: '56px',
+                fontSize: '15px',
+                background: '#FDFBF7',
+                color: 'var(--ink)',
+                border: '1.5px solid var(--gold)',
+                borderRadius: '16px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                textDecoration: 'none',
+                boxShadow: '0 4px 14px rgba(181, 139, 59, 0.12)'
+              }}
+            >
+              <Calendar size={18} color="var(--gold)" strokeWidth={2.2} />
+              <span>Pesan Fun Ride / Casual</span>
+            </Link>
+
+            <Link
+              href="/ride?tab=check"
+              style={{
+                marginTop: '4px',
+                fontSize: '13px',
+                color: 'var(--muted)',
+                fontWeight: 600,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              <Ticket size={14} color="var(--gold)" />
+              <span>Sudah pesan? Cek Status & E-Ticket Saya</span>
+            </Link>
           </div>
         </div>
       </div>

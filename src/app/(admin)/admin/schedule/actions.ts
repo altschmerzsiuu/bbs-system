@@ -2,6 +2,7 @@
 
 import { revalidateBookingPaths } from '@/lib/cache';
 import { BookingService } from '@/modules/bookings/booking-service';
+import { approveRidingRequestWithDb } from '@/modules/bookings/guest-ride-service';
 import { createServerClient } from '@/infrastructure/supabase-server';
 import { requireActor } from '@/lib/auth';
 
@@ -87,26 +88,32 @@ export async function approveBookingAction(bookingId: string) {
 }
 
 
-export async function approveRidingRequestAction(requestId: string, date: string, time: string, capacity: number) {
+export async function approveRidingRequestAction(
+  requestId: string,
+  date: string,
+  time: string,
+  capacity: number,
+  priceIdr?: number | null
+) {
   try {
     const actor = await requireActor(['ADMIN'], true);
     const db = await createServerClient();
-    
-    const { error } = await db.rpc('approve_riding_request', {
-      p_request_id: requestId,
-      p_date: date,
-      p_time: time,
-      p_capacity: capacity,
-      p_actor_id: actor.userId
+
+    const result = await approveRidingRequestWithDb(db, {
+      requestId,
+      date,
+      time,
+      capacity,
+      actorId: actor.userId,
+      priceIdr: priceIdr ?? null,
     });
 
-    if (error) {
-      console.error(error);
-      return { ok: false, message: error.message };
+    if (!result.ok) {
+      return { ok: false, message: result.message, code: result.code };
     }
-    
+
     revalidateBookingPaths();
-    return { ok: true };
+    return { ok: true, bookingId: result.bookingId };
   } catch (err: any) {
     console.error(err);
     return { ok: false, message: 'An unexpected error occurred.' };
@@ -115,31 +122,43 @@ export async function approveRidingRequestAction(requestId: string, date: string
 
 export async function rejectRidingRequestAction(requestId: string) {
   try {
-    const actor = await requireActor(['ADMIN'], true);
+    await requireActor(['ADMIN'], true);
     const db = await createServerClient();
-    
-    const { data: request } = await db.from('riding_requests').select('member_id').eq('id', requestId).single();
 
-    const { error } = await db.from('riding_requests').update({ status: 'REJECTED' }).eq('id', requestId);
+    const { data: request } = await db
+      .from('riding_requests')
+      .select('member_id, members(user_id)')
+      .eq('id', requestId)
+      .single();
+
+    const { error } = await db
+      .from('riding_requests')
+      .update({ status: 'REJECTED', updated_at: new Date().toISOString() })
+      .eq('id', requestId);
 
     if (error) {
       console.error(error);
       return { ok: false, message: error.message };
     }
-    
-    if (request?.member_id) {
+
+    const memberObj = Array.isArray((request as any)?.members)
+      ? (request as any).members[0]
+      : (request as any)?.members;
+    const recipientUserId = memberObj?.user_id || null;
+
+    if (recipientUserId) {
       await db.from('notification_outbox').insert({
         event_type: 'BOOKING_REJECTED',
         aggregate_type: 'request',
         aggregate_id: requestId,
-        recipient_user_id: request.member_id,
+        recipient_user_id: recipientUserId,
         channel: 'FCM',
         payload: {
           request_id: requestId,
-        }
+        },
       });
     }
-    
+
     revalidateBookingPaths();
     return { ok: true };
   } catch (err: any) {

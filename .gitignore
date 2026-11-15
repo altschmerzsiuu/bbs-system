@@ -20,3 +20,6 @@ bbs-system-sheet.json
 .idea/
 .gemini/
 *.tsbuildinfo
+supabase/.temp/
+._*
+Thumbs.db

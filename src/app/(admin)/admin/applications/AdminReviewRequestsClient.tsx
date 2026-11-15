@@ -164,11 +164,12 @@ export default function AdminReviewRequestsClient({
     };
   }, [router]);
 
-  // Date/Time modal state
+  // Date/Time/Price modal state
   const [assignModalReqId, setAssignModalReqId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedCapacity, setSelectedCapacity] = useState<number>(2);
+  const [selectedPriceIdr, setSelectedPriceIdr] = useState<number>(250000);
 
   const handleApproveRiding = async (reqId: string) => {
     if (!selectedDate || !selectedTime) {
@@ -177,7 +178,13 @@ export default function AdminReviewRequestsClient({
     }
 
     setIsSubmittingId(reqId);
-    const res = await approveRidingRequestAction(reqId, selectedDate, selectedTime + ':00', selectedCapacity);
+    const res = await approveRidingRequestAction(
+      reqId,
+      selectedDate,
+      selectedTime + ':00',
+      selectedCapacity,
+      selectedPriceIdr
+    );
     setIsSubmittingId(null);
 
     if (res.ok) {
@@ -189,18 +196,32 @@ export default function AdminReviewRequestsClient({
     }
   };
 
-  const handleWA = (name: string, phone: string, type: string) => {
+  const handleWA = (name: string, phone: string, type: string, extra?: any) => {
     const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
     if (!cleanPhone) {
       toast.custom((t) => <AlertToast variant="destructive" title="Gagal" description="Nomor HP tidak valid" onDismiss={() => toast.dismiss(t as string | number)} />);
       return;
     }
     const formattedPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
-    let subject = 'jadwal berkuda';
+    let subject = 'jadwal Casual / Fun Ride';
     if (type === 'JOY_RIDE') subject = 'jadwal Joy Ride';
     else if (type === 'RESCHEDULE') subject = 'permohonan reschedule jadwal berkuda';
     else if (type === 'BOOKING') subject = 'booking jadwal berkuda';
-    const message = encodeURIComponent(`Halo Kak ${name}, kami dari Admin BBS. Terkait ${subject} Anda ...`);
+
+    let text = `Halo Kak ${name}, kami dari Admin Borneo Berkuda Stable (BBS). Terkait ${subject} Anda`;
+    if (extra?.preferredDate || extra?.preferredTime) {
+      text += ` pada tanggal ${extra.preferredDate ? formatDateBig(extra.preferredDate) : '-'} pukul ${extra.preferredTime || '-'}`;
+    }
+    if (extra?.defaultPriceIdr) {
+      text += ` (Tarif: Rp ${Number(extra.defaultPriceIdr).toLocaleString('id-ID')})`;
+    }
+    if (extra?.publicToken && typeof window !== 'undefined') {
+      text += `.\n\nLink Status & E-Ticket Anda:\n${window.location.origin}/ride/status/${extra.publicToken}`;
+    } else {
+      text += ' ...';
+    }
+
+    const message = encodeURIComponent(text);
     window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
   };
 
@@ -623,11 +644,23 @@ export default function AdminReviewRequestsClient({
         if (req.category === 'riding') {
           return (
             <div key={req.id} className="card" style={{ padding: '20px', borderRadius: '20px', background: '#FFF', boxShadow: '0 8px 30px rgba(0,0,0,0.04)', border: '1px solid var(--line)', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4B6B', background: '#E5F0F9', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 700 }}>
-                  <Calendar size={14} />
-                  {req.type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4B6B', background: '#E5F0F9', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 700 }}>
+                    <Calendar size={14} />
+                    {req.type === 'JOY_RIDE' ? 'Joy Ride' : 'Casual Ride'}
+                  </div>
+                  {req.isGuest && (
+                    <span style={{ background: '#FEF3C7', color: '#92400E', padding: '5px 10px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+                      Tamu (Tanpa Login)
+                    </span>
+                  )}
                 </div>
+                {req.humanId && (
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)' }}>
+                    {req.humanId}
+                  </span>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '20px' }}>
@@ -646,6 +679,11 @@ export default function AdminReviewRequestsClient({
                 </div>
                 <div style={{ flex: 1 }}>
                   <b style={{ fontSize: '15px', color: 'var(--ink)' }}>{req.memberName}</b>
+                  {req.memberPhone && (
+                    <div style={{ fontSize: '12px', color: 'var(--ink)', marginTop: '2px', fontWeight: 600 }}>
+                      {req.memberPhone}
+                    </div>
+                  )}
                   <div
                     onClick={() => {
                       if (req.memberEmail) {
@@ -653,10 +691,26 @@ export default function AdminReviewRequestsClient({
                         toast.custom((t) => <AlertToast title="Disalin" description="Email disalin ke clipboard" onDismiss={() => toast.dismiss(t)} />);
                       }
                     }}
-                    style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px', fontWeight: 500, marginBottom: '8px', cursor: 'pointer' }}
+                    style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px', fontWeight: 500, marginBottom: '10px', cursor: 'pointer' }}
                   >
-                    {req.memberEmail || '-'}
+                    {req.memberEmail || (req.isGuest ? 'Reservasi Publik (Guest)' : '-')}
                   </div>
+
+                  {(req.preferredDate || req.preferredTime) && (
+                    <div style={{ background: '#F0F7FF', border: '1px solid #BFDBFE', borderRadius: '12px', padding: '12px 14px', marginBottom: '10px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 800, color: '#1E40AF', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
+                        Preferensi Jadwal Tamu
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>
+                        {req.preferredDate ? formatDateBig(req.preferredDate) : '-'} • Pukul {req.preferredTime || '-'}
+                      </div>
+                      {req.defaultPriceIdr && (
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#1E40AF', marginTop: '2px' }}>
+                          Estimasi Tarif: Rp {Number(req.defaultPriceIdr).toLocaleString('id-ID')}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {req.heightCm && req.weightKg && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: '#FDFBF7', padding: '16px', borderRadius: '12px', border: '1px solid #EBE4D5' }}>
@@ -684,6 +738,11 @@ export default function AdminReviewRequestsClient({
                           </div>
                         )}
                       </div>
+                      {req.guardianName && (
+                        <div style={{ paddingTop: '8px', borderTop: '1px dashed #E5DFD2', fontSize: '12px', color: '#8C6E2D', fontWeight: 600 }}>
+                          Orang Tua / Wali: <b>{req.guardianName}</b> {req.guardianPhone ? `(${req.guardianPhone})` : ''}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -694,19 +753,20 @@ export default function AdminReviewRequestsClient({
                   <button
                     className="btn"
                     style={{ flex: 1, background: '#25D366', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                    onClick={() => handleWA(req.memberName, req.memberPhone, req.type)}
+                    onClick={() => handleWA(req.memberName, req.memberPhone, req.type, req)}
                   >
-                    <MessageCircle size={16} /> WA
+                    <MessageCircle size={16} /> Chat WhatsApp
                   </button>
                   <button
                     className="btn"
                     style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     onClick={() => {
                       setAssignModalReqId(req.id);
-                      // Default to today and 15:00
                       const today = new Date();
-                      setSelectedDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
-                      setSelectedTime('15:00');
+                      const fallbackDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                      setSelectedDate(req.preferredDate || fallbackDate);
+                      setSelectedTime(req.preferredTime || '15:00');
+                      setSelectedPriceIdr(req.defaultPriceIdr ?? (req.type === 'JOY_RIDE' ? 150000 : 250000));
                     }}
                   >
                     <CheckCircle size={16} /> Tetapkan Jadwal
@@ -903,6 +963,17 @@ export default function AdminReviewRequestsClient({
                     </div>
                   ))}
                 </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '8px' }}>Tarif Sesi (Rp)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={10000}
+                  value={selectedPriceIdr}
+                  onChange={e => setSelectedPriceIdr(Number(e.target.value) || 0)}
+                  style={{ width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid #EBE4D5', background: '#FDFBF7', outline: 'none', color: 'var(--ink)', fontWeight: 700, fontSize: '15px' }}
+                />
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>

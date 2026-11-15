@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, X, Star, Bell } from 'lucide-react';
 import { BookingCard } from './booking-card';
 import { TearableTicket } from '@/components/ui/tearable-ticket';
+import { QrCodeSvg } from '@/components/ui/qr-code-svg';
 import { createClient } from '@/infrastructure/supabase-browser';
 
 function isBookingPast(booking: any): boolean {
@@ -22,6 +23,11 @@ export function BookingsClient({ list, currentUserId }: { list: any[], currentUs
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'Upcoming' | 'Completed' | 'Cancelled'>('Upcoming');
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   // Background auto-refresh for near real-time updates using Supabase Realtime
   useEffect(() => {
@@ -207,9 +213,35 @@ export function BookingsClient({ list, currentUserId }: { list: any[], currentUs
                   </div>
                 }
                 bottomContent={
-                  <div style={{ padding: '18px 22px 22px' }}>
-                    <div style={{ height: '40px', background: 'repeating-linear-gradient(90deg, #181817, #181817 2px, transparent 2px, transparent 4px)', marginBottom: '8px', opacity: 0.8 }}></div>
-                    <div style={{ fontSize: '7.5px', fontWeight: 700, letterSpacing: '1.6px', textTransform: 'uppercase', textAlign: 'center', color: '#181817' }}>Good Horses Brighter People</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '8px 16px 14px' }}>
+                    <QrCodeSvg
+                      value={`${origin}/checkin/${selectedBooking.id}`}
+                      size={148}
+                    />
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '4px 10px',
+                        borderRadius: '999px',
+                        background:
+                          selectedBooking.attendance_status === 'ATTENDED' ? '#DCFCE7' : '#F3EFE6',
+                        color:
+                          selectedBooking.attendance_status === 'ATTENDED' ? '#15803D' : '#6B5E45',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        letterSpacing: '0.8px',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {selectedBooking.attendance_status === 'ATTENDED'
+                        ? '✓ SUDAH CHECK-IN (HADIR)'
+                        : 'SCAN QR OLEH GROOMER / ADMIN SAAT TIBA'}
+                    </div>
+                    <div style={{ fontSize: '7.5px', fontWeight: 700, letterSpacing: '1.6px', textTransform: 'uppercase', textAlign: 'center', color: '#181817' }}>
+                      PASS #{selectedBooking.id.slice(0, 8).toUpperCase()} · ARENA 01
+                    </div>
                   </div>
                 }
                 stubContent={<span>BBS · GOOD HORSES BRIGHTER PEOPLE</span>}
