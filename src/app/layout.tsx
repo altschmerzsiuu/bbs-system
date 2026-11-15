@@ -45,7 +45,7 @@ export default function RootLayout({
       <body suppressHydrationWarning={true}>
         <NavigationProgress />
         <Toaster position="top-center" toastOptions={{ style: { fontFamily: 'var(--font-sans)', borderRadius: '12px' } }} />
-        <SerwistProvider swUrl="/serwist/sw.js">
+        <SerwistProvider swUrl="/serwist/sw.js" disable={process.env.NODE_ENV === 'development'}>
           {children}
         </SerwistProvider>
       </body>

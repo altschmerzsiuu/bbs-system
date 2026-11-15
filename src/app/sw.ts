@@ -37,10 +37,10 @@ const serwist = new Serwist({
       handler: new NetworkOnly(),
     },
     // 4. Static Assets (Cacheable)
-    // Next.js static chunks
+    // Next.js static chunks — use NetworkOnly in dev/unhashed or StaleWhileRevalidate so hot reload & updates never serve stale JS
     {
       matcher: ({ url }) => url.pathname.startsWith("/_next/static/"),
-      handler: new CacheFirst({ cacheName: "next-static-chunks" }),
+      handler: new NetworkOnly(),
     },
     // Next.js static images
     {
@@ -76,6 +76,19 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// Purge legacy "next-static-chunks" cache that caused stale JS hydration mismatches
+self.addEventListener('activate', (event: ExtendableEvent) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((k) => k === 'next-static-chunks')
+          .map((k) => caches.delete(k))
+      )
+    )
+  );
+});
 
 // ---------------------------------------------------------------------------
 // FCM Push Notification Handlers

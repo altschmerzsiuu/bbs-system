@@ -13,6 +13,11 @@ export default function LoginPage() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
+    // Clean up any stale Service Worker chunk cache that could cause hydration mismatch
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      caches.delete('next-static-chunks').catch(() => {});
+    }
+
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 1200);
