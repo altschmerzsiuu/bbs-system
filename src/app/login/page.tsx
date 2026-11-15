@@ -6,14 +6,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
-import { Calendar, Ticket, ArrowRight } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Clean up any stale Service Worker chunk cache that could cause hydration mismatch
     if (typeof window !== 'undefined' && 'caches' in window) {
       caches.delete('next-static-chunks').catch(() => {});
     }
@@ -102,37 +101,9 @@ export default function LoginPage() {
               position: 'absolute',
               inset: 0,
               background:
-                'linear-gradient(180deg, rgba(18,18,16,0.35) 0%, rgba(18,18,16,0.15) 45%, rgba(18,18,16,0.82) 100%)',
+                'linear-gradient(180deg, rgba(18,18,16,0.25) 0%, rgba(18,18,16,0.12) 45%, rgba(18,18,16,0.78) 100%)',
             }}
           />
-          {/* Brand Pill with Selective Gold Dot */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '24px',
-              left: '24px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 14px',
-              borderRadius: 'var(--r-md)',
-              background: 'rgba(18, 18, 16, 0.78)',
-              color: 'var(--surface)',
-              fontSize: '12px',
-              fontWeight: 800,
-              letterSpacing: '0.6px',
-            }}
-          >
-            <span
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                background: 'var(--gold)',
-              }}
-            />
-            <span>BORNEO BERKUDA STABLE</span>
-          </div>
         </div>
 
         {/* Overlapping Card */}
@@ -153,13 +124,13 @@ export default function LoginPage() {
         >
           <h1
             style={{
-              font: '800 28px/1.15 var(--font-body, sans-serif)',
+              font: '800 26px/1.18 var(--font-body, sans-serif)',
               margin: '0 0 8px 0',
               color: 'var(--ink)',
               letterSpacing: '-0.5px',
             }}
           >
-            Jadwal & Reservasi Berkuda
+            Borneo Berkuda Stable
           </h1>
           <p
             style={{
@@ -170,7 +141,7 @@ export default function LoginPage() {
               fontWeight: 600,
             }}
           >
-            Masuk dengan akun Member, atau pesan sesi Fun Ride & Joy Ride langsung tanpa akun.
+            Masuk ke akun Anda atau lanjutkan reservasi kunjungan sebagai tamu.
           </p>
 
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -188,7 +159,7 @@ export default function LoginPage() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              <span>{loading ? 'Menghubungkan...' : 'Masuk Member (Google)'}</span>
+              <span>{loading ? 'Menghubungkan...' : 'Masuk dengan Google'}</span>
             </button>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
@@ -205,38 +176,35 @@ export default function LoginPage() {
               <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
             </div>
 
-            {/* 2. Clean Secondary Action Card/Button (Zero Highlight Color) */}
+            {/* 2. Centered Secondary Action Button (No Arrow Icon, No Highlight Color) */}
             <Link
               href="/ride"
               className="bbs-btn-secondary"
               style={{
                 width: '100%',
                 boxSizing: 'border-box',
-                minHeight: '54px',
+                minHeight: '52px',
                 padding: '0 18px',
-                justifyContent: 'space-between',
+                justifyContent: 'center',
                 border: '1.5px solid var(--border-strong)',
                 background: 'var(--surface)',
                 color: 'var(--ink)',
                 boxShadow: 'var(--shadow-sm)',
               }}
             >
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
-                <Calendar size={18} strokeWidth={2} color="var(--ink)" />
-                <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
-                  Pesan Fun Ride / Casual
-                </span>
+              <Calendar size={18} strokeWidth={2} color="var(--ink)" />
+              <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
+                Pesan Fun Ride / Casual
               </span>
-              <ArrowRight size={18} strokeWidth={2} color="var(--ink)" />
             </Link>
 
-            {/* 3. Tertiary Action: Clean Underlined Link (No Highlight Color) */}
+            {/* 3. Tertiary Action: Clean Underlined Text Without Ticket Icon */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px',
+                gap: '5px',
                 minHeight: '44px',
                 flexWrap: 'wrap',
               }}
@@ -247,10 +215,7 @@ export default function LoginPage() {
               <Link
                 href="/ride?tab=check"
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '6px 4px',
+                  padding: '6px 2px',
                   color: 'var(--ink)',
                   fontSize: '13px',
                   fontWeight: 800,
@@ -259,8 +224,7 @@ export default function LoginPage() {
                   textDecorationThickness: '1.5px',
                 }}
               >
-                <Ticket size={15} strokeWidth={2} color="var(--ink)" />
-                <span>Cek Status & E-Ticket Saya</span>
+                Cek Status & E-Ticket Saya
               </Link>
             </div>
           </div>
