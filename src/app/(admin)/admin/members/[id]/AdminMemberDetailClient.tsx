@@ -580,7 +580,7 @@ export default function AdminMemberDetailClient({ member }: { member: any }) {
                           <span>{sesi.arena}</span>
                           <span>·</span>
                           <span style={{ color: sesi.horse !== 'Belum di-assign' ? 'var(--ink)' : 'var(--muted)', fontWeight: sesi.horse !== 'Belum di-assign' ? 600 : 400 }}>
-                            🐎 {sesi.horse}
+                            Kuda: {sesi.horse}
                           </span>
                         </div>
                       </div>

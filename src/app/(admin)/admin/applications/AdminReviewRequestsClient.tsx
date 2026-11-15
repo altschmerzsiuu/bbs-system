@@ -749,37 +749,43 @@ export default function AdminReviewRequestsClient({
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* 1 Dominant Primary Action */}
+                <button
+                  className="bbs-btn-primary"
+                  style={{ width: '100%' }}
+                  onClick={() => {
+                    setAssignModalReqId(req.id);
+                    const today = new Date();
+                    const fallbackDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    setSelectedDate(req.preferredDate || fallbackDate);
+                    setSelectedTime(req.preferredTime || '15:00');
+                    setSelectedPriceIdr(req.defaultPriceIdr ?? (req.type === 'JOY_RIDE' ? 150000 : 250000));
+                  }}
+                >
+                  <CheckCircle size={18} strokeWidth={2} />
+                  <span>Tetapkan Jadwal & Terima</span>
+                </button>
+
+                {/* 2 Clearly Secondary Actions */}
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    className="btn"
-                    style={{ flex: 1, background: '#25D366', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    className="bbs-btn-secondary"
+                    style={{ flex: 1 }}
                     onClick={() => handleWA(req.memberName, req.memberPhone, req.type, req)}
                   >
-                    <MessageCircle size={16} /> Chat WhatsApp
+                    <MessageCircle size={16} strokeWidth={2} />
+                    <span>Chat WhatsApp</span>
                   </button>
                   <button
-                    className="btn"
-                    style={{ flex: 1, background: 'var(--ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                    onClick={() => {
-                      setAssignModalReqId(req.id);
-                      const today = new Date();
-                      const fallbackDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                      setSelectedDate(req.preferredDate || fallbackDate);
-                      setSelectedTime(req.preferredTime || '15:00');
-                      setSelectedPriceIdr(req.defaultPriceIdr ?? (req.type === 'JOY_RIDE' ? 150000 : 250000));
-                    }}
+                    className="bbs-btn-secondary"
+                    onClick={() => setRejectModalReqId(req.id)}
+                    disabled={isSubmittingId === req.id}
+                    style={{ flex: 1, color: 'var(--danger)', borderColor: 'var(--danger-soft)' }}
                   >
-                    <CheckCircle size={16} /> Tetapkan Jadwal
+                    <XCircle size={16} strokeWidth={2} />
+                    <span>Tolak</span>
                   </button>
                 </div>
-                <button
-                  className="btn"
-                  onClick={() => setRejectModalReqId(req.id)}
-                  disabled={isSubmittingId === req.id}
-                  style={{ width: '100%', background: '#FFF', color: 'var(--red)', border: '1px solid var(--redSoft)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  <XCircle size={16} /> Tolak
-                </button>
               </div>
             </div>
           );

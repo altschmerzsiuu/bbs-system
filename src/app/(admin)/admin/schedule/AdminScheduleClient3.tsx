@@ -179,7 +179,7 @@ export default function AdminScheduleClient3({ initialSlots, initialDate, monthS
             }
             const parts = (s.booking?.participants ?? []).map(p => {
                 let name = p.name;
-                if (p.horseName) name += ` (🐴 ${p.horseName})`;
+                if (p.horseName) name += ` (${p.horseName})`;
                 return name;
             });
             if (parts.length === 0) {

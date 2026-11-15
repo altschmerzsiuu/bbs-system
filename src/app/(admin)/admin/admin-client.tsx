@@ -551,8 +551,8 @@ export function AdminClient({ stats, pending, pendingBookingsList = [], upcoming
                       <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
                         <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{rider.name}</span>
                         {rider.horseName && (
-                          <span style={{ fontSize: '11px', color: '#6A5836', fontWeight: 500 }}>
-                            🐴 {rider.horseName}
+                          <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
+                            Kuda: {rider.horseName}
                           </span>
                         )}
                       </div>
@@ -1080,8 +1080,15 @@ export function AdminClient({ stats, pending, pendingBookingsList = [], upcoming
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '18px' }}>🐴</span>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: isCurrent ? '#5A461C' : 'var(--ink)' }}>
+                        <span
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: isCurrent ? 'var(--gold)' : 'var(--border)',
+                          }}
+                        />
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: isCurrent ? 'var(--ink)' : 'var(--ink)' }}>
                           {horse.name}
                         </span>
                       </div>
@@ -1232,9 +1239,8 @@ export function AdminClient({ stats, pending, pendingBookingsList = [], upcoming
                     {/* Horse Assignment Row */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px dashed #E5E5E5', paddingTop: '8px', marginTop: '2px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: rider.horseName ? 'var(--ink)' : 'var(--muted)' }}>
-                        <span>🐴</span>
                         <span style={{ fontWeight: rider.horseName ? 600 : 400 }}>
-                          {rider.horseName ? rider.horseName : 'Belum ada kuda'}
+                          {rider.horseName ? `Kuda: ${rider.horseName}` : 'Belum ada kuda'}
                         </span>
                       </div>
 

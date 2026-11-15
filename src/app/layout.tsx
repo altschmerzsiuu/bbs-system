@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Manrope, Fraunces } from 'next/font/google';
 import './globals.css';
+import '@/styles/tokens.css';
 import { SerwistProvider } from "@serwist/turbopack/react";
 
 const manrope = Manrope({

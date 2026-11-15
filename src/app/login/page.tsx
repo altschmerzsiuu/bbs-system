@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
-import { Calendar, Ticket } from 'lucide-react';
+import { Calendar, Ticket, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -15,12 +15,16 @@ export default function LoginPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 2000);
+    }, 1200);
 
     const params = new URLSearchParams(window.location.search);
     const err = params.get('msg') || params.get('error');
     if (err) {
-      const message = params.get('msg') || (err === 'exchange_failed' ? 'Gagal menukar token sesi login Google. Periksa Authorized Redirect URI di Google Console / Supabase.' : err);
+      const message =
+        params.get('msg') ||
+        (err === 'exchange_failed'
+          ? 'Gagal menukar token sesi login Google. Periksa Authorized Redirect URI di Google Console / Supabase.'
+          : err);
       toast.custom((t) => (
         <AlertToast
           title="Login Gagal"
@@ -29,7 +33,6 @@ export default function LoginPage() {
           onDismiss={() => toast.dismiss(t)}
         />
       ));
-      // Bersihkan query string dari URL agar tidak memicu toast berulang kali saat refresh
       window.history.replaceState({}, '', window.location.pathname);
     }
 
@@ -46,64 +49,131 @@ export default function LoginPage() {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
-    } catch (err: any) {
+    } catch {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
-
-      {/* ── Landing Page Content ── */}
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        overflow: 'hidden',
+        background: 'var(--bg)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* ── Main Content ── */}
       <div
         style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', flexDirection: 'column',
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          maxWidth: '520px',
+          width: '100%',
+          margin: '0 auto',
           opacity: showSplash ? 0 : 1,
-          transition: 'opacity 0.6s ease-in-out',
-          pointerEvents: showSplash ? 'none' : 'auto'
+          transition: 'opacity 220ms ease-out',
+          pointerEvents: showSplash ? 'none' : 'auto',
         }}
       >
-        {/* Top Half: Image */}
-        <div style={{ flex: 1, position: 'relative', width: '100%' }}>
+        {/* Top Hero: Real Photography + Dark Contrast Overlay */}
+        <div style={{ flex: 1, position: 'relative', width: '100%', minHeight: '280px' }}>
           <Image
-            src="/images/horse-4.png" // Menggunakan salah satu aset kuda
-            alt="BBS Horse"
+            src="/images/horse-4.png"
+            alt="Borneo Berkuda Stable"
             fill
             sizes="100vw"
             style={{ objectFit: 'cover', objectPosition: 'center' }}
             priority
           />
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'linear-gradient(180deg, rgba(18,18,16,0.35) 0%, rgba(18,18,16,0.15) 45%, rgba(18,18,16,0.82) 100%)',
+            }}
+          />
+          {/* Brand Pill with Selective Gold Dot */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '24px',
+              left: '24px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 14px',
+              borderRadius: 'var(--r-md)',
+              background: 'rgba(18, 18, 16, 0.78)',
+              color: 'var(--surface)',
+              fontSize: '12px',
+              fontWeight: 800,
+              letterSpacing: '0.6px',
+            }}
+          >
+            <span
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: 'var(--gold)',
+              }}
+            />
+            <span>BORNEO BERKUDA STABLE</span>
+          </div>
         </div>
 
-        {/* Bottom Half: White Panel with Rounded Corners */}
-        <div style={{
-          background: 'var(--white)',
-          borderTopLeftRadius: '32px',
-          borderTopRightRadius: '32px',
-          padding: '40px 24px',
-          marginTop: '-24px', // Pull up to overlap image slightly
-          position: 'relative',
-          zIndex: 10,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          boxShadow: '0 -10px 40px rgba(0,0,0,0.1)' // slight shadow for depth
-        }}>
-          <h1 style={{ font: '32px var(--font-display)', margin: '0 0 12px 0', color: 'var(--ink)' }}>
-            More Than a Ride.
+        {/* Overlapping Card */}
+        <div
+          style={{
+            background: 'var(--surface)',
+            borderTopLeftRadius: 'var(--r-xl)',
+            borderTopRightRadius: 'var(--r-xl)',
+            padding: '32px 24px calc(28px + env(safe-area-inset-bottom, 0px))',
+            marginTop: '-28px',
+            position: 'relative',
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: 'var(--shadow-lg)',
+            borderTop: '1px solid var(--border)',
+          }}
+        >
+          <h1
+            style={{
+              font: '800 28px/1.15 var(--font-body, sans-serif)',
+              margin: '0 0 8px 0',
+              color: 'var(--ink)',
+              letterSpacing: '-0.5px',
+            }}
+          >
+            Jadwal & Reservasi Berkuda
           </h1>
-          <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 32px 0', lineHeight: 1.5, maxWidth: '280px' }}>
-            Horses teach us patience, presence, and a kinder strength.
+          <p
+            style={{
+              fontSize: '14px',
+              color: 'var(--muted)',
+              margin: '0 0 24px 0',
+              lineHeight: 1.5,
+              fontWeight: 600,
+            }}
+          >
+            Masuk dengan akun Member, atau pesan sesi Fun Ride & Joy Ride langsung tanpa akun.
           </p>
 
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px' }}>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* 1. Single Dominant Primary Action */}
             <button
               onClick={handleGoogleLogin}
               disabled={loading}
               suppressHydrationWarning
-              style={{ width: '100%', height: '56px', fontSize: '15px', background: 'var(--ink)', color: 'var(--white)', border: 'none', borderRadius: '16px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}
+              className="bbs-btn-primary"
+              style={{ width: '100%' }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -111,102 +181,105 @@ export default function LoginPage() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              {loading ? 'Connecting...' : 'Continue with Google'}
+              <span>{loading ? 'Menghubungkan...' : 'Masuk Member (Google)'}</span>
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '2px 0' }}>
-              <div style={{ flex: 1, height: '1px', background: '#EBE4D5' }} />
-              <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
+              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+              <span
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--muted)',
+                  fontWeight: 700,
+                }}
+              >
                 Tamu / Non-Member
               </span>
-              <div style={{ flex: 1, height: '1px', background: '#EBE4D5' }} />
+              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
             </div>
 
+            {/* 2. Clearly Secondary Action (No Gold Border) */}
             <Link
               href="/ride"
-              style={{
-                width: '100%',
-                height: '56px',
-                fontSize: '15px',
-                background: '#FDFBF7',
-                color: 'var(--ink)',
-                border: '1.5px solid var(--gold)',
-                borderRadius: '16px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '10px',
-                textDecoration: 'none',
-                boxShadow: '0 4px 14px rgba(181, 139, 59, 0.12)'
-              }}
+              className="bbs-btn-secondary"
+              style={{ width: '100%', justifyContent: 'space-between' }}
             >
-              <Calendar size={18} color="var(--gold)" strokeWidth={2.2} />
-              <span>Pesan Fun Ride / Casual</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                <Calendar size={18} strokeWidth={2} color="var(--ink)" />
+                <span>Pesan Fun Ride / Casual (Tanpa Login)</span>
+              </span>
+              <ArrowRight size={18} strokeWidth={2} color="var(--muted)" />
             </Link>
 
-            <Link
-              href="/ride?tab=check"
-              style={{
-                marginTop: '4px',
-                fontSize: '13px',
-                color: 'var(--muted)',
-                fontWeight: 600,
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px'
-              }}
-            >
-              <Ticket size={14} color="var(--gold)" />
+            {/* 3. Tertiary Action (44px min touch target) */}
+            <Link href="/ride?tab=check" className="bbs-btn-tertiary" style={{ width: '100%' }}>
+              <Ticket size={16} strokeWidth={2} color="var(--ink-2)" />
               <span>Sudah pesan? Cek Status & E-Ticket Saya</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* ── Splash Screen (on top) ── */}
+      {/* ── Splash Screen ── */}
       <div
         style={{
-          position: 'absolute', inset: 0, zIndex: 50,
-          background: '#ffffff',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          position: 'absolute',
+          inset: 0,
+          zIndex: 50,
+          background: 'var(--surface)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
           opacity: showSplash ? 1 : 0,
-          transition: 'opacity 0.6s ease-in-out',
-          pointerEvents: showSplash ? 'auto' : 'none'
+          transition: 'opacity 220ms ease-out',
+          pointerEvents: showSplash ? 'auto' : 'none',
         }}
       >
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-          <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', width: '160px', height: '160px' }}>
             <Image
               src="/brand/bbs-logo-source.jpg"
               alt="BBS Logo"
               fill
-              sizes="(max-width: 768px) 180px, 180px"
+              sizes="160px"
               style={{ objectFit: 'contain' }}
               priority
             />
           </div>
         </div>
-        <div style={{ paddingBottom: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+        <div
+          style={{
+            paddingBottom: '40px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
           <div style={{ display: 'flex', gap: '6px' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--gold)', animation: 'pulse 1.5s infinite' }}></div>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--gold)', animation: 'pulse 1.5s infinite 0.2s' }}></div>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--gold)', animation: 'pulse 1.5s infinite 0.4s' }}></div>
+            <div
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: 'var(--gold)',
+              }}
+            />
           </div>
-          <span style={{ fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 600 }}>Borneo Berkuda</span>
+          <span
+            style={{
+              fontSize: '12px',
+              letterSpacing: '1.6px',
+              textTransform: 'uppercase',
+              color: 'var(--ink)',
+              fontWeight: 800,
+            }}
+          >
+            Borneo Berkuda Stable
+          </span>
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1); }
-        }
-      `}} />
     </div>
   );
 }

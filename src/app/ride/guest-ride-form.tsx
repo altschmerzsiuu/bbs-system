@@ -1,19 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   Calendar,
-  CheckCircle2,
+  Check,
   ChevronLeft,
   Clock,
-  Info,
+  Loader2,
+  Search,
   ShieldCheck,
   Ticket,
   UserCheck,
-  Search,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertToast } from '@/components/ui/alert-toast';
@@ -28,6 +29,7 @@ export type RideProductItem = {
 
 const DAYS_SHORT = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const GUEST_STORAGE_KEY = 'bbs_guest_profile_v1';
 
 function computeAgeFromDob(dobStr: string): number | null {
   if (!dobStr) return null;
@@ -47,7 +49,6 @@ export default function GuestRideForm({
   slots,
   initialMode,
   initialTab = 'book',
-  adminWa,
 }: {
   products: RideProductItem[];
   slots: any[];
@@ -60,16 +61,49 @@ export default function GuestRideForm({
   const [requestType, setRequestType] = useState<string>(
     initialMode === 'JOY_RIDE' ? 'JOY_RIDE' : 'CASUAL_RIDE'
   );
-  const [dateOfBirth, setDateOfBirth] = useState<string>('');
+
+  // Controlled fields for prefill & inline validation
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [domicile, setDomicile] = useState('');
+  const [heightCm, setHeightCm] = useState('');
+  const [weightKg, setWeightKg] = useState('');
+  const [shoeSize, setShoeSize] = useState('');
+  const [guardianName, setGuardianName] = useState('');
+  const [guardianPhone, setGuardianPhone] = useState('');
+  const [isReturningGuest, setIsReturningGuest] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [waiverAccepted, setWaiverAccepted] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Ticket lookup state
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [isLookingUp, setIsLookingUp] = useState<boolean>(false);
+
+  // Auto-prefill for returning guests
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(GUEST_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.fullName) setFullName(parsed.fullName);
+        if (parsed.phone) setPhone(parsed.phone);
+        if (parsed.dateOfBirth) setDateOfBirth(parsed.dateOfBirth);
+        if (parsed.domicile) setDomicile(parsed.domicile);
+        if (parsed.heightCm) setHeightCm(String(parsed.heightCm));
+        if (parsed.weightKg) setWeightKg(String(parsed.weightKg));
+        if (parsed.shoeSize) setShoeSize(String(parsed.shoeSize));
+        if (parsed.fullName || parsed.phone) setIsReturningGuest(true);
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
 
   const riderAge = useMemo(() => computeAgeFromDob(dateOfBirth), [dateOfBirth]);
   const requiresGuardian = riderAge !== null && riderAge >= 0 && riderAge < 17;
@@ -77,7 +111,6 @@ export default function GuestRideForm({
   const availableDates = useMemo(() => {
     const unique = Array.from(new Set((slots || []).map((s) => s.slot_date))).sort();
     if (unique.length > 0) return unique;
-    // Fallback 7 days if slots table is empty
     const list: string[] = [];
     const base = new Date();
     for (let i = 0; i < 7; i++) {
@@ -139,17 +172,49 @@ export default function GuestRideForm({
     [products, requestType]
   );
 
+  const validateClientSide = (): boolean => {
+    const nextErrs: Record<string, string> = {};
+    if (!selectedDate || !selectedTime) {
+      nextErrs.schedule = 'Pilih tanggal dan jam sesi terlebih dahulu.';
+    }
+    if (fullName.trim().length < 2) {
+      nextErrs.fullName = 'Nama lengkap minimal 2 karakter.';
+    }
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length < 9) {
+      nextErrs.phone = 'Masukkan nomor WhatsApp aktif (contoh: 081234567890).';
+    }
+    if (!dateOfBirth) {
+      nextErrs.dateOfBirth = 'Tanggal lahir wajib diisi untuk penyesuaian kuda.';
+    }
+    const hNum = Number(heightCm);
+    if (!heightCm || Number.isNaN(hNum) || hNum < 80 || hNum > 230) {
+      nextErrs.heightCm = 'Tinggi badan harus antara 80–230 cm.';
+    }
+    const wNum = Number(weightKg);
+    if (!weightKg || Number.isNaN(wNum) || wNum < 15 || wNum > 150) {
+      nextErrs.weightKg = 'Berat badan harus antara 15–150 kg.';
+    }
+    if (requiresGuardian) {
+      if (guardianName.trim().length < 2) {
+        nextErrs.guardianName = 'Nama orang tua / wali wajib diisi untuk rider di bawah 17 tahun.';
+      }
+      if (guardianPhone.replace(/\D/g, '').length < 9) {
+        nextErrs.guardianPhone = 'Nomor WhatsApp wali wajib diisi.';
+      }
+    }
+    if (!waiverAccepted) {
+      nextErrs.waiver = 'Centang persetujuan keselamatan berkuda (waiver) sebelum mengirim.';
+    }
+    setFieldErrors(nextErrs);
+    return Object.keys(nextErrs).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
-    if (!selectedDate || !selectedTime) {
-      setError('Silakan pilih tanggal dan jam preferensi berkuda terlebih dahulu.');
-      return;
-    }
-
-    if (!waiverAccepted) {
-      setError('Anda wajib menyetujui ketentuan keselamatan berkuda (waiver).');
+    if (!validateClientSide()) {
       return;
     }
 
@@ -161,6 +226,23 @@ export default function GuestRideForm({
     formData.set('waiverAccepted', waiverAccepted ? 'true' : 'false');
 
     try {
+      localStorage.setItem(
+        GUEST_STORAGE_KEY,
+        JSON.stringify({
+          fullName: fullName.trim(),
+          phone: phone.trim(),
+          dateOfBirth,
+          domicile: domicile.trim(),
+          heightCm,
+          weightKg,
+          shoeSize,
+        })
+      );
+    } catch {
+      // Ignore storage errors
+    }
+
+    try {
       const res = await submitGuestRequest(formData);
       if (!res.ok) {
         setError(res.error);
@@ -170,14 +252,14 @@ export default function GuestRideForm({
 
       toast.custom((t) => (
         <AlertToast
-          title="Permohonan Terkirim!"
-          description={`Kode: ${res.requestId}. Mengarahkan ke halaman status & E-Ticket...`}
+          title="Permohonan Terkirim"
+          description={`Kode: ${res.requestId}. Admin akan menghubungi lewat WhatsApp.`}
           onDismiss={() => toast.dismiss(t)}
         />
       ));
       router.push(`/ride/status/${res.publicToken}`);
     } catch {
-      setError('Terjadi kesalahan jaringan. Silakan coba lagi.');
+      setError('Gagal terhubung ke server. Periksa koneksi internet dan coba lagi.');
       setIsSubmitting(false);
     }
   };
@@ -197,783 +279,721 @@ export default function GuestRideForm({
       }
       router.push(`/ride/status/${res.publicToken}`);
     } catch {
-      setLookupError('Gagal memeriksa status tiket. Silakan coba lagi.');
+      setLookupError('Gagal memeriksa status tiket. Periksa koneksi internet Anda.');
       setIsLookingUp(false);
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '15px 16px',
-    borderRadius: '14px',
-    border: '1px solid #e0dfda',
-    background: 'var(--white)',
-    fontSize: '15px',
-    fontFamily: 'var(--font-sans)',
-    color: 'var(--ink)',
-    outline: 'none',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: 'var(--muted)',
-    marginBottom: '6px',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  };
-
   return (
-    <div
-      suppressHydrationWarning
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        maxWidth: '520px',
-        margin: '0 auto',
-      }}
-    >
-      {/* Sticky Header */}
-      <div
-        style={{
-          padding: '20px 20px 14px',
-          position: 'sticky',
-          top: 0,
-          background: 'var(--paper)',
-          zIndex: 20,
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-          <Link
-            href="/login"
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: 'var(--white)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid #e0dfda',
-              color: 'var(--ink)',
-              textDecoration: 'none',
-              flexShrink: 0,
-            }}
-          >
-            <ChevronLeft size={20} />
-          </Link>
-          <div>
-            <div
-              style={{
-                fontSize: '10px',
-                fontWeight: 800,
-                letterSpacing: '1.4px',
-                textTransform: 'uppercase',
-                color: 'var(--gold)',
-              }}
-            >
-              Borneo Berkuda Stable
-            </div>
-            <h1
-              style={{
-                fontSize: '20px',
-                fontWeight: 700,
-                fontFamily: 'var(--font-sans)',
-                color: 'var(--ink)',
-                margin: 0,
-              }}
-            >
-              Reservasi Tamu (Non-Member)
-            </h1>
-          </div>
-        </div>
+    <div suppressHydrationWarning className="bbs-page-shell">
+      {/* ── Hero Block with Real Photography + Dark Contrast Overlay ── */}
+      <div className="bbs-hero-block">
+        <Image
+          src="/images/horse-4.png"
+          alt="Borneo Berkuda Stable Arena"
+          fill
+          sizes="520px"
+          style={{ objectFit: 'cover', objectPosition: 'center' }}
+          priority
+        />
+        <div className="bbs-hero-overlay" />
 
-        {/* Mode Switcher Tabs */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '8px',
-            background: '#EFECE4',
-            padding: '4px',
-            borderRadius: '14px',
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setActiveTab('book')}
-            style={{
-              padding: '10px 12px',
-              borderRadius: '10px',
-              border: 'none',
-              background: activeTab === 'book' ? 'var(--ink)' : 'transparent',
-              color: activeTab === 'book' ? 'var(--white)' : 'var(--ink)',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-            }}
-          >
-            <Calendar size={15} />
-            <span>Pesan Sesi Baru</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('check')}
-            style={{
-              padding: '10px 12px',
-              borderRadius: '10px',
-              border: 'none',
-              background: activeTab === 'check' ? 'var(--ink)' : 'transparent',
-              color: activeTab === 'check' ? 'var(--white)' : 'var(--ink)',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-            }}
-          >
-            <Ticket size={15} />
-            <span>Cek Tiket Saya</span>
-          </button>
-        </div>
-      </div>
-
-      {activeTab === 'check' ? (
-        <div style={{ padding: '24px 20px 60px' }}>
-          <div
-            style={{
-              background: 'var(--white)',
-              borderRadius: '20px',
-              padding: '24px 20px',
-              border: '1px solid #e6e2d8',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
-            }}
-          >
-            <div
+        <div className="bbs-hero-content">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <Link
+              href="/login"
+              aria-label="Kembali ke halaman login"
               style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '14px',
-                background: '#fbf8f1',
-                border: '1px solid #f0e4c8',
+                width: '44px',
+                height: '44px',
+                borderRadius: 'var(--r-md)',
+                background: 'rgba(18, 18, 16, 0.72)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: 'var(--gold)',
-                marginBottom: '16px',
+                color: 'var(--surface)',
+                textDecoration: 'none',
               }}
             >
-              <Ticket size={24} />
-            </div>
-            <h2 style={{ font: '24px var(--font-display)', margin: '0 0 8px', color: 'var(--ink)' }}>
-              Cek Status & E-Ticket
-            </h2>
-            <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
-              Masukkan nomor WhatsApp yang Anda gunakan saat mengisi form reservasi untuk melihat status konfirmasi dan E-Ticket Anda.
-            </p>
+              <ChevronLeft size={20} strokeWidth={2} />
+            </Link>
 
-            <form onSubmit={handleLookup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={labelStyle}>Nomor WhatsApp</label>
-                <input
-                  name="phone"
-                  type="tel"
-                  required
-                  placeholder="Contoh: 08123456789"
-                  style={inputStyle}
-                />
-              </div>
-
-              <div>
-                <label style={labelStyle}>Kode Request (Opsional)</label>
-                <input
-                  name="requestCode"
-                  type="text"
-                  placeholder="Contoh: BBS-REQ-..."
-                  style={inputStyle}
-                />
-              </div>
-
-              {lookupError && (
-                <div
-                  style={{
-                    background: '#fce8e8',
-                    color: 'var(--red)',
-                    padding: '12px 14px',
-                    borderRadius: '12px',
-                    fontSize: '13px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}
-                >
-                  <Info size={16} style={{ flexShrink: 0 }} />
-                  <span>{lookupError}</span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isLookingUp}
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 12px',
+                borderRadius: 'var(--r-sm)',
+                background: 'rgba(18, 18, 16, 0.72)',
+                fontSize: '12px',
+                fontWeight: 800,
+              }}
+            >
+              <span
                 style={{
-                  width: '100%',
-                  height: '52px',
-                  background: 'var(--ink)',
-                  color: 'var(--white)',
-                  border: 'none',
-                  borderRadius: '14px',
-                  fontSize: '15px',
-                  fontWeight: 700,
-                  cursor: isLookingUp ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: 'var(--gold)',
                 }}
-              >
-                <Search size={18} />
-                <span>{isLookingUp ? 'Mencari Tiket...' : 'Lihat Status & E-Ticket'}</span>
-              </button>
-            </form>
+              />
+              <span>RESERVASI TAMU</span>
+            </div>
+          </div>
+
+          <h1
+            style={{
+              font: '800 28px/1.15 var(--font-body, sans-serif)',
+              margin: '0 0 6px',
+              color: 'var(--surface)',
+            }}
+          >
+            {activeTab === 'book' ? 'Pesan Sesi Berkuda' : 'Cek Status & E-Ticket'}
+          </h1>
+          <p
+            style={{
+              margin: '0 0 20px',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: 'rgba(255, 255, 255, 0.85)',
+              lineHeight: 1.45,
+            }}
+          >
+            {activeTab === 'book'
+              ? 'Pilih jadwal preferensi Anda. Admin akan mengonfirmasi slot lewat WhatsApp.'
+              : 'Masukkan nomor WhatsApp atau kode REQ-XXXX untuk membuka E-Ticket Anda.'}
+          </p>
+
+          {/* Segmented Tab Switcher (44px height) */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '6px',
+              background: 'rgba(18, 18, 16, 0.75)',
+              padding: '4px',
+              borderRadius: 'var(--r-md)',
+              border: '1px solid rgba(255, 255, 255, 0.16)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveTab('book')}
+              style={{
+                minHeight: '44px',
+                borderRadius: 'var(--r-sm)',
+                border: 'none',
+                background: activeTab === 'book' ? 'var(--surface)' : 'transparent',
+                color: activeTab === 'book' ? 'var(--ink)' : 'rgba(255,255,255,0.8)',
+                fontSize: '13px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+            >
+              <Calendar size={16} strokeWidth={2} />
+              <span>Pesan Sesi Baru</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('check')}
+              style={{
+                minHeight: '44px',
+                borderRadius: 'var(--r-sm)',
+                border: 'none',
+                background: activeTab === 'check' ? 'var(--surface)' : 'transparent',
+                color: activeTab === 'check' ? 'var(--ink)' : 'rgba(255,255,255,0.8)',
+                fontSize: '13px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+            >
+              <Ticket size={16} strokeWidth={2} />
+              <span>Cek Tiket Saya</span>
+            </button>
           </div>
         </div>
-      ) : (
-        <form
-          onSubmit={handleSubmit}
-          style={{ padding: '20px 20px 48px', display: 'flex', flexDirection: 'column', gap: '28px' }}
-        >
-          {/* Honeypot field for bots (hidden from humans) */}
-          <div
-            aria-hidden="true"
-            style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
-          >
-            <label htmlFor="website_hp">Website</label>
-            <input id="website_hp" name="website" type="text" tabIndex={-1} autoComplete="off" />
-          </div>
+      </div>
 
-          {/* 1. Pilih Layanan Berkuda */}
-          <section>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div
-                style={{
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '50%',
-                  background: 'var(--ink)',
-                  color: 'var(--white)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: 800,
-                }}
-              >
-                1
-              </div>
-              <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--ink)' }}>
-                Pilih Jenis Sesi
+      {/* ── Overlapping Cards Container ── */}
+      <div className="bbs-overlap-container">
+        {activeTab === 'check' ? (
+          <form onSubmit={handleLookup} className="bbs-card-elevated" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <h2 style={{ font: '800 18px/1.25 var(--font-body, sans-serif)', margin: '0 0 4px', color: 'var(--ink)' }}>
+                Cari E-Ticket Anda
               </h2>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)', fontWeight: 600 }}>
+                Gunakan nomor WhatsApp saat memesan dan kode tiket opsional.
+              </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {products.map((prod) => {
-                const isSelected = requestType === prod.code;
-                return (
-                  <div
-                    key={prod.code}
-                    onClick={() => setRequestType(prod.code)}
-                    style={{
-                      padding: '16px',
-                      borderRadius: '18px',
-                      border: `2px solid ${isSelected ? 'var(--gold)' : '#e0dfda'}`,
-                      background: isSelected ? '#fbf8f1' : 'var(--white)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        gap: '12px',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 700, color: 'var(--ink)', fontSize: '16px' }}>
-                          {prod.name}
-                        </div>
-                        <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px', lineHeight: 1.4 }}>
-                          {prod.description}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          width: '22px',
-                          height: '22px',
-                          borderRadius: '50%',
-                          border: `2px solid ${isSelected ? 'var(--gold)' : '#d0cfca'}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          marginTop: '2px',
-                        }}
-                      >
-                        {isSelected && (
-                          <div
-                            style={{
-                              width: '11px',
-                              height: '11px',
-                              borderRadius: '50%',
-                              background: 'var(--gold)',
-                            }}
-                          />
-                        )}
-                      </div>
-                    </div>
+            {lookupError && (
+              <div
+                style={{
+                  background: 'var(--danger-soft)',
+                  color: 'var(--danger)',
+                  padding: '12px 14px',
+                  borderRadius: 'var(--r-sm)',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                }}
+              >
+                {lookupError}
+              </div>
+            )}
 
-                    {prod.price_idr > 0 && (
-                      <div
+            <div>
+              <label htmlFor="lookup-phone" className="bbs-field-label">
+                Nomor WhatsApp
+              </label>
+              <input
+                id="lookup-phone"
+                type="tel"
+                name="phone"
+                inputMode="tel"
+                required
+                defaultValue={phone}
+                placeholder="Contoh: 081234567890"
+                className="bbs-input tabular-nums"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="lookup-code" className="bbs-field-label">
+                Kode Tiket (Opsional)
+              </label>
+              <input
+                id="lookup-code"
+                type="text"
+                name="code"
+                placeholder="Contoh: REQ-4821"
+                className="bbs-input tabular-nums"
+              />
+            </div>
+
+            <button type="submit" disabled={isLookingUp} className="bbs-btn-primary" style={{ width: '100%' }}>
+              {isLookingUp ? (
+                <>
+                  <Loader2 size={18} strokeWidth={2} className="animate-spin" />
+                  <span>Mencari Tiket...</span>
+                </>
+              ) : (
+                <>
+                  <Search size={18} strokeWidth={2} />
+                  <span>Buka Status & E-Ticket</span>
+                </>
+              )}
+            </button>
+          </form>
+        ) : (
+          <form id="guest-ride-form" onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Honeypot */}
+            <input
+              type="text"
+              name="website_url"
+              tabIndex={-1}
+              autoComplete="off"
+              style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
+            />
+
+            {/* 1. Primary Card: Pilih Layanan & Jadwal */}
+            <div className="bbs-card-elevated" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--muted)', marginBottom: '10px' }}>
+                  1. PILIH JENIS LAYANAN
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {products.map((prod) => {
+                    const isSelected = requestType === prod.code;
+                    return (
+                      <button
+                        key={prod.code}
+                        type="button"
+                        onClick={() => setRequestType(prod.code)}
                         style={{
-                          marginTop: '12px',
-                          paddingTop: '10px',
-                          borderTop: '1px dashed #e5dfd2',
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '16px',
+                          borderRadius: 'var(--r-md)',
+                          border: isSelected ? '2px solid var(--ink)' : '1.5px solid var(--border)',
+                          background: isSelected ? 'var(--ink)' : 'var(--surface)',
+                          color: isSelected ? 'var(--surface)' : 'var(--ink)',
+                          cursor: 'pointer',
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
+                          gap: '12px',
                         }}
                       >
-                        <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
-                          Tarif Sesi
-                        </span>
-                        <span
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <span
+                              style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: isSelected ? 'var(--gold)' : 'var(--border-strong)',
+                              }}
+                            />
+                            <span style={{ fontSize: '15px', fontWeight: 800 }}>{prod.name}</span>
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '12px',
+                              fontWeight: 500,
+                              color: isSelected ? 'rgba(255,255,255,0.78)' : 'var(--muted)',
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            {prod.description}
+                          </div>
+                        </div>
+                        <div
+                          className="tabular-nums"
                           style={{
                             fontSize: '16px',
                             fontWeight: 800,
-                            color: 'var(--ink)',
-                            fontFamily: 'var(--font-sans)',
+                            whiteSpace: 'nowrap',
                           }}
                         >
                           Rp {prod.price_idr.toLocaleString('id-ID')}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Pilih Tanggal */}
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--muted)', marginBottom: '10px' }}>
+                  2. PILIH TANGGAL & JAM PREFERENSI
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    overflowX: 'auto',
+                    paddingBottom: '6px',
+                  }}
+                >
+                  {availableDates.map((dStr) => {
+                    const d = new Date(`${dStr}T00:00:00`);
+                    const isSelected = selectedDate === dStr;
+                    return (
+                      <button
+                        key={dStr}
+                        type="button"
+                        onClick={() => setSelectedDate(dStr)}
+                        style={{
+                          minWidth: '68px',
+                          minHeight: '68px',
+                          padding: '10px 8px',
+                          borderRadius: 'var(--r-md)',
+                          border: isSelected ? '2px solid var(--ink)' : '1.5px solid var(--border)',
+                          background: isSelected ? 'var(--ink)' : 'var(--surface)',
+                          color: isSelected ? 'var(--surface)' : 'var(--ink)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '2px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: isSelected ? 'rgba(255,255,255,0.78)' : 'var(--muted)',
+                          }}
+                        >
+                          {DAYS_SHORT[d.getDay()]}
                         </span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+                        <span className="tabular-nums" style={{ fontSize: '20px', fontWeight: 800 }}>
+                          {d.getDate()}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: isSelected ? 'var(--gold)' : 'var(--muted)',
+                          }}
+                        >
+                          {MONTHS_SHORT[d.getMonth()]}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
-          {/* 2. Pilih Tanggal & Jam Preferensi */}
-          <section>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <div
-                style={{
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '50%',
-                  background: 'var(--ink)',
-                  color: 'var(--white)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: 800,
-                }}
-              >
-                2
-              </div>
-              <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--ink)' }}>
-                Pilih Jadwal Preferensi
-              </h2>
-            </div>
-            <p style={{ fontSize: '12.5px', color: 'var(--muted)', margin: '0 0 14px 36px', lineHeight: 1.4 }}>
-              Pilih tanggal dan jam yang Anda inginkan. Admin BBS akan mengonfirmasi ketersediaan kuda & instruktur.
-            </p>
-
-            {/* Date Selector Horizontal Scroll */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={labelStyle}>Tanggal Berkuda</label>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '8px',
-                  overflowX: 'auto',
-                  paddingBottom: '6px',
-                  scrollbarWidth: 'none',
-                }}
-              >
-                {availableDates.map((dStr) => {
-                  const d = new Date(`${dStr}T00:00:00`);
-                  const isSelected = selectedDate === dStr;
-                  return (
-                    <button
-                      key={dStr}
-                      type="button"
-                      onClick={() => setSelectedDate(dStr)}
-                      style={{
-                        minWidth: '68px',
-                        padding: '10px 8px',
-                        borderRadius: '14px',
-                        border: isSelected ? '2px solid var(--ink)' : '1px solid #e0dfda',
-                        background: isSelected ? 'var(--ink)' : 'var(--white)',
-                        color: isSelected ? 'var(--white)' : 'var(--ink)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '2px',
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <span style={{ fontSize: '11px', opacity: isSelected ? 0.85 : 0.6, fontWeight: 600 }}>
-                        {DAYS_SHORT[d.getDay()]}
-                      </span>
-                      <span style={{ fontSize: '18px', fontWeight: 800 }}>{d.getDate()}</span>
-                      <span style={{ fontSize: '11px', opacity: isSelected ? 0.85 : 0.6, fontWeight: 600 }}>
-                        {MONTHS_SHORT[d.getMonth()]}
-                      </span>
-                    </button>
-                  );
-                })}
+                {/* Pilih Jam */}
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    gap: '8px',
+                    marginTop: '12px',
+                  }}
+                >
+                  {timeOptions.map((slot) => {
+                    const isSelected = selectedTime === slot.value;
+                    return (
+                      <button
+                        key={slot.value}
+                        type="button"
+                        disabled={slot.disabled}
+                        onClick={() => {
+                          setSelectedTime(slot.value);
+                          setFieldErrors((prev) => ({ ...prev, schedule: '' }));
+                        }}
+                        className="tabular-nums"
+                        style={{
+                          minHeight: '44px',
+                          borderRadius: 'var(--r-sm)',
+                          border: isSelected ? '2px solid var(--ink)' : '1.5px solid var(--border)',
+                          background: slot.disabled
+                            ? 'var(--surface-subtle)'
+                            : isSelected
+                            ? 'var(--ink)'
+                            : 'var(--surface)',
+                          color: slot.disabled
+                            ? 'var(--border-strong)'
+                            : isSelected
+                            ? 'var(--surface)'
+                            : 'var(--ink)',
+                          fontSize: '14px',
+                          fontWeight: 800,
+                          cursor: slot.disabled ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        <Clock size={14} strokeWidth={2} />
+                        <span>{slot.value}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {fieldErrors.schedule && <div className="bbs-field-error">{fieldErrors.schedule}</div>}
               </div>
             </div>
 
-            {/* Time Slot Grid */}
-            <div>
-              <label style={labelStyle}>Jam Sesi</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                {timeOptions.map((slot) => {
-                  const isSelected = selectedTime === slot.value;
-                  return (
-                    <button
-                      key={slot.value}
-                      type="button"
-                      disabled={slot.disabled}
-                      onClick={() => setSelectedTime(slot.value)}
-                      style={{
-                        padding: '12px 6px',
-                        borderRadius: '12px',
-                        border: isSelected ? '2px solid var(--gold)' : '1px solid #e0dfda',
-                        background: slot.disabled
-                          ? '#f2f0ea'
-                          : isSelected
-                          ? '#fbf8f1'
-                          : 'var(--white)',
-                        color: slot.disabled ? '#b5b2a8' : 'var(--ink)',
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        cursor: slot.disabled ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      <Clock size={13} color={isSelected ? 'var(--gold)' : 'currentColor'} />
-                      <span>{slot.value}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* 3. Informasi Data Diri */}
-          <section>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div
-                style={{
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '50%',
-                  background: 'var(--ink)',
-                  color: 'var(--white)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: 800,
-                }}
-              >
-                3
-              </div>
-              <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--ink)' }}>
-                Data Diri Rider
-              </h2>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={labelStyle}>Nama Lengkap Rider</label>
-                <input
-                  name="fullName"
-                  type="text"
-                  required
-                  style={inputStyle}
-                  placeholder="Nama lengkap sesuai identitas"
-                />
-              </div>
-
-              <div>
-                <label style={labelStyle}>Nomor WhatsApp Aktif</label>
-                <input
-                  name="phone"
-                  type="tel"
-                  required
-                  style={inputStyle}
-                  placeholder="Contoh: 08123456789"
-                />
-                <span style={{ display: 'block', fontSize: '11.5px', color: 'var(--muted)', marginTop: '4px' }}>
-                  Konfirmasi jadwal & link E-Ticket akan dikirimkan ke nomor ini.
+            {/* 2. Secondary Card: Data Diri & Spesifikasi Rider */}
+            <div className="bbs-card-secondary" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--muted)' }}>
+                  3. DATA RIDER & UKURAN KUDA
                 </span>
+                {isReturningGuest && (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      color: 'var(--success)',
+                    }}
+                  >
+                    <UserCheck size={14} strokeWidth={2} />
+                    <span>Data tersimpan</span>
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="guest-fullName" className="bbs-field-label">
+                  Nama Lengkap Rider
+                </label>
+                <input
+                  id="guest-fullName"
+                  type="text"
+                  name="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Masukkan nama lengkap"
+                  className={`bbs-input ${fieldErrors.fullName ? 'has-error' : ''}`}
+                />
+                {fieldErrors.fullName && <div className="bbs-field-error">{fieldErrors.fullName}</div>}
+              </div>
+
+              <div>
+                <label htmlFor="guest-phone" className="bbs-field-label">
+                  Nomor WhatsApp Aktif
+                </label>
+                <input
+                  id="guest-phone"
+                  type="tel"
+                  name="phone"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Contoh: 081234567890"
+                  className={`bbs-input tabular-nums ${fieldErrors.phone ? 'has-error' : ''}`}
+                />
+                {fieldErrors.phone && <div className="bbs-field-error">{fieldErrors.phone}</div>}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={labelStyle}>Tanggal Lahir</label>
+                  <label htmlFor="guest-dob" className="bbs-field-label">
+                    Tanggal Lahir
+                  </label>
                   <input
-                    name="dateOfBirth"
+                    id="guest-dob"
                     type="date"
-                    required
+                    name="dateOfBirth"
                     value={dateOfBirth}
                     onChange={(e) => setDateOfBirth(e.target.value)}
-                    style={inputStyle}
+                    className={`bbs-input tabular-nums ${fieldErrors.dateOfBirth ? 'has-error' : ''}`}
                   />
+                  {fieldErrors.dateOfBirth && <div className="bbs-field-error">{fieldErrors.dateOfBirth}</div>}
                 </div>
+
                 <div>
-                  <label style={labelStyle}>Kota Domisili</label>
+                  <label htmlFor="guest-domicile" className="bbs-field-label">
+                    Domisili / Kota
+                  </label>
                   <input
-                    name="domicile"
+                    id="guest-domicile"
                     type="text"
-                    required
-                    style={inputStyle}
+                    name="domicile"
+                    value={domicile}
+                    onChange={(e) => setDomicile(e.target.value)}
                     placeholder="Contoh: Balikpapan"
-                    onChange={(e) => {
-                      const start = e.target.selectionStart;
-                      const end = e.target.selectionEnd;
-                      e.target.value = e.target.value
-                        .split(' ')
-                        .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ''))
-                        .join(' ');
-                      e.target.setSelectionRange(start, end);
-                    }}
+                    className="bbs-input"
                   />
                 </div>
               </div>
 
-              {/* Conditional Guardian Box for Riders Under 17 */}
+              {/* Guardian Conditional Section for Riders < 17 */}
               {requiresGuardian && (
                 <div
                   style={{
-                    background: '#FDFBF7',
-                    border: '1.5px solid var(--gold)',
-                    borderRadius: '16px',
-                    padding: '16px',
+                    background: 'var(--surface-subtle)',
+                    border: '1.5px solid var(--border-strong)',
+                    borderRadius: 'var(--r-md)',
+                    padding: '14px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '12px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8C6E2D' }}>
-                    <UserCheck size={18} />
-                    <span style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-                      Data Orang Tua / Wali (Usia Rider: {riderAge} Tahun)
-                    </span>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--ink)' }}>
+                    Data Orang Tua / Wali (Rider Usia {riderAge} Tahun)
                   </div>
-                  <p style={{ fontSize: '12.5px', color: 'var(--muted)', margin: 0, lineHeight: 1.4 }}>
-                    Untuk rider berusia di bawah 17 tahun, mohon lengkapi nama dan nomor WhatsApp orang tua atau wali pendamping.
-                  </p>
                   <div>
-                    <label style={labelStyle}>Nama Orang Tua / Wali</label>
+                    <label htmlFor="guest-guardianName" className="bbs-field-label">
+                      Nama Orang Tua / Wali
+                    </label>
                     <input
-                      name="guardianName"
+                      id="guest-guardianName"
                       type="text"
-                      required={requiresGuardian}
-                      style={inputStyle}
-                      placeholder="Nama lengkap orang tua / wali"
+                      name="guardianName"
+                      value={guardianName}
+                      onChange={(e) => setGuardianName(e.target.value)}
+                      placeholder="Nama lengkap wali"
+                      className={`bbs-input ${fieldErrors.guardianName ? 'has-error' : ''}`}
                     />
+                    {fieldErrors.guardianName && (
+                      <div className="bbs-field-error">{fieldErrors.guardianName}</div>
+                    )}
                   </div>
                   <div>
-                    <label style={labelStyle}>Nomor WhatsApp Orang Tua / Wali</label>
+                    <label htmlFor="guest-guardianPhone" className="bbs-field-label">
+                      Nomor WhatsApp Wali
+                    </label>
                     <input
-                      name="guardianPhone"
+                      id="guest-guardianPhone"
                       type="tel"
-                      required={requiresGuardian}
-                      style={inputStyle}
-                      placeholder="Contoh: 0812..."
+                      name="guardianPhone"
+                      inputMode="tel"
+                      value={guardianPhone}
+                      onChange={(e) => setGuardianPhone(e.target.value)}
+                      placeholder="Contoh: 081234567890"
+                      className={`bbs-input tabular-nums ${fieldErrors.guardianPhone ? 'has-error' : ''}`}
                     />
+                    {fieldErrors.guardianPhone && (
+                      <div className="bbs-field-error">{fieldErrors.guardianPhone}</div>
+                    )}
                   </div>
                 </div>
               )}
-            </div>
-          </section>
 
-          {/* 4. Profil Fisik (Untuk Pemilihan Kuda & Perlengkapan) */}
-          <section>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <div
+              {/* Numeric Specs with Unit Suffix */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label htmlFor="guest-height" className="bbs-field-label">
+                    Tinggi Badan
+                  </label>
+                  <div className="bbs-input-wrap">
+                    <input
+                      id="guest-height"
+                      type="text"
+                      inputMode="numeric"
+                      name="heightCm"
+                      value={heightCm}
+                      onChange={(e) => setHeightCm(e.target.value.replace(/[^\d.]/g, ''))}
+                      placeholder="165"
+                      style={{ paddingRight: '38px' }}
+                      className={`bbs-input tabular-nums ${fieldErrors.heightCm ? 'has-error' : ''}`}
+                    />
+                    <span className="bbs-input-suffix">cm</span>
+                  </div>
+                  {fieldErrors.heightCm && <div className="bbs-field-error">{fieldErrors.heightCm}</div>}
+                </div>
+
+                <div>
+                  <label htmlFor="guest-weight" className="bbs-field-label">
+                    Berat Badan
+                  </label>
+                  <div className="bbs-input-wrap">
+                    <input
+                      id="guest-weight"
+                      type="text"
+                      inputMode="numeric"
+                      name="weightKg"
+                      value={weightKg}
+                      onChange={(e) => setWeightKg(e.target.value.replace(/[^\d.]/g, ''))}
+                      placeholder="60"
+                      style={{ paddingRight: '36px' }}
+                      className={`bbs-input tabular-nums ${fieldErrors.weightKg ? 'has-error' : ''}`}
+                    />
+                    <span className="bbs-input-suffix">kg</span>
+                  </div>
+                  {fieldErrors.weightKg && <div className="bbs-field-error">{fieldErrors.weightKg}</div>}
+                </div>
+
+                <div>
+                  <label htmlFor="guest-shoe" className="bbs-field-label">
+                    Sepatu (Ops)
+                  </label>
+                  <div className="bbs-input-wrap">
+                    <input
+                      id="guest-shoe"
+                      type="text"
+                      inputMode="numeric"
+                      name="shoeSize"
+                      value={shoeSize}
+                      onChange={(e) => setShoeSize(e.target.value.replace(/\D/g, ''))}
+                      placeholder="40"
+                      style={{ paddingRight: '36px' }}
+                      className="bbs-input tabular-nums"
+                    />
+                    <span className="bbs-input-suffix">EU</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Safety Waiver Card */}
+            <div className="bbs-card-secondary">
+              <button
+                type="button"
+                onClick={() => {
+                  setWaiverAccepted((v) => !v);
+                  setFieldErrors((prev) => ({ ...prev, waiver: '' }));
+                }}
                 style={{
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '50%',
-                  background: 'var(--ink)',
-                  color: 'var(--white)',
+                  width: '100%',
+                  minHeight: '48px',
+                  border: 'none',
+                  background: 'transparent',
+                  padding: 0,
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: 800,
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
                 }}
               >
-                4
-              </div>
-              <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--ink)' }}>
-                Profil Berkuda
-              </h2>
-            </div>
-            <p style={{ fontSize: '12.5px', color: 'var(--muted)', margin: '0 0 14px 36px', lineHeight: 1.4 }}>
-              Digunakan oleh tim Groomer BBS untuk menyiapkan kuda dan sepatu boots/helm yang sesuai ukuran Anda.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-              <div>
-                <label style={labelStyle}>Tinggi (cm)</label>
-                <input
-                  name="heightCm"
-                  type="number"
-                  min={50}
-                  max={250}
-                  required
-                  style={inputStyle}
-                  placeholder="165"
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>Berat (kg)</label>
-                <input
-                  name="weightKg"
-                  type="number"
-                  min={15}
-                  max={200}
-                  required
-                  style={inputStyle}
-                  placeholder="58"
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>Sepatu (EUR)</label>
-                <input
-                  name="shoeSize"
-                  type="number"
-                  min={20}
-                  max={50}
-                  required
-                  style={inputStyle}
-                  placeholder="40"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* 5. Waiver Keselamatan */}
-          <section>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '12px',
-                background: 'var(--white)',
-                padding: '16px',
-                borderRadius: '16px',
-                border: waiverAccepted ? '1.5px solid var(--gold)' : '1px solid #e0dfda',
-                cursor: 'pointer',
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={waiverAccepted}
-                onChange={(e) => setWaiverAccepted(e.target.checked)}
-                style={{ width: '20px', height: '20px', marginTop: '2px', accentColor: 'var(--ink)', flexShrink: 0 }}
-              />
-              <div style={{ fontSize: '13px', color: 'var(--ink)', lineHeight: 1.5 }}>
-                <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <ShieldCheck size={16} color="var(--gold)" />
-                  <span>Persetujuan Keselamatan Berkuda (Riding Waiver)</span>
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '6px',
+                    border: waiverAccepted ? '2px solid var(--ink)' : '2px solid var(--border-strong)',
+                    background: waiverAccepted ? 'var(--ink)' : 'var(--surface)',
+                    color: 'var(--surface)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginTop: '2px',
+                  }}
+                >
+                  {waiverAccepted && <Check size={16} strokeWidth={2.5} />}
                 </div>
-                <span style={{ color: 'var(--muted)' }}>
-                  Saya menyatakan data fisik di atas benar dan bersedia mengikuti seluruh instruksi keselamatan dari pelatih/groomer Borneo Berkuda Stable selama berada di area kandang & arena.
-                </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>
+                    <ShieldCheck size={16} strokeWidth={2} color="var(--success)" />
+                    <span>Persetujuan Keselamatan Berkuda (Waiver)</span>
+                  </div>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)', lineHeight: 1.45, fontWeight: 500 }}>
+                    Saya bersedia mematuhi instruksi pelatih/groomer Borneo Berkuda Stable dan wajib menggunakan helm pengaman selama di area arena.
+                  </p>
+                </div>
+              </button>
+              {fieldErrors.waiver && <div className="bbs-field-error">{fieldErrors.waiver}</div>}
+            </div>
+
+            {error && (
+              <div
+                style={{
+                  background: 'var(--danger-soft)',
+                  color: 'var(--danger)',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--r-md)',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                }}
+              >
+                {error}
               </div>
-            </label>
-          </section>
+            )}
 
-          {error && (
-            <div
-              style={{
-                background: '#fce8e8',
-                color: 'var(--red)',
-                padding: '14px 16px',
-                borderRadius: '14px',
-                fontSize: '13.5px',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '10px',
-                fontWeight: 500,
-              }}
-            >
-              <Info size={18} style={{ flexShrink: 0, marginTop: '1px' }} />
-              <span>{error}</span>
+            {/* ── Sticky Bottom Action Bar: Summary Left, 1 Dominant Primary Button Right ── */}
+            <div className="bbs-sticky-bottom-bar">
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--muted)' }}>
+                  {selectedProduct?.name || 'Casual Ride'}
+                </div>
+                <div className="tabular-nums" style={{ fontSize: '20px', fontWeight: 800, color: 'var(--ink)' }}>
+                  Rp {(selectedProduct?.price_idr || 250000).toLocaleString('id-ID')}
+                </div>
+              </div>
+
+              <button type="submit" disabled={isSubmitting} className="bbs-btn-primary">
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={18} strokeWidth={2} className="animate-spin" />
+                    <span>Mengirim...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Kirim Permohonan</span>
+                    <ArrowRight size={18} strokeWidth={2} />
+                  </>
+                )}
+              </button>
             </div>
-          )}
-
-          {/* Submit Summary Footer */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                height: '56px',
-                background: 'var(--ink)',
-                color: 'var(--white)',
-                border: 'none',
-                borderRadius: '16px',
-                fontSize: '16px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '10px',
-                opacity: isSubmitting ? 0.7 : 1,
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
-              }}
-            >
-              <span>{isSubmitting ? 'Mengirim Reservasi...' : 'Kirim Reservasi & Dapatkan Tiket'}</span>
-              {!isSubmitting && <ArrowRight size={20} />}
-            </button>
-
-            <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--muted)' }}>
-              Ingin berlatih rutin dengan harga lebih hemat?{' '}
-              <Link href="/login" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
-                Masuk / Daftar Member
-              </Link>
-            </div>
-          </div>
-        </form>
-      )}
+          </form>
+        )}
+      </div>
     </div>
   );
 }

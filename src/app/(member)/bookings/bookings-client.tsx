@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, X, Star, Bell } from 'lucide-react';
+import { ChevronLeft, X, Star, Bell, Calendar, CheckCircle2, QrCode } from 'lucide-react';
 import { BookingCard } from './booking-card';
 import { TearableTicket } from '@/components/ui/tearable-ticket';
 import { QrCodeSvg } from '@/components/ui/qr-code-svg';
@@ -92,11 +92,13 @@ export function BookingsClient({ list, currentUserId }: { list: any[], currentUs
 
       {list.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '48px', padding: '0 24px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'var(--goldSoft)', marginBottom: '12px' }}>✦</div>
-          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>No rides yet</div>
-          <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '20px' }}>Book your first session at the stable.</div>
+          <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'var(--surface-subtle)', marginBottom: '12px' }}>
+            <Calendar size={32} strokeWidth={2} color="var(--ink)" />
+          </div>
+          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>Belum ada jadwal berkuda</div>
+          <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '20px' }}>Pesan sesi berkuda pertama Anda di Borneo Berkuda Stable.</div>
           <Link href="/schedule">
-            <button className="primary" style={{ maxWidth: '220px', margin: '0 auto', background: 'var(--ink)' }}>Book a Ride</button>
+            <button className="bbs-btn-primary" style={{ maxWidth: '220px', margin: '0 auto' }}>Pesan Sesi</button>
           </Link>
         </div>
       ) : (
@@ -218,26 +220,18 @@ export function BookingsClient({ list, currentUserId }: { list: any[], currentUs
                       value={`${origin}/checkin/${selectedBooking.id}`}
                       size={148}
                     />
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 10px',
-                        borderRadius: '999px',
-                        background:
-                          selectedBooking.attendance_status === 'ATTENDED' ? '#DCFCE7' : '#F3EFE6',
-                        color:
-                          selectedBooking.attendance_status === 'ATTENDED' ? '#15803D' : '#6B5E45',
-                        fontSize: '9px',
-                        fontWeight: 800,
-                        letterSpacing: '0.8px',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {selectedBooking.attendance_status === 'ATTENDED'
-                        ? '✓ SUDAH CHECK-IN (HADIR)'
-                        : 'SCAN QR OLEH GROOMER / ADMIN SAAT TIBA'}
+                    <div className={`bbs-status-badge ${selectedBooking.attendance_status === 'ATTENDED' ? 'confirmed' : 'pending'}`}>
+                      {selectedBooking.attendance_status === 'ATTENDED' ? (
+                        <>
+                          <CheckCircle2 size={14} strokeWidth={2} />
+                          <span>Sudah Check-In (Hadir)</span>
+                        </>
+                      ) : (
+                        <>
+                          <QrCode size={14} strokeWidth={2} />
+                          <span>Scan QR saat tiba di lokasi</span>
+                        </>
+                      )}
                     </div>
                     <div style={{ fontSize: '7.5px', fontWeight: 700, letterSpacing: '1.6px', textTransform: 'uppercase', textAlign: 'center', color: '#181817' }}>
                       PASS #{selectedBooking.id.slice(0, 8).toUpperCase()} · ARENA 01

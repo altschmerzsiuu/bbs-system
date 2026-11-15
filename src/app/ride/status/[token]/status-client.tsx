@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -11,6 +12,7 @@ import {
   Copy,
   MapPin,
   MessageCircle,
+  QrCode,
   RefreshCw,
   XCircle,
 } from 'lucide-react';
@@ -64,19 +66,21 @@ const MONTHS_FULL = [
   'Desember',
 ];
 
-function formatDateIndonesian(isoDate: string) {
-  if (!isoDate) return { dayName: '-', fullDate: '-' };
-  const d = new Date(`${isoDate}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return { dayName: '-', fullDate: isoDate };
+function formatDateIndonesian(dateStr: string): { dayName: string; fullDate: string } {
+  const d = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(d.getTime())) {
+    return { dayName: '-', fullDate: dateStr };
+  }
   return {
     dayName: DAYS_FULL[d.getDay()],
     fullDate: `${d.getDate()} ${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`,
   };
 }
 
-function addOneHour(hm: string): string {
-  if (!hm || !hm.includes(':')) return '';
-  const [h, m] = hm.split(':').map(Number);
+function addOneHour(timeHm: string): string {
+  const [hStr, mStr] = (timeHm || '08:00').split(':');
+  const h = parseInt(hStr || '8', 10);
+  const m = parseInt(mStr || '0', 10);
   const totalMins = h * 60 + m + 60;
   const eh = String(Math.floor(totalMins / 60)).padStart(2, '0');
   const em = String(totalMins % 60).padStart(2, '0');
@@ -92,11 +96,14 @@ export default function GuestRideStatusClient({
 }) {
   const router = useRouter();
   const [origin, setOrigin] = useState('');
+
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
+
   const isConfirmed = data.status === 'CONFIRMED';
   const isRejected = data.status === 'REJECTED';
+  const isAttended = data.booking?.attendanceStatus === 'ATTENDED';
 
   const activeDate = data.booking?.date || data.preferredDate;
   const activeStartTime = data.booking?.startTime || data.preferredTime;
@@ -113,25 +120,24 @@ export default function GuestRideStatusClient({
 
   const handleOpenWhatsApp = () => {
     const waPhone = normalizeWaNumber(adminWa);
-    const ticketUrl =
-      typeof window !== 'undefined'
-        ? `${window.location.origin}/ride/status/${data.publicToken}`
-        : `/ride/status/${data.publicToken}`;
+    const ticketUrl = origin
+      ? `${origin}/ride/status/${data.publicToken}`
+      : `/ride/status/${data.publicToken}`;
 
     const messageLines = isConfirmed
       ? [
           `Halo Admin BBS, saya *${data.riderName}*.`,
           `Berikut E-Ticket reservasi *${data.serviceName}* saya yang sudah terkonfirmasi:`,
-          `• Kode: *${data.humanId}*`,
-          `• Jadwal: *${dayName}, ${fullDate} (${activeStartTime} - ${activeEndTime})*`,
-          `• Link E-Ticket: ${ticketUrl}`,
+          `- Kode: *${data.humanId}*`,
+          `- Jadwal: *${dayName}, ${fullDate} (${activeStartTime} - ${activeEndTime})*`,
+          `- Link E-Ticket: ${ticketUrl}`,
         ]
       : [
           `Halo Admin BBS, saya *${data.riderName}* baru saja mengajukan reservasi *${data.serviceName}*:`,
-          `• Kode Request: *${data.humanId}*`,
-          `• Preferensi Jadwal: *${dayName}, ${fullDate} pukul ${activeStartTime}*`,
-          `• Tarif Sesi: *Rp ${data.priceIdr.toLocaleString('id-ID')}*`,
-          `• Link Status & Tiket: ${ticketUrl}`,
+          `- Kode Request: *${data.humanId}*`,
+          `- Preferensi Jadwal: *${dayName}, ${fullDate} pukul ${activeStartTime}*`,
+          `- Tarif Sesi: *Rp ${data.priceIdr.toLocaleString('id-ID')}*`,
+          `- Link Status & Tiket: ${ticketUrl}`,
           ``,
           `Mohon konfirmasi ketersediaan jadwalnya ya Kak. Terima kasih!`,
         ];
@@ -153,149 +159,152 @@ export default function GuestRideStatusClient({
   };
 
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        maxWidth: '520px',
-        margin: '0 auto',
-        paddingBottom: '48px',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '20px 20px 12px',
-        }}
-      >
-        <Link
-          href="/ride"
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            background: 'var(--white)',
-            border: '1px solid #e0dfda',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--ink)',
-            textDecoration: 'none',
-          }}
-        >
-          <ChevronLeft size={20} />
-        </Link>
+    <div className="bbs-page-shell">
+      {/* ── Hero Block with Real Photography + Dark Contrast Overlay ── */}
+      <div className="bbs-hero-block">
+        <Image
+          src="/images/horse-4.png"
+          alt="Borneo Berkuda Stable"
+          fill
+          sizes="520px"
+          style={{ objectFit: 'cover', objectPosition: 'center' }}
+          priority
+        />
+        <div className="bbs-hero-overlay" />
 
-        <button
-          type="button"
-          onClick={() => router.refresh()}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 14px',
-            borderRadius: '100px',
-            border: '1px solid #e0dfda',
-            background: 'var(--white)',
-            color: 'var(--ink)',
-            fontSize: '12px',
-            fontWeight: 700,
-            cursor: 'pointer',
-          }}
-        >
-          <RefreshCw size={13} />
-          <span>Perbarui Status</span>
-        </button>
-      </div>
+        <div className="bbs-hero-content">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <Link
+              href="/ride"
+              aria-label="Kembali ke form reservasi"
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: 'var(--r-md)',
+                background: 'rgba(18, 18, 16, 0.72)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--surface)',
+                textDecoration: 'none',
+              }}
+            >
+              <ChevronLeft size={20} strokeWidth={2} />
+            </Link>
 
-      {/* Title Section */}
-      <div style={{ padding: '4px 24px 20px' }}>
-        <div
-          style={{
-            fontSize: '10px',
-            fontWeight: 800,
-            letterSpacing: '1.5px',
-            textTransform: 'uppercase',
-            color: 'var(--gold)',
-            marginBottom: '4px',
-          }}
-        >
-          {data.humanId}
+            <button
+              type="button"
+              onClick={() => router.refresh()}
+              style={{
+                minHeight: '44px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '0 14px',
+                borderRadius: 'var(--r-md)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(18, 18, 16, 0.72)',
+                color: 'var(--surface)',
+                fontSize: '13px',
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
+            >
+              <RefreshCw size={15} strokeWidth={2} />
+              <span>Perbarui Status</span>
+            </button>
+          </div>
+
+          <div
+            className="tabular-nums"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '12px',
+              fontWeight: 800,
+              letterSpacing: '1px',
+              color: 'var(--gold)',
+              marginBottom: '6px',
+            }}
+          >
+            <span>TIKET #{data.humanId}</span>
+          </div>
+
+          <h1
+            style={{
+              font: '800 28px/1.15 var(--font-body, sans-serif)',
+              margin: '0 0 8px',
+              color: 'var(--surface)',
+            }}
+          >
+            {isConfirmed
+              ? 'E-Ticket Berkuda Anda'
+              : isRejected
+              ? 'Jadwal Belum Tersedia'
+              : 'Menunggu Konfirmasi Admin'}
+          </h1>
+          <p
+            style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: 'rgba(255, 255, 255, 0.85)',
+              margin: 0,
+              lineHeight: 1.45,
+            }}
+          >
+            {isConfirmed
+              ? 'Tunjukkan QR Code di bawah kepada Groomer atau Admin saat tiba di kandang.'
+              : isRejected
+              ? 'Slot pada jam yang dipilih sedang penuh. Hubungi Admin lewat WhatsApp untuk jadwal pengganti.'
+              : 'Admin akan menghubungi lewat WhatsApp setelah memeriksa ketersediaan kuda.'}
+          </p>
         </div>
-        <h1 style={{ font: '34px/1.05 var(--font-display)', margin: '0 0 6px', color: 'var(--ink)' }}>
-          {isConfirmed
-            ? 'Riding Pass Anda'
-            : isRejected
-            ? 'Jadwal Belum Tersedia'
-            : 'Menunggu Konfirmasi'}
-        </h1>
-        <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0, lineHeight: 1.45 }}>
-          {isConfirmed
-            ? 'Tunjukkan E-Ticket ini kepada tim Groomer / Admin saat tiba di Borneo Berkuda Stable.'
-            : isRejected
-            ? 'Mohon maaf, slot pada jam yang Anda pilih sedang penuh atau berhalangan. Silakan hubungi Admin untuk jadwal alternatif.'
-            : 'Permohonan Anda sudah masuk ke antrean Admin BBS. Klik tombol WhatsApp di bawah untuk mempercepat konfirmasi & menyimpan link tiket Anda.'}
-        </p>
       </div>
 
-      {/* Main Content: E-Ticket when CONFIRMED, Status Card when UNDER_REVIEW / REJECTED */}
-      <div style={{ padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* ── Overlapping Boarding Pass / Status Cards ── */}
+      <div className="bbs-overlap-container">
         {isConfirmed ? (
-          <div style={{ width: '100%', maxWidth: '360px', margin: '0 auto' }}>
+          <div style={{ width: '100%', maxWidth: '380px', margin: '0 auto' }}>
             <TearableTicket
               topContent={
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                     <div>
                       <h3
                         style={{
                           margin: 0,
-                          fontSize: '22px',
-                          fontFamily: 'var(--font-display)',
+                          fontSize: '20px',
+                          fontWeight: 800,
                           color: 'var(--ink)',
                         }}
                       >
-                        BBS
+                        BBS PASS
                       </h3>
                       <div
                         style={{
-                          fontSize: '10px',
+                          fontSize: '12px',
                           color: 'var(--muted)',
                           marginTop: '2px',
-                          textTransform: 'uppercase',
                           fontWeight: 700,
-                          letterSpacing: '1px',
                         }}
                       >
                         Borneo Berkuda Stable
                       </div>
                     </div>
+
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-                      <span
-                        style={{
-                          background: '#2E6F40',
-                          color: '#fff',
-                          fontSize: '9px',
-                          fontWeight: 800,
-                          padding: '5px 11px',
-                          borderRadius: '12px',
-                          letterSpacing: '0.5px',
-                        }}
-                      >
-                        CONFIRMED
+                      <span className="bbs-status-badge confirmed">
+                        <CheckCircle2 size={14} strokeWidth={2} />
+                        <span>Terkonfirmasi</span>
                       </span>
                       <span
+                        className="tabular-nums"
                         style={{
-                          fontSize: '8.5px',
+                          fontSize: '12px',
                           fontWeight: 800,
-                          letterSpacing: '0.8px',
                           color: 'var(--muted)',
-                          textTransform: 'uppercase',
                         }}
                       >
                         {data.humanId}
@@ -306,31 +315,23 @@ export default function GuestRideStatusClient({
                   <div style={{ marginTop: '20px' }}>
                     <div
                       style={{
-                        fontSize: '10px',
+                        fontSize: '12px',
                         fontWeight: 700,
-                        letterSpacing: '1px',
                         color: 'var(--muted)',
-                        textTransform: 'uppercase',
-                        marginBottom: '3px',
+                        marginBottom: '2px',
                       }}
                     >
-                      {dayName}
+                      {dayName}, {fullDate}
                     </div>
+
                     <div
+                      className="tabular-nums"
                       style={{
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        borderBottom: '1px solid #e2dcd0',
-                        paddingBottom: '4px',
-                        display: 'inline-block',
-                        marginBottom: '18px',
+                        font: '800 30px/1.15 var(--font-body, sans-serif)',
+                        marginBottom: '20px',
                         color: 'var(--ink)',
                       }}
                     >
-                      {fullDate.toUpperCase()}
-                    </div>
-
-                    <div style={{ font: '42px/1 var(--font-display)', marginBottom: '22px', color: 'var(--ink)' }}>
                       {activeStartTime} — {activeEndTime}
                     </div>
 
@@ -339,77 +340,42 @@ export default function GuestRideStatusClient({
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
                         gap: '14px',
-                        marginBottom: '8px',
+                        paddingTop: '14px',
+                        borderTop: '1px solid var(--border)',
                       }}
                     >
                       <div>
-                        <span
-                          style={{
-                            display: 'block',
-                            fontSize: '9px',
-                            fontWeight: 600,
-                            color: 'var(--muted)',
-                            marginBottom: '3px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
+                        <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '2px' }}>
                           Rider (Tamu)
                         </span>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
                           {data.riderName}
                         </span>
                       </div>
 
                       <div>
-                        <span
-                          style={{
-                            display: 'block',
-                            fontSize: '9px',
-                            fontWeight: 600,
-                            color: 'var(--muted)',
-                            marginBottom: '3px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
+                        <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '2px' }}>
                           Layanan
                         </span>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
                           {data.serviceName}
                         </span>
                       </div>
 
                       <div>
-                        <span
-                          style={{
-                            display: 'block',
-                            fontSize: '9px',
-                            fontWeight: 600,
-                            color: 'var(--muted)',
-                            marginBottom: '3px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
+                        <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '2px' }}>
                           Kuda / Groom
                         </span>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
-                          {data.booking?.horseName ? `${data.booking.horseName} · Tim BBS` : 'Tim Groom BBS'}
+                        <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
+                          {data.booking?.horseName ? data.booking.horseName : 'Tim Groom BBS'}
                         </span>
                       </div>
 
                       <div>
-                        <span
-                          style={{
-                            display: 'block',
-                            fontSize: '9px',
-                            fontWeight: 600,
-                            color: 'var(--muted)',
-                            marginBottom: '3px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
+                        <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '2px' }}>
                           Tarif Sesi
                         </span>
-                        <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>
+                        <span className="tabular-nums" style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
                           Rp {data.priceIdr.toLocaleString('id-ID')}
                         </span>
                       </div>
@@ -418,40 +384,31 @@ export default function GuestRideStatusClient({
                 </div>
               }
               bottomContent={
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                  <QrCodeSvg
-                    value={`${origin}/checkin/${data.publicToken}`}
-                    size={154}
-                  />
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '4px 10px',
-                      borderRadius: '999px',
-                      background:
-                        data.booking?.attendanceStatus === 'ATTENDED' ? '#DCFCE7' : '#F3EFE6',
-                      color:
-                        data.booking?.attendanceStatus === 'ATTENDED' ? '#15803D' : '#6B5E45',
-                      fontSize: '9px',
-                      fontWeight: 800,
-                      letterSpacing: '0.8px',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {data.booking?.attendanceStatus === 'ATTENDED'
-                      ? '✓ SUDAH CHECK-IN (HADIR)'
-                      : 'SCAN QR OLEH GROOMER / ADMIN SAAT TIBA'}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <QrCodeSvg value={`${origin}/checkin/${data.publicToken}`} size={160} />
+
+                  <div className={`bbs-status-badge ${isAttended ? 'confirmed' : 'pending'}`}>
+                    {isAttended ? (
+                      <>
+                        <CheckCircle2 size={14} strokeWidth={2} />
+                        <span>Sudah Check-In (Hadir)</span>
+                      </>
+                    ) : (
+                      <>
+                        <QrCode size={14} strokeWidth={2} />
+                        <span>Scan QR saat tiba di lokasi</span>
+                      </>
+                    )}
                   </div>
+
                   <div
+                    className="tabular-nums"
                     style={{
-                      fontSize: '8px',
+                      fontSize: '12px',
                       fontWeight: 800,
-                      letterSpacing: '1.6px',
-                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
                       textAlign: 'center',
-                      color: '#181817',
+                      color: 'var(--ink)',
                     }}
                   >
                     PASS {data.humanId} · ARENA 01
@@ -462,233 +419,109 @@ export default function GuestRideStatusClient({
             />
           </div>
         ) : (
-          <div
-            style={{
-              background: 'linear-gradient(145deg, #FFFDF9 0%, #F6EFE2 100%)',
-              borderRadius: '24px',
-              padding: '24px',
-              border: '1px solid #E6DEC8',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.05)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '18px',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  letterSpacing: '0.8px',
-                  textTransform: 'uppercase',
-                  color: 'var(--muted)',
-                }}
-              >
-                {data.serviceName}
+          /* ── Status Card when UNDER_REVIEW or REJECTED ── */
+          <div className="bbs-card-elevated" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+              <span className={`bbs-status-badge ${isRejected ? 'rejected' : 'pending'}`}>
+                {isRejected ? (
+                  <>
+                    <XCircle size={15} strokeWidth={2} />
+                    <span>Ditolak / Jadwal Penuh</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock size={15} strokeWidth={2} />
+                    <span>Menunggu Konfirmasi</span>
+                  </>
+                )}
               </span>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: isRejected ? '#FEE2E2' : '#FEF3C7',
-                  color: isRejected ? '#B91C1C' : '#92400E',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  padding: '5px 12px',
-                  borderRadius: '100px',
-                }}
-              >
-                {isRejected ? <XCircle size={13} /> : <Clock size={13} />}
-                <span>{isRejected ? 'DITOLAK / PENUH' : 'MENUNGGU KONFIRMASI'}</span>
+
+              <span className="tabular-nums" style={{ fontSize: '13px', fontWeight: 800, color: 'var(--muted)' }}>
+                {data.humanId}
               </span>
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
-                Preferensi Jadwal Berkuda
+            <div
+              style={{
+                background: 'var(--surface-subtle)',
+                borderRadius: 'var(--r-md)',
+                padding: '16px',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px' }}>
+                Jadwal Preferensi
               </div>
-              <div style={{ font: '32px/1.1 var(--font-display)', color: 'var(--ink)' }}>
+              <div className="tabular-nums" style={{ fontSize: '24px', fontWeight: 800, color: 'var(--ink)' }}>
+                {activeStartTime} — {activeEndTime} WITA
+              </div>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink-2)', marginTop: '2px' }}>
                 {dayName}, {fullDate}
               </div>
-              <div
-                style={{
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  color: 'var(--gold)',
-                  marginTop: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <Calendar size={17} />
-                <span>Pukul {activeStartTime} WITA</span>
-              </div>
             </div>
 
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.75)',
-                borderRadius: '16px',
-                padding: '14px 16px',
-                border: '1px solid #EAE2D3',
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '12px',
-              }}
-            >
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
-                  Nama Rider
-                </div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
-                  {data.riderName}
-                </div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>Nama Rider</div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>{data.riderName}</div>
               </div>
               <div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
-                  Estimasi Tarif
-                </div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)', marginTop: '2px' }}>
-                  Rp {data.priceIdr.toLocaleString('id-ID')}
-                </div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>Layanan</div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>{data.serviceName}</div>
               </div>
               <div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
-                  Profil Fisik
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginTop: '2px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>Spesifikasi Rider</div>
+                <div className="tabular-nums" style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
                   {data.heightCm} cm · {data.weightKg} kg
-                  {data.shoeSize ? ` · EUR ${data.shoeSize}` : ''}
+                  {data.shoeSize ? ` · EU ${data.shoeSize}` : ''}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
-                  Kode Tiket
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
-                  {data.humanId}
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>Estimasi Tarif</div>
+                <div className="tabular-nums" style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
+                  Rp {data.priceIdr.toLocaleString('id-ID')}
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Arrival & Location Guide */}
-        <div
-          style={{
-            background: 'var(--white)',
-            borderRadius: '18px',
-            padding: '16px',
-            border: '1px solid #e6e2d8',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '12px',
-          }}
+        {/* Secondary Location Info Card */}
+        <div className="bbs-card-secondary" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <MapPin size={20} strokeWidth={2} color="var(--ink)" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
+              Panduan Kedatangan di Kandang
+            </div>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--muted)', lineHeight: 1.5, fontWeight: 500 }}>
+              Hadir 15 menit sebelum jadwal sesi menggunakan celana panjang dan sepatu tertutup. Helm pengaman disediakan oleh Borneo Berkuda Stable.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Sticky Bottom Action Bar: 1 Dominant Primary Button + 1 Secondary Copy Button ── */}
+      <div className="bbs-sticky-bottom-bar">
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          className="bbs-btn-secondary"
+          aria-label="Salin Link Tiket"
+          style={{ padding: '0 16px' }}
         >
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: '#fbf8f1',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--gold)',
-              flexShrink: 0,
-            }}
-          >
-            <MapPin size={18} />
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--ink)', lineHeight: 1.5 }}>
-            <div style={{ fontWeight: 700, marginBottom: '2px' }}>Petunjuk Kedatangan BBS</div>
-            <span style={{ color: 'var(--muted)' }}>
-              Mohon hadir <b>15 menit sebelum sesi dimulai</b> untuk fitting helm, boots, dan pengenalan dengan kuda. Gunakan celana panjang yang nyaman.
-            </span>
-          </div>
-        </div>
+          <Copy size={18} strokeWidth={2} />
+          <span>Salin Link</span>
+        </button>
 
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button
-            type="button"
-            onClick={handleOpenWhatsApp}
-            style={{
-              width: '100%',
-              height: '54px',
-              background: '#25D366',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '16px',
-              fontSize: '15px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              boxShadow: '0 6px 18px rgba(37, 211, 102, 0.25)',
-            }}
-          >
-            <MessageCircle size={20} />
-            <span>
-              {isConfirmed
-                ? 'Simpan Link Tiket ke WhatsApp'
-                : 'Konfirmasi & Simpan Link via WhatsApp'}
-            </span>
-          </button>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              style={{
-                height: '48px',
-                background: 'var(--white)',
-                color: 'var(--ink)',
-                border: '1px solid #e0dfda',
-                borderRadius: '14px',
-                fontSize: '13.5px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-              }}
-            >
-              <Copy size={16} />
-              <span>Salin Link Tiket</span>
-            </button>
-
-            <Link
-              href="/ride"
-              style={{
-                height: '48px',
-                background: 'var(--white)',
-                color: 'var(--ink)',
-                border: '1px solid #e0dfda',
-                borderRadius: '14px',
-                fontSize: '13.5px',
-                fontWeight: 700,
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-              }}
-            >
-              <CheckCircle2 size={16} color="var(--gold)" />
-              <span>Pesan Sesi Lain</span>
-            </Link>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={handleOpenWhatsApp}
+          className="bbs-btn-primary"
+          style={{ flex: 1 }}
+        >
+          <MessageCircle size={18} strokeWidth={2} />
+          <span>{isConfirmed ? 'Simpan ke WhatsApp' : 'Hubungi Admin via WA'}</span>
+        </button>
       </div>
     </div>
   );

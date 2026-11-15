@@ -1,78 +1,321 @@
-/* ─── BBS V2 Design Tokens ─────────────────────────────────────
-   Single source of truth. All CSS pulls from here.
-   ─────────────────────────────────────────────────────────────── */
+/* ============================================================================
+ * BBS Design Tokens & Core Primitives (src/styles/tokens.css)
+ * Bold, high-contrast equestrian palette with selective Gold accents,
+ * overlapping hero cards, 4/8 spacing scale, and 44px+ touch targets.
+ * ============================================================================ */
+
 :root {
-  /* Canvas */
-  --paper: #f7f6f1;
-  --white: #ffffff;
-  --bg:    #f7f6f1;               /* alias for Tailwind bg-bg */
+  /* Core Surfaces & Backgrounds (Warm Bold Contrast) */
+  --bg: #EFECE4;
+  --paper: #F4F1EA;
+  --surface: #FFFFFF;
+  --surface-subtle: #F8F6F1;
+  --surface-elevated: #FFFFFF;
 
-  /* Ink */
-  --ink:   #181817;
-  --muted: #7b7a74;
-  --line:  rgba(24, 24, 23, 0.09);
+  /* Typography & Ink Hierarchy (Contrast >= 4.5:1) */
+  --ink: #121210;
+  --ink-2: #282724;
+  --muted: #52504A;
+  --border: #D6CFC0;
+  --border-strong: #B8AF9C;
 
-  /* Brand */
-  --gold:      #b9974f;
-  --gold2:     #d8c18a;
-  --goldSoft:  #eee2c6;
-  --green:     #56705a;
-  --greenSoft: #dfe9df;
-  --red:       #c66d66;
-  --redSoft:   #f7e3e1;
+  /* Bold Hero & Brand Deep Accents */
+  --hero-dark: #141311;
+  --green-900: #14452F;
+  --green-50: #EAF3EE;
 
-  /* Radii */
-  --r-card: 22px;
-  --r-hero: 27px;
-  --r-pill: 999px;
+  /* Selective Gold (ONLY for Logo, Active Dot, Center Scan QR, Gold Tier) */
+  --gold: #E9C46A;
+  --gold-accent: #C89D3C;
+  --gold-soft: #FBEFCB;
+  --gold-ink: #5A4310;
 
-  /* Shadows */
-  --sh:     0 8px 24px rgba(24, 24, 23, 0.05);
-  --sh-nav: 0 18px 38px rgba(0, 0, 0, 0.24);
+  /* Semantic Status Tokens (Consistent across all screens) */
+  --success: #0F5A38;
+  --success-soft: #DCFCE7;
+  --danger: #B3261E;
+  --danger-soft: #FEE2E2;
+  --info: #1E40AF;
+  --info-soft: #DBEAFE;
 
-  /* Typography */
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body:    'Manrope', system-ui, sans-serif;
+  /* Border Radius Scale (12 / 16 / 24 / 28 only) */
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-xl: 28px;
 
-  /* Motion */
-  --ease-spring:   cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
-  --dur-fast:      120ms;
-  --dur-normal:    250ms;
-  --dur-slow:      350ms;
+  /* Two Shadow Levels Only */
+  --shadow-sm: 0 4px 14px rgba(18, 18, 16, 0.07);
+  --shadow-lg: 0 16px 40px rgba(18, 18, 16, 0.16);
 
-  /* ── Legacy aliases (used by older component CSS still in globals) ── */
-  --surface:          var(--white);
-  --surface-2:        #f0efe9;
-  --color-bg:         var(--paper);
-  --color-surface:    var(--white);
-  --color-ink:        var(--ink);
-  --color-gold:       var(--gold);
-  --color-sage:       var(--green);
-  --shadow-card:      var(--sh);
-  --shadow-nav:       var(--sh-nav);
-  --radius-card:      var(--r-card);
-  --radius-hero:      var(--r-hero);
-  --radius-pill:      var(--r-pill);
-  --ink-2:            var(--muted);
-  --ink-3:            #a0a09a;
-  --gold-deep:        #9a7a37;
-  --gold-soft:        var(--goldSoft);
-  --gold-accent:      var(--goldSoft);
-  --sage:             var(--green);
-  --sage-soft:        var(--greenSoft);
-  --teal:             var(--green);
-  --teal-soft:        var(--greenSoft);
-  --clay:             var(--red);
-  --clay-soft:        var(--redSoft);
-  --lilac:            #8d86b8;
-  --lilac-soft:       #e9e6f4;
-  --border:           var(--line);
-  --border-strong:    rgba(24, 24, 23, 0.18);
-  --stable:           #ede6d8;
-  --stable-mid:       #e0d8c8;
-  --nav-height:       68px;
-  --space-page:       20px;
-  --shadow-sm:        0 2px 8px rgba(24,24,23,0.06);
-  --shadow-gold:      0 8px 24px rgba(185,151,79,0.28);
+  /* Spacing Scale (4 / 8) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+}
+
+/* Tabular Numerals for Times, Prices, and Ticket Codes */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reusable Hero + Overlapping Card Architecture */
+.bbs-page-shell {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  max-width: 520px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.bbs-hero-block {
+  position: relative;
+  width: 100%;
+  background: var(--hero-dark);
+  color: var(--surface);
+  overflow: hidden;
+  padding: 24px 24px 56px;
+}
+
+.bbs-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 18, 16, 0.45) 0%,
+    rgba(20, 69, 47, 0.65) 55%,
+    rgba(18, 18, 16, 0.92) 100%
+  );
+  z-index: 1;
+}
+
+.bbs-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.bbs-overlap-container {
+  position: relative;
+  z-index: 10;
+  margin-top: -28px;
+  padding: 0 16px 112px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.bbs-card-elevated {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  padding: var(--sp-6);
+}
+
+.bbs-card-secondary {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-5);
+}
+
+/* Action Hierarchy: 1 Primary Dominant, Secondary Clearly Subordinate (Min 44px) */
+.bbs-btn-primary {
+  min-height: 52px;
+  padding: 0 var(--sp-6);
+  border-radius: var(--r-md);
+  border: none;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 15px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 160ms ease-out, opacity 160ms ease-out;
+  text-decoration: none;
+}
+
+.bbs-btn-primary:active {
+  transform: scale(0.985);
+}
+
+.bbs-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bbs-btn-secondary {
+  min-height: 48px;
+  padding: 0 var(--sp-5);
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 160ms ease-out, background 160ms ease-out;
+  text-decoration: none;
+}
+
+.bbs-btn-secondary:active {
+  transform: scale(0.985);
+  background: var(--surface-subtle);
+}
+
+.bbs-btn-tertiary {
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* Sticky Bottom Action Bar for Forms & Ticket Actions */
+.bbs-sticky-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 40;
+}
+
+/* Unified Status Badges (Icon + Label + Token Color) */
+.bbs-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.bbs-status-badge.pending {
+  background: var(--gold-soft);
+  color: var(--gold-ink);
+}
+
+.bbs-status-badge.confirmed {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.bbs-status-badge.rejected {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Form Controls with 44px+ Touch Target & Unit Suffix */
+.bbs-field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+
+.bbs-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bbs-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  transition: border-color 150ms ease-out;
+}
+
+.bbs-input:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+
+.bbs-input.has-error {
+  border-color: var(--danger);
+}
+
+.bbs-input-suffix {
+  position: absolute;
+  right: 14px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.bbs-field-error {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+/* Bottom Sheet Slide-up Animation */
+@keyframes bbsSheetSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bbs-bottom-sheet {
+  animation: bbsSheetSlideUp 200ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bbs-bottom-sheet,
+  .bbs-btn-primary,
+  .bbs-btn-secondary {
+    animation: none !important;
+    transition: none !important;
+  }
 }
