@@ -89,9 +89,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(18, 18, 16, 0.45) 0%,
-    rgba(20, 69, 47, 0.65) 55%,
-    rgba(18, 18, 16, 0.92) 100%
+    rgba(18, 18, 16, 0.48) 0%,
+    rgba(42, 34, 18, 0.68) 55%,
+    rgba(18, 18, 16, 0.94) 100%
   );
   z-index: 1;
 }
@@ -204,15 +204,22 @@
   transform: translateX(-50%);
   width: 100%;
   max-width: 520px;
+  box-sizing: border-box;
   background: var(--surface);
   border-top: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
-  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   z-index: 40;
+}
+
+.bbs-input:focus {
+  outline: none;
+  border-color: var(--gold-accent);
+  box-shadow: 0 0 0 3px rgba(233, 196, 106, 0.25);
 }
 
 /* Unified Status Badges (Icon + Label + Token Color) */
@@ -259,6 +266,8 @@
 
 .bbs-input {
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   min-height: 48px;
   padding: 0 14px;
   border-radius: var(--r-sm);
@@ -267,12 +276,13 @@
   color: var(--ink);
   font-size: 14px;
   font-weight: 700;
-  transition: border-color 150ms ease-out;
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
 }
 
 .bbs-input:focus {
   outline: none;
-  border-color: var(--ink);
+  border-color: var(--gold-accent);
+  box-shadow: 0 0 0 3px rgba(233, 196, 106, 0.25);
 }
 
 .bbs-input.has-error {

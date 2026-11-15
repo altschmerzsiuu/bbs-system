@@ -56,6 +56,7 @@ export default function LoginPage() {
 
   return (
     <div
+      suppressHydrationWarning
       style={{
         position: 'fixed',
         inset: 0,
@@ -67,6 +68,7 @@ export default function LoginPage() {
     >
       {/* ── Main Content ── */}
       <div
+        suppressHydrationWarning
         style={{
           position: 'absolute',
           inset: 0,
@@ -198,24 +200,61 @@ export default function LoginPage() {
               <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
             </div>
 
-            {/* 2. Clearly Secondary Action (No Gold Border) */}
+            {/* 2. Clearly Secondary Action: Direct Link to /ride */}
             <Link
               href="/ride"
               className="bbs-btn-secondary"
-              style={{ width: '100%', justifyContent: 'space-between' }}
+              style={{
+                width: '100%',
+                justifyContent: 'space-between',
+                border: '1.5px solid var(--gold-accent)',
+                background: 'var(--surface-subtle)',
+              }}
             >
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-                <Calendar size={18} strokeWidth={2} color="var(--ink)" />
-                <span>Pesan Fun Ride / Casual (Tanpa Login)</span>
+                <Calendar size={18} strokeWidth={2} color="var(--gold-accent)" />
+                <span>Pesan Fun Ride / Casual</span>
               </span>
-              <ArrowRight size={18} strokeWidth={2} color="var(--muted)" />
+              <ArrowRight size={18} strokeWidth={2} color="var(--gold-ink)" />
             </Link>
 
-            {/* 3. Tertiary Action (44px min touch target) */}
-            <Link href="/ride?tab=check" className="bbs-btn-tertiary" style={{ width: '100%' }}>
-              <Ticket size={16} strokeWidth={2} color="var(--ink-2)" />
-              <span>Sudah pesan? Cek Status & E-Ticket Saya</span>
-            </Link>
+            {/* 3. Tertiary Action: Visually Distinct Clickable Link for Ticket Check */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                minHeight: '44px',
+                flexWrap: 'wrap',
+                marginTop: '2px',
+              }}
+            >
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>
+                Sudah pesan tiket?
+              </span>
+              <Link
+                href="/ride?tab=check"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: '999px',
+                  background: 'var(--gold-soft)',
+                  border: '1px solid var(--gold-accent)',
+                  color: 'var(--gold-ink)',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3px',
+                }}
+              >
+                <Ticket size={14} strokeWidth={2} color="var(--gold-ink)" />
+                <span>Cek Status & E-Ticket Saya</span>
+                <ArrowRight size={14} strokeWidth={2} color="var(--gold-ink)" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
